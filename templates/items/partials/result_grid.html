@@ -1,0 +1,15 @@
+{% if items %}
+  <div class="item-grid">
+    {% for item in items %}{% include 'items/partials/item_card.html' %}{% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}<nav class="row wrap" aria-label="Search pages" style="margin-top:24px">
+    {% if page_obj.has_previous %}<button type="button" class="btn btn-ghost" data-page="{{ page_obj.previous_page_number }}">Previous</button>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<button type="button" class="btn btn-ghost" data-page="{{ page_obj.next_page_number }}">Next</button>{% endif %}
+  </nav>{% endif %}
+{% else %}
+  <div class="empty">
+    <span class="em">🔍</span>
+    No items match your search. Try broadening your filters.
+  </div>
+{% endif %}

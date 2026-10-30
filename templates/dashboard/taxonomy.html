@@ -1,0 +1,42 @@
+{% extends 'shell.html' %}
+{% block title %}Categories & locations{% endblock %}
+{% block page_title %}Administration · Categories &amp; Locations{% endblock %}
+
+{% block main %}
+<div class="section-head"><div><h1>Categories &amp; locations 🏷️</h1><div class="sub">The controlled vocabularies the matching engine uses for metadata.</div></div></div>
+
+<div class="grid g-2" style="align-items:start">
+  <div class="card">
+    <div class="card-h"><h2>📦 Categories</h2></div>
+    <div class="card-b">
+      <form method="post" class="row" style="gap:8px; margin-bottom:16px">
+        {% csrf_token %}
+        <input type="hidden" name="kind" value="category">
+        <input name="icon" class="field-input" style="max-width:64px" placeholder="📦" maxlength="4">
+        <input name="name" class="field-input" placeholder="New category name" required>
+        <button class="btn btn-primary btn-sm">Add</button>
+      </form>
+      <table class="table">
+        <thead><tr><th>Category</th><th>Reports</th></tr></thead>
+        <tbody>{% for c in categories %}<tr><td>{{ c.icon }} {{ c.name }}</td><td>{{ c.n }}</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>📍 Locations</h2></div>
+    <div class="card-b">
+      <form method="post" class="row" style="gap:8px; margin-bottom:16px">
+        {% csrf_token %}
+        <input type="hidden" name="kind" value="location">
+        <input name="name" class="field-input" placeholder="New location / zone name" required>
+        <button class="btn btn-accent btn-sm">Add</button>
+      </form>
+      <table class="table">
+        <thead><tr><th>Location</th><th>Reports</th></tr></thead>
+        <tbody>{% for l in locations %}<tr><td>📍 {{ l.name }}</td><td>{{ l.n }}</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

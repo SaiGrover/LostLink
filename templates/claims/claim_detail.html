@@ -1,0 +1,184 @@
+{% extends 'shell.html' %}
+{% load humanize %}
+{% block title %}Claim #{{ claim.pk }}{% endblock %}
+{% block page_title %}Claim #{{ claim.pk }}{% endblock %}
+
+{% block main %}
+<div class="trail"><a href="{% url 'items:detail' claim.item.pk %}">{{ claim.item.title|truncatechars:34 }}</a> / Claim</div>
+
+<div class="grid" style="grid-template-columns: 1.4fr 1fr; align-items:start">
+  <div class="stack">
+    <!-- status banner -->
+    <div class="card pad">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <h1 style="font-size:1.4rem; margin-bottom:6px">Claim on “{{ claim.item.title }}”</h1>
+          <span class="badge {{ claim.status_tone }}">{{ claim.get_status_display }}</span>
+          <span class="muted" style="font-size:.85rem; margin-left:8px">by {{ claim.claimant.display_name }} · {{ claim.created_at|naturaltime }}</span>
+        </div>
+        <a href="{% url 'items:detail' claim.item.pk %}" class="btn btn-ghost btn-sm">View item</a>
+      </div>
+      <div class="divider"></div>
+      <h4 class="muted" style="font-size:.8rem; text-transform:uppercase; letter-spacing:.06em">Claimant’s statement</h4>
+      <p style="margin:0">{{ claim.statement }}</p>
+      {% if claim.decision_note %}
+        <div class="divider"></div>
+        <h4 class="muted" style="font-size:.8rem; text-transform:uppercase; letter-spacing:.06em">Moderator note</h4>
+        <p style="margin:0">{{ claim.decision_note }}</p>
+      {% endif %}
+    </div>
+
+    <!-- verification questions -->
+    <div class="card">
+      <div class="card-h"><h3>🔐 Verification questions</h3></div>
+      <div class="card-b">
+        {% if questions %}
+          <div class="stack">
+          {% for q in questions %}
+            <div style="border:1px solid var(--line); border-radius:var(--r); padding:14px">
+              <div class="row" style="gap:8px"><span>❓</span><b>{{ q.text }}</b></div>
+              {% if q.answer %}
+                <div class="row" style="gap:8px; margin-top:8px; align-items:flex-start"><span>💬</span>
+                  <div><span class="badge success">Answered</span><p style="margin:6px 0 0">{{ q.answer }}</p></div></div>
+              {% elif is_claimant %}
+                <form method="post" action="{% url 'claims:answer' claim.pk q.pk %}" style="margin-top:10px">
+                  {% csrf_token %}
+                  {{ answer_form.answer }}
+                  <button class="btn btn-primary btn-sm" style="margin-top:8px">Submit answer</button>
+                </form>
+              {% else %}
+                <div class="muted" style="margin-top:8px; font-size:.85rem">⏳ Awaiting the claimant’s answer.</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted" style="margin:0">No verification questions have been asked yet.</p>
+        {% endif %}
+
+        {% if is_finder or can_moderate %}
+          {% if claim.is_open %}
+          <div class="divider"></div>
+          <form method="post" action="{% url 'claims:add_question' claim.pk %}">
+            {% csrf_token %}
+            <label class="muted" style="font-size:.82rem; font-weight:600">Ask a verification question</label>
+            <div class="row" style="gap:8px; margin-top:6px">
+              {{ question_form.text }}
+              <button class="btn btn-ink btn-sm" style="white-space:nowrap">Add ❓</button>
+            </div>
+          </form>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- side: item + decision -->
+  <div class="stack">
+    <div class="card">
+      <div class="thumb" style="aspect-ratio:4/3; border-radius:var(--r-lg) var(--r-lg) 0 0; overflow:hidden; background:var(--sand)">
+        {% if claim.item.image %}<img src="{{ claim.item.image.url }}" style="width:100%;height:100%;object-fit:cover">
+        {% else %}<div style="height:100%;display:grid;place-items:center;font-size:3rem">{{ claim.item.category.icon }}</div>{% endif %}
+      </div>
+      <div class="card-b">
+        <span class="badge {{ claim.item.report_type }}">{{ claim.item.get_report_type_display }}</span>
+        <h3 style="margin:8px 0 4px">{{ claim.item.title }}</h3>
+        <div class="muted" style="font-size:.85rem">📍 {{ claim.item.location.name }} · {{ claim.item.event_date|naturalday }}</div>
+      </div>
+    </div>
+
+    {% if claim.status == 'approved' or claim.status == 'returned' %}
+    <div class="card" style="border-color:var(--green)">
+      <div class="card-h"><h3>🤝 Arrange the handover</h3></div>
+      <div class="card-b">
+        <p class="muted" style="font-size:.86rem; margin-top:0">Claim approved — here are the contact details to coordinate the return.</p>
+        <div class="stack" style="gap:12px">
+          <div style="border:1px solid var(--line); border-radius:var(--r-sm); padding:12px">
+            <div class="muted" style="font-size:.76rem; text-transform:uppercase; letter-spacing:.05em">{% if claim.item.is_found %}Finder{% else %}Owner{% endif %} (reported the item)</div>
+            <b>{{ claim.item.reporter.display_name }}</b>
+            <div style="font-size:.9rem; margin-top:4px">✉️ {{ claim.item.reporter.email|default:"—" }}{% if claim.item.reporter.phone %} · 📞 {{ claim.item.reporter.phone }}{% endif %}</div>
+          </div>
+          <div style="border:1px solid var(--line); border-radius:var(--r-sm); padding:12px">
+            <div class="muted" style="font-size:.76rem; text-transform:uppercase; letter-spacing:.05em">{% if claim.item.is_found %}Owner{% else %}Finder{% endif %} (responded)</div>
+            <b>{{ claim.claimant.display_name }}</b>
+            <div style="font-size:.9rem; margin-top:4px">✉️ {{ claim.contact_email|default:claim.claimant.email|default:"—" }}{% if claim.contact_phone %} · 📞 {{ claim.contact_phone }}{% endif %}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if can_moderate or is_finder %}
+    <div class="card">
+      <div class="card-h"><h3>🤖 AI assessment</h3>
+        <span class="muted" style="margin-left:auto; font-size:.78rem">decision support</span></div>
+      <div class="card-b">
+        {% if assessment.match %}
+          <div class="row" style="align-items:center; gap:14px">
+            <div class="score-ring" data-p="{{ assessment.match.percent }}" data-ring="{% if assessment.match.tier == 'high' %}#2FA36B{% elif assessment.match.tier == 'medium' %}#F2A63B{% else %}#8A8194{% endif %}">
+              <div class="inner">{{ assessment.match.percent }}%</div>
+            </div>
+            <div>
+              <span class="badge {{ assessment.match.tier_tone }}">{{ assessment.match.get_tier_display }} match</span>
+              <div class="muted" style="font-size:.82rem; margin-top:4px">
+                Confidence that the claimant’s report and this item are the same object.
+              </div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div style="font-size:.78rem; color:var(--muted); margin-bottom:8px">Score breakdown</div>
+          {% for label, val, weight in assessment.match.breakdown %}
+            <div class="bar-row" style="grid-template-columns:118px 1fr 40px">
+              <span class="lab">{{ label }}</span>
+              <div class="meter"><i style="width:{% widthratio val 1 100 %}%"></i></div>
+              <span class="val">{% widthratio val 1 100 %}%</span>
+            </div>
+          {% endfor %}
+          <div class="divider"></div>
+        {% else %}
+          <p class="muted" style="font-size:.86rem; margin:0 0 12px">
+            No lost-report match on file for this claimant — verify identity from the statement and answers alone.</p>
+        {% endif %}
+
+        <div class="bar-row" style="grid-template-columns:118px 1fr 40px; margin-bottom:0">
+          <span class="lab">Statement fit</span>
+          <div class="meter tone-{{ assessment.statement_tone }}"><i style="width:{{ assessment.statement_sim }}%"></i></div>
+          <span class="val">{{ assessment.statement_sim }}%</span>
+        </div>
+        <div class="muted" style="font-size:.78rem; margin-top:6px">
+          NLP similarity between the claimant’s written proof and the item’s description.
+        </div>
+        <div class="divider"></div>
+        <p class="muted" style="font-size:.78rem; margin:0">
+          ⚠️ Guidance only. The AI ranks likelihood — <b>you</b> confirm the owner’s
+          identity from the private answers before releasing the item.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if can_moderate and claim.is_open %}
+    <div class="card pad">
+      <h3>🛡️ Moderator decision</h3>
+      <p class="muted" style="font-size:.86rem">Review the statement and answers. Approval allows contact exchange; handover is confirmed separately.</p>
+      <form method="post" action="{% url 'claims:decide' claim.pk 'approve' %}">
+        {% csrf_token %}
+        <label class="muted" style="font-size:.82rem; font-weight:600">Note to claimant (optional)</label>
+        <div style="margin-top:6px">{{ decision_form.note }}</div>
+        <button class="btn btn-accent btn-block" style="margin-top:12px">Approve verified claim</button>
+      </form>
+      <form method="post" action="{% url 'claims:decide' claim.pk 'reject' %}" style="margin-top:10px"
+            onsubmit="return confirm('Reject this claim?')">
+        {% csrf_token %}
+        <button class="btn btn-ghost btn-block">✕ Reject claim</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% if can_moderate and claim.status == 'approved' %}
+<form method="post" action="{% url 'claims:return' claim.pk %}" class="card pad" style="margin-top:24px">{% csrf_token %}<h3>Confirm collection</h3><p>Only confirm after the physical item has been handed over.</p><button class="btn btn-primary">Mark item returned</button></form>
+{% endif %}
+{% if claim.status != 'returned' and claim.status != 'rejected' %}
+<details class="card pad" style="margin-top:24px"><summary>Raise a concern about this claim</summary><form method="post" action="{% url 'claims:dispute' claim.pk %}">{% csrf_token %}<label for="dispute-reason">Explain the concern</label><textarea class="field-input" id="dispute-reason" name="reason" maxlength="280" required></textarea><button class="btn btn-ghost">Send to moderator</button></form></details>
+{% endif %}
+{% endblock %}

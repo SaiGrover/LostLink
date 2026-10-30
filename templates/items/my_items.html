@@ -1,0 +1,17 @@
+{% extends 'shell.html' %}
+{% block title %}My reports{% endblock %}
+{% block page_title %}My reports{% endblock %}
+
+{% block main %}
+<div class="section-head">
+  <div><h1>My reports</h1><div class="sub">Everything you’ve reported lost or found.</div></div>
+  <a href="{% url 'items:report' %}" class="btn btn-primary">➕ New report</a>
+</div>
+
+{% if items %}
+  <div class="item-grid">{% for item in items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
+{% else %}
+  <div class="card"><div class="empty"><span class="em">📭</span>You haven’t reported anything yet.<br><br>
+    <a href="{% url 'items:report' %}" class="btn btn-primary">Report your first item</a></div></div>
+{% endif %}
+{% endblock %}

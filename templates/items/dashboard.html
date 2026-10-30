@@ -1,0 +1,93 @@
+{% extends 'shell.html' %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block main %}
+<div class="section-head">
+  <div>
+    <p class="eyebrow">YOUR CAMPUS CONNECTIONS</p>
+    <h1>Welcome back, {{ user.first_name|default:user.username }}.</h1>
+    <div class="sub">Here’s what’s happening with your items.</div>
+  </div>
+</div>
+
+<div class="grid g-4" style="margin-bottom:22px">
+  <div class="kpi"><div class="k-ico tone-primary">📋</div><div class="k-val">{{ my_item_count }}</div><div class="k-lab">Total reports</div></div>
+  <div class="kpi"><div class="k-ico tone-gold">🔎</div><div class="k-val">{{ my_lost }}</div><div class="k-lab">Lost reports</div></div>
+  <div class="kpi"><div class="k-ico tone-accent">🎁</div><div class="k-val">{{ my_found }}</div><div class="k-lab">Found reports</div></div>
+  <div class="kpi"><div class="k-ico tone-green">🎉</div><div class="k-val">{{ my_returned }}</div><div class="k-lab">Recovered</div></div>
+</div>
+
+<div class="grid" style="grid-template-columns: 1.4fr 1fr; align-items:start">
+  <div class="card">
+    <div class="card-h"><h2>Your potential matches</h2></div>
+    <div class="card-b">
+      {% if top_matches %}
+        <div class="stack">
+        {% for row in top_matches %}
+          <a href="{% url 'items:detail' row.mine.pk %}" style="text-decoration:none; color:inherit">
+          <div class="row" style="border:1px solid var(--line); border-radius:var(--r); padding:12px 14px">
+            <div class="score-ring" data-p="{{ row.match.percent }}" data-ring="{% if row.match.tier == 'high' %}#2FA36B{% elif row.match.tier == 'medium' %}#F2A63B{% else %}#8A8194{% endif %}">
+              <div class="inner">{{ row.match.percent }}%</div>
+            </div>
+            <div style="flex:1">
+              <div class="row wrap" style="gap:8px">
+                <span class="badge {{ row.mine.report_type }}">{{ row.mine.get_report_type_display }}</span>
+                <b>{{ row.mine.title }}</b>
+              </div>
+              <div class="muted" style="font-size:.86rem; margin-top:4px">
+                ↔ matches <b>{{ row.other.title }}</b> · {{ row.other.location.name }}
+              </div>
+              <span class="badge {{ row.match.tier_tone }}" style="margin-top:6px">{{ row.match.get_tier_display }}</span>
+            </div>
+          </div>
+          </a>
+        {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty"><span class="em">🪄</span>No matches yet. Report a lost or found item and the AI will start looking.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card pad">
+      <h3>Quick actions</h3>
+      <div class="stack" style="gap:10px; margin-top:12px">
+        <a href="{% url 'items:report' %}?type=lost" class="btn btn-ghost btn-block">I lost something →</a>
+        <a href="{% url 'items:report' %}?type=found" class="btn btn-ghost btn-block">I found something →</a>
+        <a href="{% url 'items:search' %}" class="btn btn-ink btn-block">Search all items</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Open claims</h3><span class="badge accent" style="margin-left:auto">{{ open_claims }}</span></div>
+      <div class="card-b">
+        {% if my_claims %}
+          <div class="stack" style="gap:10px">
+          {% for c in my_claims %}
+            <a href="{% url 'claims:detail' c.pk %}" class="row" style="justify-content:space-between; text-decoration:none; color:inherit">
+              <span>{{ c.item.title|truncatechars:26 }}</span>
+              <span class="badge {{ c.status_tone }}">{{ c.get_status_display }}</span>
+            </a>
+          {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted" style="margin:0">No claims yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:22px">
+  <div class="card-h"><h2>Recent reports</h2><a href="{% url 'items:mine' %}" class="btn btn-ghost btn-sm" style="margin-left:auto">View all</a></div>
+  <div class="card-b">
+    {% if my_items %}
+      <div class="item-grid">{% for item in my_items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
+    {% else %}
+      <div class="empty"><span class="em">📭</span>You haven’t reported anything yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

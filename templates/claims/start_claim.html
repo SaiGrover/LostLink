@@ -1,0 +1,56 @@
+{% extends 'shell.html' %}
+{% block title %}{% if is_found %}Claim item{% else %}Offer to return{% endif %}{% endblock %}
+{% block page_title %}{% if is_found %}Claim an item{% else %}Return an item{% endif %}{% endblock %}
+
+{% block main %}
+<div class="trail"><a href="{% url 'items:detail' item.pk %}">{{ item.title|truncatechars:34 }}</a> / {% if is_found %}Claim{% else %}Return{% endif %}</div>
+
+<div class="grid" style="grid-template-columns: 1.4fr 1fr; align-items:start">
+  <div class="card pad">
+    {% if is_found %}
+      <h1>Claim “{{ item.title }}”</h1>
+      <p class="muted">This item was <b>found</b> and handed in. Tell us why it’s yours — a
+        moderator (or the finder) may ask private verification questions before approving.</p>
+    {% else %}
+      <h1>Return “{{ item.title }}”</h1>
+      <p class="muted">Someone reported this <b>lost</b>. Let them know you found it and how
+        you can hand it back — the owner will confirm it’s theirs.</p>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="field">
+        <label for="{{ form.statement.id_for_label }}">{{ form.statement.label }}</label>
+        {{ form.statement }}
+        <div class="help">{{ form.statement.help_text }}</div>
+        {% for e in form.statement.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+      <div class="grid g-2">
+        <div class="field">
+          <label for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }}</label>
+          {{ form.contact_phone }}
+        </div>
+        <div class="field">
+          <label for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }}</label>
+          {{ form.contact_email }}
+        </div>
+      </div>
+      <div class="help" style="margin:-6px 0 16px">🔒 Your contact details are shared with the other party <b>only after the {% if is_found %}claim{% else %}return{% endif %} is approved</b>.</div>
+      <button type="submit" class="btn btn-primary">{% if is_found %}Submit claim{% else %}Offer to return{% endif %} →</button>
+      <a href="{% url 'items:detail' item.pk %}" class="btn btn-ghost">Cancel</a>
+    </form>
+  </div>
+
+  <aside class="card pad">
+    <h3>🔐 How verification works</h3>
+    <div class="stack" style="gap:14px; margin-top:12px">
+      <div class="row" style="gap:10px"><span class="badge info">1</span><span>You submit this {% if is_found %}claim{% else %}offer{% endif %} with your details.</span></div>
+      <div class="row" style="gap:10px"><span class="badge warning">2</span><span>Private verification questions are exchanged.</span></div>
+      <div class="row" style="gap:10px"><span class="badge accent">3</span><span>A moderator verifies your answers before approving the claim.</span></div>
+      <div class="row" style="gap:10px"><span class="badge success">4</span><span>Contacts are shared so you can arrange the handover.</span></div>
+    </div>
+    <div class="divider"></div>
+    <p class="muted" style="font-size:.85rem; margin:0">An item is never handed over on a guess — every recovery is verified.</p>
+  </aside>
+</div>
+{% endblock %}

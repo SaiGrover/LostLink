@@ -1,0 +1,65 @@
+{% extends 'shell.html' %}
+{% load humanize %}
+{% block title %}Review queue{% endblock %}
+{% block page_title %}Moderation · Review queue{% endblock %}
+
+{% block main %}
+<div class="section-head"><div><h1>Review queue 🛡️</h1><div class="sub">Approve reports and verify claims before items change hands.</div></div></div>
+
+<div class="grid g-2" style="margin-bottom:22px">
+  <div class="kpi"><div class="k-ico tone-gold">📋</div><div class="k-val">{{ pending_count }}</div><div class="k-lab">Reports awaiting approval</div></div>
+  <div class="kpi"><div class="k-ico tone-accent">🔑</div><div class="k-val">{{ claim_count }}</div><div class="k-lab">Open claims to review</div></div>
+</div>
+
+<div class="card" style="margin-bottom:22px">
+  <div class="card-h"><h2>📋 Reports awaiting approval</h2></div>
+  <div class="card-b">
+    {% if pending_items %}
+      <table class="table">
+        <thead><tr><th>Item</th><th>Type</th><th>Category</th><th>Reporter</th><th>When</th><th></th></tr></thead>
+        <tbody>
+        {% for item in pending_items %}
+          <tr>
+            <td><a href="{% url 'items:detail' item.pk %}"><b>{{ item.title }}</b></a><br><small class="muted">📍 {{ item.location.name }}</small></td>
+            <td><span class="badge {{ item.report_type }}">{{ item.get_report_type_display }}</span></td>
+            <td>{{ item.category.name }}{% if item.duplicate_of %}<br><a href="{{ item.duplicate_of.get_absolute_url }}" class="badge warning">Possible duplicate — review</a>{% endif %}</td>
+            <td>{{ item.reporter.display_name }}</td>
+            <td>{{ item.created_at|naturaltime }}</td>
+            <td style="text-align:right; white-space:nowrap">
+              <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" style="display:inline">{% csrf_token %}<button class="btn btn-accent btn-sm">✓</button></form>
+              <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" style="display:inline">{% csrf_token %}<button class="btn btn-ghost btn-sm">✕</button></form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty"><span class="em">✅</span>No reports waiting — all caught up!</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-h"><h2>🔑 Open claims</h2></div>
+  <div class="card-b">
+    {% if open_claims %}
+      <table class="table">
+        <thead><tr><th>Item</th><th>Claimant</th><th>Status</th><th>When</th><th></th></tr></thead>
+        <tbody>
+        {% for c in open_claims %}
+          <tr>
+            <td><b>{{ c.item.title }}</b></td>
+            <td>{{ c.claimant.display_name }}</td>
+            <td><span class="badge {{ c.status_tone }}">{{ c.get_status_display }}</span></td>
+            <td>{{ c.created_at|naturaltime }}</td>
+            <td style="text-align:right"><a href="{% url 'claims:detail' c.pk %}" class="btn btn-primary btn-sm">Review →</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty"><span class="em">🎉</span>No open claims right now.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'shell.html' %}
+{% load humanize %}
+{% block title %}{{ item.title }}{% endblock %}
+{% block page_title %}Item detail{% endblock %}
+
+{% block main %}
+<div class="trail"><a href="{% url 'items:search' %}">Items</a> / {{ item.title|truncatechars:40 }}</div>
+
+<div class="grid" style="grid-template-columns: 1fr 1.25fr; align-items:start">
+  <!-- item card -->
+  <div class="card">
+    <div class="thumb" style="aspect-ratio:4/3; background:var(--sand); border-radius:var(--r-lg) var(--r-lg) 0 0; overflow:hidden">
+      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.title }}" style="width:100%;height:100%;object-fit:cover">
+      {% else %}<div class="noimg" style="height:100%;display:grid;place-items:center;font-size:4rem">{{ item.category.icon }}</div>{% endif %}
+    </div>
+    <div class="card-b">
+      <div class="row wrap" style="gap:8px; margin-bottom:10px">
+        <span class="badge {{ item.report_type }}">{{ item.get_report_type_display }}</span>
+        <span class="badge {{ item.status_tone }}">{{ item.get_status_display }}</span>
+      </div>
+      <h1 style="font-size:1.5rem">{{ item.title }}</h1>
+      <p>{{ item.description }}</p>
+      <div class="divider"></div>
+      <table class="table">
+        <tr><td class="muted">Category</td><td>{{ item.category.icon }} {{ item.category.name }}</td></tr>
+        <tr><td class="muted">Location</td><td>📍 {{ item.location.name }}</td></tr>
+        <tr><td class="muted">Date</td><td>🗓️ {{ item.event_date|date:"d M Y" }} ({{ item.event_date|naturalday }})</td></tr>
+        {% if item.brand %}<tr><td class="muted">Brand</td><td>{{ item.brand }}</td></tr>{% endif %}
+        {% if item.color %}<tr><td class="muted">Colour</td><td>{{ item.color }}</td></tr>{% endif %}
+        <tr><td class="muted">Reported by</td><td>{{ item.reporter.display_name }}</td></tr>
+        <tr><td class="muted">Reported</td><td>{{ item.created_at|naturaltime }}</td></tr>
+      </table>
+
+      {% if not is_owner and item.is_active %}
+        {% if existing_claim %}
+          <a href="{% url 'claims:detail' existing_claim.pk %}" class="btn btn-ghost btn-block" style="margin-top:14px">View your {% if item.is_found %}claim{% else %}response{% endif %} · {{ existing_claim.get_status_display }}</a>
+        {% elif item.is_found %}
+          <a href="{% url 'claims:start' item.pk %}" class="btn btn-primary btn-block" style="margin-top:14px">🔑 This is mine — claim it</a>
+        {% else %}
+          <a href="{% url 'claims:start' item.pk %}" class="btn btn-accent btn-block" style="margin-top:14px">🙋 I found this — offer to return</a>
+        {% endif %}
+      {% endif %}
+      {% if is_owner %}
+        {% if item.is_active %}<a class="btn btn-ghost btn-block" href="{% url 'items:edit' item.pk %}">Edit report</a>{% endif %}
+        <form method="post" action="{% url 'items:withdraw' item.pk %}" style="margin-top:14px" onsubmit="return confirm('Withdraw this report?')">
+          {% csrf_token %}
+          <button class="btn btn-ghost btn-block">Withdraw report</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- matches -->
+  <div class="stack">
+    <div class="card">
+      <div class="card-h"><h2>🎯 Potential {{ item.opposite_type }} matches</h2>
+        <span class="badge muted" style="margin-left:auto">{{ match_rows|length }} found</span></div>
+      <div class="card-b">
+        {% if match_rows %}
+          <div class="stack">
+          {% for row in match_rows %}
+            <div style="border:1px solid var(--line); border-radius:var(--r); padding:16px">
+              <div class="row" style="align-items:flex-start">
+                <div class="score-ring" data-p="{{ row.match.percent }}" data-ring="{% if row.match.tier == 'high' %}#2FA36B{% elif row.match.tier == 'medium' %}#F2A63B{% else %}#8A8194{% endif %}">
+                  <div class="inner">{{ row.match.percent }}%</div>
+                </div>
+                <div style="flex:1">
+                  <div class="row wrap" style="gap:8px">
+                    <a href="{% url 'items:detail' row.other.pk %}"><b>{{ row.other.title }}</b></a>
+                    <span class="badge {{ row.match.tier_tone }}">{{ row.match.get_tier_display }}</span>
+                  </div>
+                  <div class="meta muted" style="font-size:.82rem; margin-top:4px; display:flex; gap:12px; flex-wrap:wrap">
+                    <span>{{ row.other.category.icon }} {{ row.other.category.name }}</span>
+                    <span>📍 {{ row.other.location.name }}</span>
+                    <span>🗓️ {{ row.other.event_date|naturalday }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- explainable breakdown (synopsis 4.11) -->
+              <div class="divider"></div>
+              <div style="font-size:.82rem; color:var(--muted); margin-bottom:8px">Why this match</div>
+              {% for label, val, weight in row.match.breakdown %}
+                <div class="bar-row">
+                  <span class="lab">{{ label }}</span>
+                  <div class="meter"><i style="width:{% widthratio val 1 100 %}%"></i></div>
+                  <span class="val">{% widthratio val 1 100 %}%</span>
+                </div>
+              {% endfor %}
+
+              {% if is_owner and item.is_active and row.other.is_active %}
+                <a href="{% url 'claims:start' row.other.pk %}?match={{ row.match.pk }}" class="btn btn-primary btn-sm" style="margin-top:10px">Claim this item →</a>
+              {% endif %}
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty"><span class="em">🔦</span>No potential matches yet. We’ll notify you the moment one appears.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if can_review and item.claims.exists %}
+    <div class="card">
+      <div class="card-h"><h3>🛡️ Claims on this item</h3></div>
+      <div class="card-b"><div class="stack" style="gap:10px">
+        {% for c in item.claims.all %}
+          <a href="{% url 'claims:detail' c.pk %}" class="row" style="justify-content:space-between; text-decoration:none; color:inherit; border:1px solid var(--line); border-radius:var(--r-sm); padding:10px 12px">
+            <span>{{ c.claimant.display_name }}</span>
+            <span class="badge {{ c.status_tone }}">{{ c.get_status_display }}</span>
+          </a>
+        {% endfor %}
+      </div></div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

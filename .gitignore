@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+*.sqlite3
+media/
+staticfiles/
+tmp/
+model_cache/
+evaluation/pilot/features/
+test-results/

@@ -1,0 +1,45 @@
+{% extends 'shell.html' %}
+{% load static %}
+{% block title %}{% if is_lost %}Lost items{% else %}Found items{% endif %}{% endblock %}
+{% block page_title %}{% if is_lost %}Lost items{% else %}Found items{% endif %}{% endblock %}
+
+{% block main %}
+<div class="section-head">
+  <div>
+    <h1>{% if is_lost %}🔎 Lost items{% else %}🎁 Found items{% endif %}</h1>
+    <div class="sub">
+      {% if is_lost %}Things people are looking for — if you found one, you can offer to return it.
+      {% else %}Things people handed in — if one is yours, you can claim it.{% endif %}
+    </div>
+  </div>
+  <div class="row" style="gap:8px">
+    <a href="{% url 'items:lost' %}" class="btn {% if is_lost %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Lost</a>
+    <a href="{% url 'items:found' %}" class="btn {% if not is_lost %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Found</a>
+  </div>
+</div>
+
+<form id="search-form" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
+  <input type="hidden" name="type" value="{{ locked_type }}">
+  <div class="row wrap" style="gap:12px">
+    <div style="flex:1; min-width:220px; position:relative">
+      <label for="query">Search {{ page_kind }} reports</label><input id="query" type="search" name="q" value="{{ q }}" class="field-input" placeholder="Title, description, brand or colour" autocomplete="off">
+      <span id="search-spinner" style="visibility:hidden; position:absolute; right:14px; top:12px">⏳</span>
+    </div>
+    <select name="category" aria-label="Category" class="field-input" style="max-width:200px">
+      <option value="">All categories</option>
+      {% for c in categories %}<option value="{{ c.slug }}" {% if sel_category == c.slug %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="location" aria-label="Campus location" class="field-input" style="max-width:200px">
+      <option value="">All locations</option>
+      {% for l in locations %}<option value="{{ l.slug }}" {% if sel_location == l.slug %}selected{% endif %}>📍 {{ l.name }}</option>{% endfor %}
+    </select>
+  </div>
+{% include 'items/partials/date_filters.html' %}
+</form>
+
+<div class="section-head"><div class="sub"><b id="result-count">{{ total }}</b> {{ page_kind }} item(s)</div></div>
+
+<div id="results">{% include 'items/partials/result_grid.html' %}</div>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/search.js' %}"></script>{% endblock %}

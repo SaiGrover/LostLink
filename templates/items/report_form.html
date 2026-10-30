@@ -1,0 +1,91 @@
+{% extends 'shell.html' %}
+{% block title %}Report an item{% endblock %}
+{% block page_title %}Report an item{% endblock %}
+
+{% block main %}
+<div class="trail"><a href="{% url 'items:dashboard' %}">Dashboard</a> / Report item</div>
+
+<div class="grid" style="grid-template-columns: 1.6fr .9fr; align-items:start">
+  <div class="card pad">
+    <h1>{% if editing %}Edit your report{% else %}Report a lost or found item{% endif %}</h1>
+    <p class="muted">The more detail you add, the better the AI can match it. A clear photo helps a lot.</p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <div class="field">
+        <label>What are you reporting?</label>
+        <div class="segmented">
+          {% for radio in form.report_type %}
+            <label>{{ radio.tag }}<span>{{ radio.choice_label }} item</span></label>
+          {% endfor %}
+        </div>
+        {% for e in form.report_type.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label for="{{ form.title.id_for_label }}">Item title</label>
+        {{ form.title }}
+        {% for e in form.title.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="grid g-2">
+        <div class="field">
+          <label for="{{ form.category.id_for_label }}">Category</label>
+          {{ form.category }}
+          {% for e in form.category.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.location.id_for_label }}">Location / zone</label>
+          {{ form.location }}
+          {% for e in form.location.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="{{ form.event_date.id_for_label }}">Date lost / found</label>
+        {{ form.event_date }}
+        {% for e in form.event_date.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        <div class="help">Colour, material, brand, distinctive marks — anything that identifies it.</div>
+        {% for e in form.description.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="grid g-2">
+        <div class="field">
+          <label for="{{ form.brand.id_for_label }}">Brand <span class="muted">(optional)</span></label>
+          {{ form.brand }}
+        </div>
+        <div class="field">
+          <label for="{{ form.color.id_for_label }}">Colour <span class="muted">(optional)</span></label>
+          {{ form.color }}
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="{{ form.image.id_for_label }}">Photo <span class="muted">(optional, recommended)</span></label>
+        {{ form.image }}
+        {% for e in form.image.errors %}<p class="errorlist">{{ e }}</p>{% endfor %}
+        <div class="help">A photo powers the image-similarity part of the match score.</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">{% if editing %}Save for review{% else %}Submit report →{% endif %}</button>
+    </form>
+  </div>
+
+  <aside class="card pad">
+    <h3>🤖 How matching works</h3>
+    <p class="muted" style="font-size:.9rem">After moderator approval, LostLink compares your report with reviewed reports using text, photographs and campus details. Similarity helps discovery; it is not proof of ownership.</p>
+    <div style="margin-top:10px">
+      <p class="muted">Descriptions and photos provide the strongest signals. Location, category, date, brand and colour add context. Every suggested match includes its component scores.</p>
+    </div>
+    <div class="divider"></div>
+    <p class="muted" style="font-size:.86rem; margin:0">A match never hands over your item automatically — a claim is always
+      verified by a moderator first. 🔐</p>
+  </aside>
+</div>
+{% endblock %}

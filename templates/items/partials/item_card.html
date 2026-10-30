@@ -1,0 +1,19 @@
+{% load humanize %}
+<a href="{% url 'items:detail' item.pk %}" class="item-card">
+  <div class="thumb">
+    {% if item.image %}
+      <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
+    {% else %}
+      <div class="noimg">{{ item.category.icon }}</div>
+    {% endif %}
+    <span class="tag badge {{ item.report_type }}">{{ item.get_report_type_display }}</span>
+  </div>
+  <div class="ic-b">
+    <h4>{{ item.title }}</h4>
+    <div class="meta">
+      <span>{{ item.category.icon }} {{ item.category.name }}</span>
+      <span>📍 {{ item.location.name }}</span>
+      <span>🗓️ {{ item.event_date|naturalday }}</span>
+    </div>
+  </div>
+</a>

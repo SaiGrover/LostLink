@@ -1,0 +1,28 @@
+{% extends 'shell.html' %}
+{% load humanize %}
+{% block title %}My claims{% endblock %}
+{% block page_title %}My claims{% endblock %}
+
+{% block main %}
+<div class="section-head"><div><h1>My claims</h1><div class="sub">Items you’ve claimed and their verification status.</div></div></div>
+
+{% if claims %}
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Item</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for c in claims %}
+      <tr>
+        <td><b>{{ c.item.title }}</b><br><small class="muted">📍 {{ c.item.location.name }}</small></td>
+        <td>{{ c.created_at|naturaltime }}</td>
+        <td><span class="badge {{ c.status_tone }}">{{ c.get_status_display }}</span></td>
+        <td style="text-align:right"><a href="{% url 'claims:detail' c.pk %}" class="btn btn-ghost btn-sm">Open</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card"><div class="empty"><span class="em">🔑</span>You haven’t claimed any items yet.<br>Find something that’s yours in <a href="{% url 'items:search' %}">search</a>.</div></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'shell.html' %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Administration · Analytics{% endblock %}
+
+{% block main %}
+<form method="get" action="{% url 'dashboard:export_pdf' %}" class="row wrap" style="margin-bottom:24px"><label for="report-month">Monthly summary</label><input class="field-input" id="report-month" type="month" name="month" style="max-width:220px" required><button class="btn btn-ghost">Download monthly PDF</button></form>
+<div class="section-head">
+  <div><h1>Analytics 📊</h1><div class="sub">System health and campus-wide loss patterns.</div></div>
+  <div class="row" style="gap:10px">
+    <a href="{% url 'dashboard:export_csv' %}" class="btn btn-ghost btn-sm">⬇️ Export CSV</a>
+    <a href="{% url 'dashboard:export_pdf' %}" class="btn btn-ink btn-sm">📄 PDF report</a>
+  </div>
+</div>
+
+<div class="grid g-4" style="margin-bottom:22px">
+  <div class="kpi"><div class="k-ico tone-violet">👥</div><div class="k-val">{{ kpis.users }}</div><div class="k-lab">Registered users</div></div>
+  <div class="kpi"><div class="k-ico tone-primary">📋</div><div class="k-val">{{ kpis.reports }}</div><div class="k-lab">Total reports</div></div>
+  <div class="kpi"><div class="k-ico tone-gold">🎯</div><div class="k-val">{{ kpis.matches }}</div><div class="k-lab">Potential matches</div></div>
+  <div class="kpi"><div class="k-ico tone-green">🎉</div><div class="k-val">{{ kpis.returned }}</div><div class="k-lab">Items returned</div></div>
+</div>
+
+<div class="grid g-2" style="margin-bottom:22px">
+  <div class="card">
+    <div class="card-h"><h2>📦 Most commonly reported categories</h2></div>
+    <div class="card-b">
+      {% for c in by_category %}
+        <div class="bar-row" style="grid-template-columns:170px 1fr 40px">
+          <span class="lab">{{ c.category__icon }} {{ c.category__name }}</span>
+          <div class="meter"><i style="width:{{ c.pct }}%"></i></div>
+          <span class="val">{{ c.n }}</span>
+        </div>
+      {% empty %}<p class="muted">No data yet.</p>{% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>📍 Most problematic locations</h2></div>
+    <div class="card-b">
+      {% for l in by_location %}
+        <div class="bar-row" style="grid-template-columns:170px 1fr 40px">
+          <span class="lab">{{ l.location__name }}</span>
+          <div class="meter tone-warning"><i style="width:{{ l.pct }}%"></i></div>
+          <span class="val">{{ l.n }}</span>
+        </div>
+      {% empty %}<p class="muted">No data yet.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid g-3">
+  <div class="card pad">
+    <h3>Lost vs Found</h3>
+    <div class="row" style="gap:24px; margin-top:14px">
+      <div><div class="k-val" style="color:var(--danger)">{{ lost_total }}</div><div class="k-lab">🔎 Lost</div></div>
+      <div><div class="k-val" style="color:var(--green)">{{ found_total }}</div><div class="k-lab">🎁 Found</div></div>
+    </div>
+  </div>
+  <div class="card pad">
+    <h3>Match confidence tiers</h3>
+    <div class="stack" style="gap:8px; margin-top:12px">
+      {% for t in tier_dist %}
+        <div class="row" style="justify-content:space-between">
+          <span class="badge {% if t.tier == 'high' %}success{% elif t.tier == 'medium' %}warning{% else %}muted{% endif %}">{{ t.tier|capfirst }}</span>
+          <b>{{ t.n }}</b>
+        </div>
+      {% empty %}<p class="muted" style="margin:0">No matches computed yet.</p>{% endfor %}
+    </div>
+  </div>
+  <div class="card pad">
+    <h3>Average match score</h3>
+    <div class="score-ring" data-p="{{ avg_match|stringformat:'.4f' }}" style="margin:14px auto 0">
+      <div class="inner">–</div>
+    </div>
+  </div>
+</div>
+<section class="card pad" style="margin-top:24px"><h2>Matching history</h2><p class="muted">Recorded score distributions. These describe similarity scores, not measured accuracy.</p><div style="overflow-x:auto"><table class="table"><thead><tr><th>Recorded</th><th>Version</th><th>Matches</th><th>Mean</th><th>High / medium / low</th></tr></thead><tbody>{% for s in snapshots %}<tr><td>{{ s.created_at|date:'d M Y H:i' }}</td><td>{{ s.configuration.version }}</td><td>{{ s.match_count }}</td><td>{{ s.mean_score|floatformat:3 }}</td><td>{{ s.tiers.high }} / {{ s.tiers.medium }} / {{ s.tiers.low }}</td></tr>{% empty %}<tr><td colspan="5">No monitoring snapshots yet.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}
+{% block scripts %}
+<script>
+  // avg_match is 0..1; convert to percent for the ring
+  var ring = document.querySelectorAll('.score-ring[data-p]');
+  ring.forEach(function(el){
+    var v = parseFloat(el.dataset.p);
+    if (v <= 1) { v = Math.round(v*100); }
+    el.style.setProperty('--p', v);
+    el.querySelector('.inner').textContent = v + '%';
+  });
+</script>
+{% endblock %}

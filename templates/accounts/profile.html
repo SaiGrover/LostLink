@@ -1,0 +1,38 @@
+{% extends 'shell.html' %}
+{% block title %}Profile{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block main %}
+<div class="section-head"><div><h1>Your profile ⚙️</h1><div class="sub">Keep your contact details up to date.</div></div></div>
+
+<div class="grid" style="grid-template-columns: .8fr 1.2fr; align-items:start">
+  <div class="card pad center">
+    <div class="avatar" style="width:88px;height:88px;font-size:2rem;margin:0 auto 14px;background:{{ user.avatar_color }}">{{ user.initials }}</div>
+    <h2 style="margin-bottom:4px">{{ user.display_name }}</h2>
+    <span class="badge {% if user.role == 'admin' %}info{% elif user.role == 'moderator' %}accent{% else %}muted{% endif %}">{{ user.get_role_display }}</span>
+    <div class="divider"></div>
+    <div class="muted" style="font-size:.9rem; text-align:left">
+      <div>👤 {{ user.username }}</div>
+      <div style="margin-top:6px">✉️ {{ user.email|default:"—" }}</div>
+      <div style="margin-top:6px">🆔 {{ user.enrolment_no|default:"—" }}</div>
+    </div>
+  </div>
+
+  <div class="card pad">
+    <h3>Edit details</h3>
+    <form method="post" novalidate style="margin-top:12px">
+      {% csrf_token %}
+      <div class="grid g-2">
+        <div class="field"><label>First name</label>{{ form.first_name }}</div>
+        <div class="field"><label>Last name</label>{{ form.last_name }}</div>
+      </div>
+      <div class="field"><label>Email</label>{{ form.email }}</div>
+      <div class="grid g-2">
+        <div class="field"><label>Enrolment number</label>{{ form.enrolment_no }}</div>
+        <div class="field"><label>Phone</label>{{ form.phone }}</div>
+      </div>
+      <button class="btn btn-primary">Save changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

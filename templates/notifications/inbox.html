@@ -1,0 +1,30 @@
+{% extends 'shell.html' %}
+{% load humanize %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block main %}
+<div class="section-head">
+  <div><h1>Notifications 🔔</h1><div class="sub">Match alerts, claim updates and report decisions.</div></div>
+  {% if notes %}<form method="post" action="{% url 'notifications:read_all' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">Mark all read</button></form>{% endif %}
+</div>
+
+<div class="card">
+  {% if notes %}
+    <div class="stack" style="gap:0">
+    {% for n in notes %}
+      <a href="{% url 'notifications:open' n.pk %}" class="row" style="gap:14px; padding:16px 20px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; {% if not n.is_read %}background:var(--primary-t){% endif %}">
+        <span style="font-size:1.4rem">{{ n.icon }}</span>
+        <div style="flex:1">
+          <b>{{ n.title }}</b>{% if not n.is_read %} <span class="badge primary" style="background:var(--primary);color:#fff">new</span>{% endif %}
+          <div class="muted" style="font-size:.88rem">{{ n.body }}</div>
+        </div>
+        <small class="muted">{{ n.created_at|naturaltime }}</small>
+      </a>
+    {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty"><span class="em">🔕</span>No notifications yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

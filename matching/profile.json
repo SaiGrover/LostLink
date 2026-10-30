@@ -1,0 +1,9 @@
+{
+  "version": "pilot-v3",
+  "text": "tfidf",
+  "image": "resnet",
+  "weights": {"text": 0.2, "image": 0.4, "location": 0.15, "category": 0.1, "date": 0.1, "attribute": 0.05},
+  "medium": 0.8,
+  "high": 0.9,
+  "selection": "Curated 180-pair pilot: validation F1/precision/MRR tie; deterministic first configuration, TF-IDF + ResNet. Selected notification threshold 0.8. Constructed source-identity pilot only, not real-world calibrated probabilities."
+}

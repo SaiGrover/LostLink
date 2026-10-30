@@ -1,0 +1,10 @@
+# LostLink — core dependencies
+Django>=5.0,<6.2
+Pillow>=10.0            # image handling + image-similarity descriptor
+scikit-learn>=1.3       # TF-IDF + cosine text similarity (Section 4.5)
+numpy>=1.24
+reportlab>=4.0          # PDF summary reports (Section 7.4)
+
+# The selected profile uses pretrained ResNet features. Install
+# requirements-ml.txt for the default setup. Core-only installs can set
+# LOSTLINK_IMAGE_MODEL=histogram for a lightweight development mode.

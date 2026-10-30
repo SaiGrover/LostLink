@@ -1,0 +1,5413 @@
+{
+  "provenance": "Project-constructed source-identity pilot; automatic labels, not human-reviewed campus reports.",
+  "limitations": [
+    "Positive pairs reuse the same photograph with brightness/compression changes.",
+    "Source titles generate descriptions; lexical overlap makes this an optimistic sanity benchmark.",
+    "Negatives use different source files, which are not guaranteed different physical objects.",
+    "Do not interpret metrics as real-world accuracy."
+  ],
+  "sources": [
+    {
+      "id": "108964100",
+      "category": "bags",
+      "description": "A backpack with trekking poles and shoes",
+      "image": "images/108964100.jpg",
+      "query_image": "images/108964100-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:A_backpack_with_trekking_poles_and_shoes.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/A_backpack_with_trekking_poles_and_shoes.jpg/500px-A_backpack_with_trekking_poles_and_shoes.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:SGrabarczuk_(WMF)\" title=\"User:SGrabarczuk (WMF)\">SGrabarczuk (WMF)</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "2d2d0e41dfcf9efa1e221806074691f41578e0d0dbaf38653332fca5351f8ebc",
+      "split": "validation"
+    },
+    {
+      "id": "80619479",
+      "category": "bags",
+      "description": "Plecak Hiker 50 L HiMountain",
+      "image": "images/80619479.jpg",
+      "query_image": "images/80619479-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Plecak_Hiker_50_L_HiMountain.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Plecak_Hiker_50_L_HiMountain.jpg/500px-Plecak_Hiker_50_L_HiMountain.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:WrS.tm.pl\" title=\"User:WrS.tm.pl\">WrS.tm.pl</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "1a088d91e9031c1489ea013ce8c2c1a3f97993ada13255c04616c41a63a845bc",
+      "split": "validation"
+    },
+    {
+      "id": "153407132",
+      "category": "bags",
+      "description": "Ryan Wesley Routh's Backpack And Rifle",
+      "image": "images/153407132.jpg",
+      "query_image": "images/153407132-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Ryan_Wesley_Routh%27s_Backpack_And_Rifle.png",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Ryan_Wesley_Routh%27s_Backpack_And_Rifle.png/500px-Ryan_Wesley_Routh%27s_Backpack_And_Rifle.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Southern District Of Florida",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.washingtonpost.com/documents/e3acb7eb-24b1-4b87-88e6-1fa7e14dde83.pdf\">https://www.washingtonpost.com/documents/e3acb7eb-24b1-4b87-88e6-1fa7e14dde83.pdf</a>",
+      "sha256": "6018dc43c414c0ac52c1c01650956b1d9968e03a002de92ac918591afdd6bd73",
+      "split": "validation"
+    },
+    {
+      "id": "113623402",
+      "category": "bags",
+      "description": "Backpack small",
+      "image": "images/113623402.jpg",
+      "query_image": "images/113623402-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Backpack_small.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Backpack_small.jpg/500px-Backpack_small.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:%D0%92%D0%B8%D0%BA%D1%82%D0%BE%D1%80_%D0%9F%D0%B8%D0%BD%D1%87%D1%83%D0%BA\" title=\"User:\u0412\u0438\u043a\u0442\u043e\u0440 \u041f\u0438\u043d\u0447\u0443\u043a\">\u0412\u0438\u043a\u0442\u043e\u0440 \u041f\u0438\u043d\u0447\u0443\u043a</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "70aec9426a4050888a25efd563b9bb45dd09f682f4951e23f2762a786ca56f34",
+      "split": "validation"
+    },
+    {
+      "id": "120191736",
+      "category": "bags",
+      "description": "Cat photo backpack",
+      "image": "images/120191736.jpg",
+      "query_image": "images/120191736-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Cat_photo_backpack.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Cat_photo_backpack.jpg/500px-Cat_photo_backpack.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:%D0%92%D1%81%D0%B5%D0%B2%D0%B8%D0%B4%D1%8F%D1%87%D0%B5_%D0%9E%D0%BA%D0%BE\" title=\"User:\u0412\u0441\u0435\u0432\u0438\u0434\u044f\u0447\u0435 \u041e\u043a\u043e\">\u0412\u0441\u0435\u0432\u0438\u0434\u044f\u0447\u0435 \u041e\u043a\u043e</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "4046a7876b98868e75abc8eea4f7bcdd6d17bfe8f179ea50af5989fcc8afbcfc",
+      "split": "validation"
+    },
+    {
+      "id": "80611330",
+      "category": "bags",
+      "description": "Military backpack 01",
+      "image": "images/80611330.jpg",
+      "query_image": "images/80611330-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Military_backpack_01.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Military_backpack_01.jpg/500px-Military_backpack_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Pegasovagante\" title=\"User:Pegasovagante\">Pegasovagante</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "99825fb88c92b330061d611b9d943dc7678d9cec61d1e8bde30865fd2c964125",
+      "split": "test"
+    },
+    {
+      "id": "150078918",
+      "category": "bags",
+      "description": "Wikimedia swag backpack",
+      "image": "images/150078918.jpg",
+      "query_image": "images/150078918-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Wikimedia_swag_backpack.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Wikimedia_swag_backpack.jpg/500px-Wikimedia_swag_backpack.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Kaartic\" title=\"User:Kaartic\">Kaartic</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "eacd24d3186a085fab0d64de3268374d9d2e380b3fcb51f82b12f6a7245d3b60",
+      "split": "test"
+    },
+    {
+      "id": "131419937",
+      "category": "bags",
+      "description": "Gregory, OutDoor 2018, Friedrichshafen (1X7A9957) (cropped)",
+      "image": "images/131419937.jpg",
+      "query_image": "images/131419937-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Gregory,_OutDoor_2018,_Friedrichshafen_(1X7A9957)_(cropped).jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Gregory%2C_OutDoor_2018%2C_Friedrichshafen_%281X7A9957%29_%28cropped%29.jpg/500px-Gregory%2C_OutDoor_2018%2C_Friedrichshafen_%281X7A9957%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:MB-one\" title=\"User:MB-one\">Matti Blume</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "6178e4aac8d9f829f4412071bc6a17fcef6710c0452b92bdb0e2a733143251e2",
+      "split": "test"
+    },
+    {
+      "id": "145601019",
+      "category": "bags",
+      "description": "CitiBike Angel backpack 2024 jeh",
+      "image": "images/145601019.jpg",
+      "query_image": "images/145601019-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:CitiBike_Angel_backpack_2024_jeh.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/CitiBike_Angel_backpack_2024_jeh.jpg/500px-CitiBike_Angel_backpack_2024_jeh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Jim.henderson\" title=\"User:Jim.henderson\">Jim.henderson</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "82b36eebafe70978ed8803e45f30a2a6bfb1aa98c5d9b4bd86445ae8c737f033",
+      "split": "test"
+    },
+    {
+      "id": "103191834",
+      "category": "bags",
+      "description": "Google-Maps-Backpack-NYC",
+      "image": "images/103191834.jpg",
+      "query_image": "images/103191834-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Google-Maps-Backpack-NYC.png",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/Google-Maps-Backpack-NYC.png/500px-Google-Maps-Backpack-NYC.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:AndrewHenkelman\" title=\"User:AndrewHenkelman\">Andrew Henkelman</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "31eacf4c6c126a1e1cf46582ff176aa64da1f13be4e97f14dea3b9307fab2a84",
+      "split": "test"
+    },
+    {
+      "id": "1908341",
+      "category": "wallets",
+      "description": "WalletMpegMan",
+      "image": "images/1908341.jpg",
+      "query_image": "images/1908341-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:WalletMpegMan.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/WalletMpegMan.jpg/500px-WalletMpegMan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "artist": "The original uploader was <a href=\"https://en.wikipedia.org/wiki/User:TheArmadillo\" class=\"extiw\" title=\"wikipedia:User:TheArmadillo\">TheArmadillo</a> at <a href=\"https://en.wikipedia.org/wiki/\" class=\"extiw\" title=\"wikipedia:\">English Wikipedia</a>.. Uploaded to Commons by <a href=\"//commons.wikimedia.org/w/index.php?title=User:Koernerbroetchen&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Koernerbroetchen (page does not exist)\">K\u00f6rnerbr\u00f6tchen</a>.",
+      "credit": "<bdi lang=\"en\" dir=\"ltr\">Transferred from <span class=\"plainlinks\"><a class=\"external text\" data-mw-original-href=\"//en.wikipedia.org\" href=\"https://en.wikipedia.org\">en.wikipedia</a></span> to Commons.</bdi>",
+      "sha256": "f071c031bc06e1a47df2d5db97ab86b9136b5413cb951fb3fd3bc1ee6f090baa",
+      "split": "validation"
+    },
+    {
+      "id": "92849836",
+      "category": "wallets",
+      "description": "I-CLIP Slim Wallet 03",
+      "image": "images/92849836.jpg",
+      "query_image": "images/92849836-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:I-CLIP_Slim_Wallet_03.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/I-CLIP_Slim_Wallet_03.jpg/500px-I-CLIP_Slim_Wallet_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/iclip-kartenetui-geldboerse-test/\">https://www.kartenetui.info/iclip-kartenetui-geldboerse-test/</a>",
+      "sha256": "53971f911bb26432585c36970dd1d7fdb4eee0ec19299a74f24ead70bc733430",
+      "split": "validation"
+    },
+    {
+      "id": "92849838",
+      "category": "wallets",
+      "description": "I-CLIP Slim Wallet 02",
+      "image": "images/92849838.jpg",
+      "query_image": "images/92849838-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:I-CLIP_Slim_Wallet_02.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/I-CLIP_Slim_Wallet_02.jpg/500px-I-CLIP_Slim_Wallet_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/iclip-kartenetui-geldboerse-test/\">https://www.kartenetui.info/iclip-kartenetui-geldboerse-test/</a>",
+      "sha256": "fdaaff5bc81523c51a6d3b15dc74441efa3a25e8a7499752b6243067401b5cd3",
+      "split": "validation"
+    },
+    {
+      "id": "92849837",
+      "category": "wallets",
+      "description": "I-CLIP Slim Wallet 01",
+      "image": "images/92849837.jpg",
+      "query_image": "images/92849837-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:I-CLIP_Slim_Wallet_01.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/I-CLIP_Slim_Wallet_01.jpg/500px-I-CLIP_Slim_Wallet_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/iclip-kartenetui-geldboerse-test/\">https://www.kartenetui.info/iclip-kartenetui-geldboerse-test/</a>",
+      "sha256": "79d7a5313d7bd907c622d9edc07e26a97e041a50b543f59a7e482586ce2b8b0f",
+      "split": "validation"
+    },
+    {
+      "id": "87189440",
+      "category": "wallets",
+      "description": "Flap Boy Slim Wallet from JAIMIE JACOBS 01",
+      "image": "images/87189440.jpg",
+      "query_image": "images/87189440-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_01.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_01.jpg/500px-Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/\">https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/</a>",
+      "sha256": "1f59d47a808ae4b491ddc794b751233de7a6a246c52c2d999ad6d0ac13f0a8a5",
+      "split": "validation"
+    },
+    {
+      "id": "87189439",
+      "category": "wallets",
+      "description": "Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+      "image": "images/87189439.jpg",
+      "query_image": "images/87189439-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_02.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_02.jpg/500px-Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/\">https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/</a>",
+      "sha256": "3137cc708ba67fe7285bc66a1368c52038f598c1c1dfb18936fc0b0cf51b43af",
+      "split": "test"
+    },
+    {
+      "id": "87189442",
+      "category": "wallets",
+      "description": "Flap Boy Slim Wallet from JAIMIE JACOBS 04",
+      "image": "images/87189442.jpg",
+      "query_image": "images/87189442-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_04.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_04.jpg/500px-Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/\">https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/</a>",
+      "sha256": "9572438ae1ccb745e4195dbc10fb576b3f952efa386e858148806e432c00e2e7",
+      "split": "test"
+    },
+    {
+      "id": "87189438",
+      "category": "wallets",
+      "description": "Flap Boy Slim Wallet from JAIMIE JACOBS 03",
+      "image": "images/87189438.jpg",
+      "query_image": "images/87189438-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_03.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_03.jpg/500px-Flap_Boy_Slim_Wallet_from_JAIMIE_JACOBS_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "www.kartenetui.info",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/\">https://www.kartenetui.info/jamie-jacobs-flap-boy-slim-wallet-test/</a>",
+      "sha256": "f751b2e9cb6194b11fe4c2f9c7899daecbb3d7953b18d245c71e74c6bf9a488a",
+      "split": "test"
+    },
+    {
+      "id": "37325916",
+      "category": "wallets",
+      "description": "Wallet",
+      "image": "images/37325916.jpg",
+      "query_image": "images/37325916-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Wallet.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/Wallet.jpg/500px-Wallet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<div class=\"fn value\">\nDavid Ring</div>",
+      "credit": "Drawing made by David Ring, commissioned by Europeana Fashion, scanned by team of MoMu \u2013 Fashion Museum Province of Antwerp",
+      "sha256": "fc02fa3877ac43293c46150a459fa1c840243a2c398396b075c1d471638c7bdb",
+      "split": "test"
+    },
+    {
+      "id": "83359816",
+      "category": "wallets",
+      "description": "Wikidata branded wallet 04",
+      "image": "images/83359816.jpg",
+      "query_image": "images/83359816-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Wikidata_branded_wallet_04.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Wikidata_branded_wallet_04.jpg/500px-Wikidata_branded_wallet_04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Edward\" title=\"User:Edward\">Edward</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "75bf31f735c0cf2d50311bbf450ce60be7dfe5208081449ca9001aa59200f97c",
+      "split": "test"
+    },
+    {
+      "id": "1602879",
+      "category": "electronics",
+      "description": "Mobile phone PHS Japan 1997-2003",
+      "image": "images/1602879.jpg",
+      "query_image": "images/1602879-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mobile_phone_PHS_Japan_1997-2003.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Mobile_phone_PHS_Japan_1997-2003.jpg/500px-Mobile_phone_PHS_Japan_1997-2003.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Marus&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Marus (page does not exist)\">Marus</a>",
+      "credit": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Marus&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Marus (page does not exist)\">Marus</a>",
+      "sha256": "cd557ab8125fd437b8cf036fc2392550d0129708d4de4438178e6caa46c877f0",
+      "split": "validation"
+    },
+    {
+      "id": "119598140",
+      "category": "electronics",
+      "description": "Green mobile phone of brand Lecom in India",
+      "image": "images/119598140.jpg",
+      "query_image": "images/119598140-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Green_mobile_phone_of_brand_Lecom_in_India.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Green_mobile_phone_of_brand_Lecom_in_India.jpg/500px-Green_mobile_phone_of_brand_Lecom_in_India.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "Mehade Hasan",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://crowdsource.google.com/images/ed9b8472-2d24-4b52-bb53-6d7b46f30f73\">https://crowdsource.google.com/images/ed9b8472-2d24-4b52-bb53-6d7b46f30f73</a>",
+      "sha256": "49c6e38ce42cbede1525902fc0974f901b0401ac9524638db8ab03425f3144de",
+      "split": "validation"
+    },
+    {
+      "id": "121479594",
+      "category": "electronics",
+      "description": "Mobile Phone Museum Launch display 1",
+      "image": "images/121479594.jpg",
+      "query_image": "images/121479594-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mobile_Phone_Museum_Launch_display_1.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Mobile_Phone_Museum_Launch_display_1.jpg/500px-Mobile_Phone_Museum_Launch_display_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Mxtt.prior\" title=\"User:Mxtt.prior\">Matthew Prior</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "74e1d3b96bfb4a39a81d574a72b937466580ce82e049738e2898bad6a0bf6129",
+      "split": "validation"
+    },
+    {
+      "id": "121479595",
+      "category": "electronics",
+      "description": "Mobile Phone Museum Launch display 2",
+      "image": "images/121479595.jpg",
+      "query_image": "images/121479595-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mobile_Phone_Museum_Launch_display_2.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Mobile_Phone_Museum_Launch_display_2.jpg/500px-Mobile_Phone_Museum_Launch_display_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Mxtt.prior\" title=\"User:Mxtt.prior\">Matthew Prior</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "04b212d37fcb5b9c0e2cf37c21c813be0e69714e68ec723be0ffd03855e068b1",
+      "split": "validation"
+    },
+    {
+      "id": "1427841",
+      "category": "electronics",
+      "description": "Mobile phone evolution",
+      "image": "images/1427841.jpg",
+      "query_image": "images/1427841-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mobile_phone_evolution.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Mobile_phone_evolution.jpg/500px-Mobile_phone_evolution.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Anders\" title=\"User:Anders\">Anders</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "a53067885c92ca83532a4bebea513a01c5eaa2faf450df5b30dbd51a099a0c9a",
+      "split": "validation"
+    },
+    {
+      "id": "36271517",
+      "category": "electronics",
+      "description": "Mobile Phone Evolution 1992 - 2014",
+      "image": "images/36271517.jpg",
+      "query_image": "images/36271517-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mobile_Phone_Evolution_1992_-_2014.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/Mobile_Phone_Evolution_1992_-_2014.jpg/500px-Mobile_Phone_Evolution_1992_-_2014.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Jojhnjoy",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>, based on the work of <a href=\"//commons.wikimedia.org/wiki/User:Anders\" title=\"User:Anders\">Anders</a>",
+      "sha256": "27ba1a383c15f6bbf0763567a40fcebf9f70cf256a2f95c9390f58cce3d5e404",
+      "split": "test"
+    },
+    {
+      "id": "74366625",
+      "category": "electronics",
+      "description": "Mobile phone cage in high school",
+      "image": "images/74366625.jpg",
+      "query_image": "images/74366625-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mobile_phone_cage_in_high_school.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Mobile_phone_cage_in_high_school.jpg/500px-Mobile_phone_cage_in_high_school.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Chainwit.\" title=\"User:Chainwit.\">Chainwit.</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "d84534e33c2b909b74972e06d617164ef7e1743db7c2fd5cdc8d8cd66d453551",
+      "split": "test"
+    },
+    {
+      "id": "137817845",
+      "category": "electronics",
+      "description": "2086, Lebara Mobile SIM in Sony Ericsson phone",
+      "image": "images/137817845.jpg",
+      "query_image": "images/137817845-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2086,_Lebara_Mobile_SIM_in_Sony_Ericsson_phone.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/2086%2C_Lebara_Mobile_SIM_in_Sony_Ericsson_phone.jpg/500px-2086%2C_Lebara_Mobile_SIM_in_Sony_Ericsson_phone.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Syced\" title=\"User:Syced\">Syced</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "d0063d92394ce7a227b5be273979c08d41abc4f06b96b79e9fbd423bced63ad6",
+      "split": "test"
+    },
+    {
+      "id": "191856814",
+      "category": "electronics",
+      "description": "Late 2010s Doro 1362 mobile phone for seniors",
+      "image": "images/191856814.jpg",
+      "query_image": "images/191856814-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Late_2010s_Doro_1362_mobile_phone_for_seniors.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Late_2010s_Doro_1362_mobile_phone_for_seniors.jpg/500px-Late_2010s_Doro_1362_mobile_phone_for_seniors.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:R._Henrik_Nilsson\" title=\"User:R. Henrik Nilsson\">R. Henrik Nilsson</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "819dc42555aba9aa9e6c78484ef8544bd22f4c4c99dcf3c1ff0c7ca585de369b",
+      "split": "test"
+    },
+    {
+      "id": "129597785",
+      "category": "electronics",
+      "description": "Philips Isis mobile phone",
+      "image": "images/129597785.jpg",
+      "query_image": "images/129597785-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Philips_Isis_mobile_phone.png",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/Philips_Isis_mobile_phone.png/500px-Philips_Isis_mobile_phone.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:ShootingStarMax&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:ShootingStarMax (page does not exist)\">ShootingStarMax</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "451c8a2feaf1ad3073dbbdc7a4a76d2e4c25d043222bc15587c7f009f735c1a4",
+      "split": "test"
+    },
+    {
+      "id": "30679923",
+      "category": "books",
+      "description": "Hanna book cover",
+      "image": "images/30679923.jpg",
+      "query_image": "images/30679923-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Hanna_book_cover.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Hanna_book_cover.jpg/500px-Hanna_book_cover.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Verlag von Wilhelm Jacobsohn, Breslau",
+      "credit": "Scanned 1902 book cover of \"Hannah\" by Jacob Freund (1867)",
+      "sha256": "ac6efba04aa78cf6b35048601729afcfdc3665192f9c37eaaf7af639ed7e0eea",
+      "split": "validation"
+    },
+    {
+      "id": "37968928",
+      "category": "books",
+      "description": "Norman Saunders - cover of Marvel Science Stories for April-May 1939",
+      "image": "images/37968928.jpg",
+      "query_image": "images/37968928-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Norman_Saunders_-_cover_of_Marvel_Science_Stories_for_April-May_1939.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Norman_Saunders_-_cover_of_Marvel_Science_Stories_for_April-May_1939.jpg/500px-Norman_Saunders_-_cover_of_Marvel_Science_Stories_for_April-May_1939.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "<bdi><a href=\"https://en.wikipedia.org/wiki/User:Adam_Cuerden\" class=\"extiw\" title=\"en:User:Adam Cuerden\">Adam Cuerden</a></bdi>",
+      "credit": "Self-scanned, 600dpi.",
+      "sha256": "5411292c5e5f9c382fd38999404b965156d90d60a27a431dc063967e29204efc",
+      "split": "validation"
+    },
+    {
+      "id": "139892636",
+      "category": "books",
+      "description": "Ajar (book cover)",
+      "image": "images/139892636.jpg",
+      "query_image": "images/139892636-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Ajar_(book_cover).jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Ajar_%28book_cover%29.jpg/500px-Ajar_%28book_cover%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Bayali uulu, Kasimali",
+      "credit": "book, cover of Ajar (by Bayali uulu)",
+      "sha256": "92af14e800997f16475c20529d91faafbe4a84bcb64acb29c659261f46bf7698",
+      "split": "validation"
+    },
+    {
+      "id": "126959272",
+      "category": "books",
+      "description": "Joel Hayward Book Cover Warrior Prophet-2",
+      "image": "images/126959272.jpg",
+      "query_image": "images/126959272-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Joel_Hayward_Book_Cover_Warrior_Prophet-2.jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/1/13/Joel_Hayward_Book_Cover_Warrior_Prophet-2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Joel hayward. He has placed this copyright free waiver at this location for the cover image: \"(This is a copyright free image. The author Joel Hayward has placed this image in the public domain for use without licenses or restrictions and has waived all rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law.)\"",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.joelhayward.org/the-warrior-prophet\">https://www.joelhayward.org/the-warrior-prophet</a>",
+      "sha256": "a1a0a70bc8a7d232c9b4a58f7db072053b2a0de10645f2e965d279b0496de8e9",
+      "split": "validation"
+    },
+    {
+      "id": "157545002",
+      "category": "books",
+      "description": "Book Cover \u041d\u0435\u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0439 \u043c\u0438\u0440 \u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 (\u0421. \u0427\u0435\u043a\u0430\u043d\u043e\u0432)",
+      "image": "images/157545002.jpg",
+      "query_image": "images/157545002-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Book_Cover_%D0%9D%D0%B5%D1%81%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B9_%D0%BC%D0%B8%D1%80_%D0%98%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8_(%D0%A1._%D0%A7%D0%B5%D0%BA%D0%B0%D0%BD%D0%BE%D0%B2).png",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Book_Cover_%D0%9D%D0%B5%D1%81%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D1%8B%D0%B9_%D0%BC%D0%B8%D1%80_%D0%98%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D0%B8%D0%B8_%28%D0%A1._%D0%A7%D0%B5%D0%BA%D0%B0%D0%BD%D0%BE%D0%B2%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:TaniaSmal&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:TaniaSmal (page does not exist)\">TaniaSmal</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "a6bfc29040732d77e1538ede04a0621447569c0ece62fdbb4e77a94d289be379",
+      "split": "validation"
+    },
+    {
+      "id": "158256776",
+      "category": "books",
+      "description": "Lederarbeiten 003 2025 01 17",
+      "image": "images/158256776.jpg",
+      "query_image": "images/158256776-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Lederarbeiten_003_2025_01_17.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Lederarbeiten_003_2025_01_17.jpg/500px-Lederarbeiten_003_2025_01_17.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<b><a href=\"//commons.wikimedia.org/wiki/User:F._Riedelio\" title=\"User:F. Riedelio\">Friedrich Haag</a></b>",
+      "credit": "<span class=\"int-own-work\">Self-photographed</span>",
+      "sha256": "76b93aa14d003c3c184b319fd5ddfd9ef435449e08837cb34a1bc1e675016c41",
+      "split": "test"
+    },
+    {
+      "id": "154899806",
+      "category": "books",
+      "description": "Cloth book cover of \"Early Vanities\"",
+      "image": "images/154899806.jpg",
+      "query_image": "images/154899806-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Cloth_book_cover_of_%22Early_Vanities%22.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Cloth_book_cover_of_%22Early_Vanities%22.jpg/500px-Cloth_book_cover_of_%22Early_Vanities%22.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Clodfelter, N. J. (Noah J.), 1853-1901",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://archive.org/details/earlyvanities00clod\">https://archive.org/details/earlyvanities00clod</a>",
+      "sha256": "0958f6b7118d74f65383d770dbc8c36f3c73e24116b7ed1bf6e6fdaaf4a9ee0e",
+      "split": "test"
+    },
+    {
+      "id": "140789219",
+      "category": "books",
+      "description": "Cover of RCAHMW book",
+      "image": "images/140789219.jpg",
+      "query_image": "images/140789219-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Cover_of_RCAHMW_book.png",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Cover_of_RCAHMW_book.png/500px-Cover_of_RCAHMW_book.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "RCAHMW",
+      "credit": "<span class=\"url\"><a rel=\"nofollow\" class=\"external text\" href=\"https://shop.rcahmw.gov.uk/collections/downloads/products/caernarvonshire-central-ii-an-inventory-of-the-ancient-monuments-in-the-county-ebook\">Caernarvonshire Volume II: Central, A Survey and Inventory by the Royal Commission on the Ancient and Historical Monuments in Wales and Monmouthshire</a></span>.",
+      "sha256": "0b1be58cd6f26f301bead6ebc7855c422a9c29aa833f52f36b655913cff6fd0f",
+      "split": "test"
+    },
+    {
+      "id": "95466497",
+      "category": "books",
+      "description": "Tango Secrets Book Cover by Educator X, published by Pablito Greco, 2020",
+      "image": "images/95466497.jpg",
+      "query_image": "images/95466497-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Tango_Secrets_Book_Cover_by_Educator_X,_published_by_Pablito_Greco,_2020.png",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/Tango_Secrets_Book_Cover_by_Educator_X%2C_published_by_Pablito_Greco%2C_2020.png/500px-Tango_Secrets_Book_Cover_by_Educator_X%2C_published_by_Pablito_Greco%2C_2020.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "artist": "PablitoGreco",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/milongadas/50530132792/\">https://www.flickr.com/photos/milongadas/50530132792/</a>",
+      "sha256": "a473d7ee90c35e3bbeb9a20bede82e62fa0cafad13416a7a161da025810f48ed",
+      "split": "test"
+    },
+    {
+      "id": "138904983",
+      "category": "books",
+      "description": "Cover of the book The Independence of the Czecho-Slovak Nation",
+      "image": "images/138904983.jpg",
+      "query_image": "images/138904983-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Cover_of_the_book_The_Independence_of_the_Czecho-Slovak_Nation.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Cover_of_the_book_The_Independence_of_the_Czecho-Slovak_Nation.jpg/500px-Cover_of_the_book_The_Independence_of_the_Czecho-Slovak_Nation.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+      "credit": "<a rel=\"nofollow\" class=\"external text\" href=\"https://arl.pamatniknarodnihopisemnictvi.cz/arl-pnp/cs/detail-pnp_us_cat-095080-The-independence-of-the-CzechoSlovak-nation/\">Pam\u00e1tn\u00edk n\u00e1rodn\u00edho p\u00edsemnictv\u00ed</a>",
+      "sha256": "beca3e6f25076e0e1208d93e4d680988fabd142a9bd665d2fce20bd1b480cfe2",
+      "split": "test"
+    },
+    {
+      "id": "4469278",
+      "category": "accessories",
+      "description": "2008-07-27 Sunglasses",
+      "image": "images/4469278.jpg",
+      "query_image": "images/4469278-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:2008-07-27_Sunglasses.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/2008-07-27_Sunglasses.jpg/500px-2008-07-27_Sunglasses.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Ildar Sagdejev (<a href=\"//commons.wikimedia.org/wiki/User:Specious\" title=\"User:Specious\">Specious</a>)",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "6fbeefeb6472cd42f742bdc6e641712c0e530b72b676524eebfd1950385097d1",
+      "split": "validation"
+    },
+    {
+      "id": "99430534",
+      "category": "accessories",
+      "description": "210120-Z-NI803-1657 (50884694388)",
+      "image": "images/99430534.jpg",
+      "query_image": "images/99430534-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:210120-Z-NI803-1657_(50884694388).jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/210120-Z-NI803-1657_%2850884694388%29.jpg/500px-210120-Z-NI803-1657_%2850884694388%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/76858203@N04\">Matt Hecht</a> from U.S.A.",
+      "credit": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/matt_hecht/50884694388/\">210120-Z-NI803-1657</a>",
+      "sha256": "593deb6e29f3c1b0ec236e453852cc7341f844105b857fcb2a791abb916b5f76",
+      "split": "validation"
+    },
+    {
+      "id": "137149884",
+      "category": "accessories",
+      "description": "Sunglasses in Mexico",
+      "image": "images/137149884.jpg",
+      "query_image": "images/137149884-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Sunglasses_in_Mexico.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Sunglasses_in_Mexico.jpg/500px-Sunglasses_in_Mexico.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:BORNTHISWAYMEDIA\" title=\"User:BORNTHISWAYMEDIA\">BORNTHISWAYMEDIA</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "3057cd4ffcda06e774ecd43ee7d0ee135bfa176efc8b24b18ed93a40e02bfe88",
+      "split": "validation"
+    },
+    {
+      "id": "110783347",
+      "category": "accessories",
+      "description": "Koh Kut, Thailand, Sunglasses 2",
+      "image": "images/110783347.jpg",
+      "query_image": "images/110783347-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Koh_Kut,_Thailand,_Sunglasses_2.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Koh_Kut%2C_Thailand%2C_Sunglasses_2.jpg/500px-Koh_Kut%2C_Thailand%2C_Sunglasses_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\">Vyacheslav Argenberg</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "c0b53645c51e4201cae40096a8e254eca25bddb166f5fa7e02b78f026e02a9b8",
+      "split": "validation"
+    },
+    {
+      "id": "130406130",
+      "category": "accessories",
+      "description": "Mezmay, Sports sunglasses, Reflective mirrored sunglasses, Russia",
+      "image": "images/130406130.jpg",
+      "query_image": "images/130406130-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mezmay,_Sports_sunglasses,_Reflective_mirrored_sunglasses,_Russia.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Mezmay%2C_Sports_sunglasses%2C_Reflective_mirrored_sunglasses%2C_Russia.jpg/500px-Mezmay%2C_Sports_sunglasses%2C_Reflective_mirrored_sunglasses%2C_Russia.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\">Vyacheslav Argenberg</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "b27b488c8988c6b70672c9d129e225e00b7aa8146381fddcf0b747e513a8a86a",
+      "split": "validation"
+    },
+    {
+      "id": "137040103",
+      "category": "accessories",
+      "description": "Women's sunglasses VERSACE Violet Gradient (Creative Commons)",
+      "image": "images/137040103.jpg",
+      "query_image": "images/137040103-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Women%27s_sunglasses_VERSACE_Violet_Gradient_(Creative_Commons).jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Women%27s_sunglasses_VERSACE_Violet_Gradient_%28Creative_Commons%29.jpg/500px-Women%27s_sunglasses_VERSACE_Violet_Gradient_%28Creative_Commons%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0",
+      "artist": "Ossa Kolo",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/199061755@N05/53166690776/\">https://www.flickr.com/photos/199061755@N05/53166690776/</a>",
+      "sha256": "24b5aa4e067aeab779464866a558e8c277ba7b20b8738a3c905a983ba32b56fb",
+      "split": "test"
+    },
+    {
+      "id": "135129426",
+      "category": "accessories",
+      "description": "Sunglasses on ground outside Varnado Hall",
+      "image": "images/135129426.jpg",
+      "query_image": "images/135129426-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Sunglasses_on_ground_outside_Varnado_Hall.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Sunglasses_on_ground_outside_Varnado_Hall.jpg/500px-Sunglasses_on_ground_outside_Varnado_Hall.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Ktkvtsh\" title=\"User:Ktkvtsh\">Timothy Holdiness</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "e70e08d7d7bcdcee787625106d998007df273d694741f723c3711239ca5daa77",
+      "split": "test"
+    },
+    {
+      "id": "130406138",
+      "category": "accessories",
+      "description": "Mezmay, Sports sunglasses, Black sunglasses, Russia",
+      "image": "images/130406138.jpg",
+      "query_image": "images/130406138-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mezmay,_Sports_sunglasses,_Black_sunglasses,_Russia.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/de/Mezmay%2C_Sports_sunglasses%2C_Black_sunglasses%2C_Russia.jpg/500px-Mezmay%2C_Sports_sunglasses%2C_Black_sunglasses%2C_Russia.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\">Vyacheslav Argenberg</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "89454e6031d77985e5169c3b626a1c622dbd5544f12bdad090932c2cb874ae00",
+      "split": "test"
+    },
+    {
+      "id": "110682102",
+      "category": "accessories",
+      "description": "Chiang Mai, Thailand, Sunglasses",
+      "image": "images/110682102.jpg",
+      "query_image": "images/110682102-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Chiang_Mai,_Thailand,_Sunglasses.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Chiang_Mai%2C_Thailand%2C_Sunglasses.jpg/500px-Chiang_Mai%2C_Thailand%2C_Sunglasses.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\">Vyacheslav Argenberg</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "f98e9b60349770179e61c00f00bc315cf33529fc0322c1f1a8a6b25c6b3d2cf2",
+      "split": "test"
+    },
+    {
+      "id": "130406131",
+      "category": "accessories",
+      "description": "Mezmay, Sports sunglasses, Russia",
+      "image": "images/130406131.jpg",
+      "query_image": "images/130406131-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Mezmay,_Sports_sunglasses,_Russia.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Mezmay%2C_Sports_sunglasses%2C_Russia.jpg/500px-Mezmay%2C_Sports_sunglasses%2C_Russia.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Argenberg\" title=\"User:Argenberg\">Vyacheslav Argenberg</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "e8f809b3df0cb65f93480b9738ca179e5a9b65f09d70e4cfeca0705885c339c7",
+      "split": "test"
+    },
+    {
+      "id": "19133709",
+      "category": "bottles",
+      "description": "Metal Water Bottles",
+      "image": "images/19133709.jpg",
+      "query_image": "images/19133709-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Metal_Water_Bottles.jpeg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Metal_Water_Bottles.jpeg/500px-Metal_Water_Bottles.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Amraepowell&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Amraepowell (page does not exist)\">Amraepowell</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "bfe6a1222730a2af0f60f2311eef0cb5a68fe5dce26e19f54c46b566ce90edc3",
+      "split": "validation"
+    },
+    {
+      "id": "113356851",
+      "category": "bottles",
+      "description": "Metal water bottle",
+      "image": "images/113356851.jpg",
+      "query_image": "images/113356851-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Metal_water_bottle.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Metal_water_bottle.jpg/500px-Metal_water_bottle.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Srini297&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Srini297 (page does not exist)\">Srini297</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "1ff6c3503f04f89d62b9677278bcfe4a2109e6fd90452a4ef242c43a50037eef",
+      "split": "validation"
+    },
+    {
+      "id": "178976421",
+      "category": "bottles",
+      "description": "Water bottle 11-26-2025",
+      "image": "images/178976421.jpg",
+      "query_image": "images/178976421-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Water_bottle_11-26-2025.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Water_bottle_11-26-2025.jpg/500px-Water_bottle_11-26-2025.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:WikiGrower1\" title=\"User:WikiGrower1\">WikiGrower1</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "188f571cd8b8f363a5b7dfb90a9920ad9c3eb2b4a682c2eb778838cccbb7a874",
+      "split": "validation"
+    },
+    {
+      "id": "180676399",
+      "category": "bottles",
+      "description": "Sinulog 2026 water bottle Natures Spring",
+      "image": "images/180676399.jpg",
+      "query_image": "images/180676399-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Sinulog_2026_water_bottle_Natures_Spring.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/Sinulog_2026_water_bottle_Natures_Spring.jpg/500px-Sinulog_2026_water_bottle_Natures_Spring.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Ternant_728228\" title=\"User:Ternant 728228\">Ternant 728228</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "91715deac2d4509add89506f7407803a4805e0a975fe4dabb070607499bec68c",
+      "split": "validation"
+    },
+    {
+      "id": "153685656",
+      "category": "bottles",
+      "description": "Blue Waters bottle no label",
+      "image": "images/153685656.jpg",
+      "query_image": "images/153685656-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Blue_Waters_bottle_no_label.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Blue_Waters_bottle_no_label.jpg/500px-Blue_Waters_bottle_no_label.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:999real\" title=\"User:999real\">999real</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "678154dcaae820b82693181ad47494980ad16e6d754b57e4d0fb600b10c0ff4a",
+      "split": "validation"
+    },
+    {
+      "id": "183494508",
+      "category": "bottles",
+      "description": "Bottle of Water",
+      "image": "images/183494508.jpg",
+      "query_image": "images/183494508-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Bottle_of_Water.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Bottle_of_Water.jpg/500px-Bottle_of_Water.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Jiafei_Slay_Queen\" title=\"User:Jiafei Slay Queen\">Jiafei Slay Queen</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "7eb441b709c34e76e7d184a9553b4d2af5bec174574a17c27a112592ef766086",
+      "split": "test"
+    },
+    {
+      "id": "190017180",
+      "category": "bottles",
+      "description": "A bottle of cold water with droplets",
+      "image": "images/190017180.jpg",
+      "query_image": "images/190017180-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:A_bottle_of_cold_water_with_droplets.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/A_bottle_of_cold_water_with_droplets.jpg/500px-A_bottle_of_cold_water_with_droplets.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Philsacor&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Philsacor (page does not exist)\">Philsacor</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "7179f9664ae27fd993c02a2da597a6d193e3f0b86b90d595c9f2e52ae6e9400d",
+      "split": "test"
+    },
+    {
+      "id": "179038257",
+      "category": "bottles",
+      "description": "Camelbak water bottle",
+      "image": "images/179038257.jpg",
+      "query_image": "images/179038257-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Camelbak_water_bottle.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Camelbak_water_bottle.jpg/500px-Camelbak_water_bottle.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 2.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "artist": "Richard Masoner / Cyclelicious",
+      "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/bike/3542922741/\">https://www.flickr.com/photos/bike/3542922741/</a>",
+      "sha256": "f1adf956f29874bbed56eeec4b15b7b3e99c16d031e697f5897e60a983289017",
+      "split": "test"
+    },
+    {
+      "id": "185973701",
+      "category": "bottles",
+      "description": "Short water bottles",
+      "image": "images/185973701.jpg",
+      "query_image": "images/185973701-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Short_water_bottles.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Short_water_bottles.jpg/500px-Short_water_bottles.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Jiafei_Slay_Queen\" title=\"User:Jiafei Slay Queen\">Jiafei Slay Queen</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "8c79c080d8263097829dfd6df54558bf1e88d995f98466d55709d19b946f65cc",
+      "split": "test"
+    },
+    {
+      "id": "182337243",
+      "category": "bottles",
+      "description": "Stainless Steel Water Bottle",
+      "image": "images/182337243.jpg",
+      "query_image": "images/182337243-query.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Stainless_Steel_Water_Bottle.jpg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Stainless_Steel_Water_Bottle.jpg/500px-Stainless_Steel_Water_Bottle.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Gannu03\" title=\"User:Gannu03\">Gannu03</a>",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "sha256": "afa46f780695e962748311ad6ba5f0889b243d797d1cc3ffa119cd07a633c570",
+      "split": "test"
+    }
+  ],
+  "pairs": [
+    {
+      "query_id": "108964100",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "108964100",
+        "description": "Missing A backpack with trekking poles and shoes. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "108964100",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "108964100",
+        "description": "Missing A backpack with trekking poles and shoes. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100-query.jpg"
+      },
+      "candidate": {
+        "id": "80619479",
+        "description": "Found: Plecak Hiker 50 L HiMountain",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80619479.jpg"
+      }
+    },
+    {
+      "query_id": "108964100",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "108964100",
+        "description": "Missing A backpack with trekking poles and shoes. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "80619479",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "80619479",
+        "description": "Missing Plecak Hiker 50 L HiMountain. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/80619479-query.jpg"
+      },
+      "candidate": {
+        "id": "80619479",
+        "description": "Found: Plecak Hiker 50 L HiMountain",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80619479.jpg"
+      }
+    },
+    {
+      "query_id": "80619479",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "80619479",
+        "description": "Missing Plecak Hiker 50 L HiMountain. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/80619479-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "80619479",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "80619479",
+        "description": "Missing Plecak Hiker 50 L HiMountain. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/80619479-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "153407132",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "153407132",
+        "description": "Missing Ryan Wesley Routh's Backpack And Rifle. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/153407132-query.jpg"
+      },
+      "candidate": {
+        "id": "153407132",
+        "description": "Found: Ryan Wesley Routh's Backpack And Rifle",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/153407132.jpg"
+      }
+    },
+    {
+      "query_id": "153407132",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "153407132",
+        "description": "Missing Ryan Wesley Routh's Backpack And Rifle. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/153407132-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "153407132",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "153407132",
+        "description": "Missing Ryan Wesley Routh's Backpack And Rifle. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/153407132-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "113623402",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "113623402",
+        "description": "Missing Backpack small. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/113623402-query.jpg"
+      },
+      "candidate": {
+        "id": "113623402",
+        "description": "Found: Backpack small",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/113623402.jpg"
+      }
+    },
+    {
+      "query_id": "113623402",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "113623402",
+        "description": "Missing Backpack small. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/113623402-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "113623402",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "113623402",
+        "description": "Missing Backpack small. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/113623402-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "120191736",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "120191736",
+        "description": "Missing Cat photo backpack. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/120191736-query.jpg"
+      },
+      "candidate": {
+        "id": "120191736",
+        "description": "Found: Cat photo backpack",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/120191736.jpg"
+      }
+    },
+    {
+      "query_id": "120191736",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "120191736",
+        "description": "Missing Cat photo backpack. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/120191736-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "120191736",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "120191736",
+        "description": "Missing Cat photo backpack. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/120191736-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "80611330",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "80611330",
+        "description": "Missing Military backpack 01. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "80611330",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "80611330",
+        "description": "Missing Military backpack 01. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330-query.jpg"
+      },
+      "candidate": {
+        "id": "150078918",
+        "description": "Found: Wikimedia swag backpack",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/150078918.jpg"
+      }
+    },
+    {
+      "query_id": "80611330",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "80611330",
+        "description": "Missing Military backpack 01. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "150078918",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "150078918",
+        "description": "Missing Wikimedia swag backpack. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/150078918-query.jpg"
+      },
+      "candidate": {
+        "id": "150078918",
+        "description": "Found: Wikimedia swag backpack",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/150078918.jpg"
+      }
+    },
+    {
+      "query_id": "150078918",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "150078918",
+        "description": "Missing Wikimedia swag backpack. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/150078918-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "150078918",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "150078918",
+        "description": "Missing Wikimedia swag backpack. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/150078918-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "131419937",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "131419937",
+        "description": "Missing Gregory, OutDoor 2018, Friedrichshafen (1X7A9957) (cropped). Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/131419937-query.jpg"
+      },
+      "candidate": {
+        "id": "131419937",
+        "description": "Found: Gregory, OutDoor 2018, Friedrichshafen (1X7A9957) (cropped)",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/131419937.jpg"
+      }
+    },
+    {
+      "query_id": "131419937",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "131419937",
+        "description": "Missing Gregory, OutDoor 2018, Friedrichshafen (1X7A9957) (cropped). Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/131419937-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "131419937",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "131419937",
+        "description": "Missing Gregory, OutDoor 2018, Friedrichshafen (1X7A9957) (cropped). Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/131419937-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "145601019",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "145601019",
+        "description": "Missing CitiBike Angel backpack 2024 jeh. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/145601019-query.jpg"
+      },
+      "candidate": {
+        "id": "145601019",
+        "description": "Found: CitiBike Angel backpack 2024 jeh",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/145601019.jpg"
+      }
+    },
+    {
+      "query_id": "145601019",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "145601019",
+        "description": "Missing CitiBike Angel backpack 2024 jeh. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/145601019-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "145601019",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "145601019",
+        "description": "Missing CitiBike Angel backpack 2024 jeh. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/145601019-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "103191834",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "103191834",
+        "description": "Missing Google-Maps-Backpack-NYC. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/103191834-query.jpg"
+      },
+      "candidate": {
+        "id": "103191834",
+        "description": "Found: Google-Maps-Backpack-NYC",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/103191834.jpg"
+      }
+    },
+    {
+      "query_id": "103191834",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "103191834",
+        "description": "Missing Google-Maps-Backpack-NYC. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/103191834-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "103191834",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "103191834",
+        "description": "Missing Google-Maps-Backpack-NYC. Please help locate it.",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/103191834-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "1908341",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "1908341",
+        "description": "Missing WalletMpegMan. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "1908341",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "1908341",
+        "description": "Missing WalletMpegMan. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341-query.jpg"
+      },
+      "candidate": {
+        "id": "92849836",
+        "description": "Found: I-CLIP Slim Wallet 03",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/92849836.jpg"
+      }
+    },
+    {
+      "query_id": "1908341",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "1908341",
+        "description": "Missing WalletMpegMan. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "92849836",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "92849836",
+        "description": "Missing I-CLIP Slim Wallet 03. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849836-query.jpg"
+      },
+      "candidate": {
+        "id": "92849836",
+        "description": "Found: I-CLIP Slim Wallet 03",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/92849836.jpg"
+      }
+    },
+    {
+      "query_id": "92849836",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "92849836",
+        "description": "Missing I-CLIP Slim Wallet 03. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849836-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "92849836",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "92849836",
+        "description": "Missing I-CLIP Slim Wallet 03. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849836-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "92849838",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "92849838",
+        "description": "Missing I-CLIP Slim Wallet 02. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849838-query.jpg"
+      },
+      "candidate": {
+        "id": "92849838",
+        "description": "Found: I-CLIP Slim Wallet 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/92849838.jpg"
+      }
+    },
+    {
+      "query_id": "92849838",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "92849838",
+        "description": "Missing I-CLIP Slim Wallet 02. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849838-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "92849838",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "92849838",
+        "description": "Missing I-CLIP Slim Wallet 02. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849838-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "92849837",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "92849837",
+        "description": "Missing I-CLIP Slim Wallet 01. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849837-query.jpg"
+      },
+      "candidate": {
+        "id": "92849837",
+        "description": "Found: I-CLIP Slim Wallet 01",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/92849837.jpg"
+      }
+    },
+    {
+      "query_id": "92849837",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "92849837",
+        "description": "Missing I-CLIP Slim Wallet 01. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849837-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "92849837",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "92849837",
+        "description": "Missing I-CLIP Slim Wallet 01. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/92849837-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "87189440",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "87189440",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 01. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189440-query.jpg"
+      },
+      "candidate": {
+        "id": "87189440",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 01",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189440.jpg"
+      }
+    },
+    {
+      "query_id": "87189440",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "87189440",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 01. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189440-query.jpg"
+      },
+      "candidate": {
+        "id": "1908341",
+        "description": "Found: WalletMpegMan",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1908341.jpg"
+      }
+    },
+    {
+      "query_id": "87189440",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "87189440",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 01. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189440-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "87189439",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "87189439",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 02. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "87189439",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "87189439",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 02. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439-query.jpg"
+      },
+      "candidate": {
+        "id": "87189442",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 04",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189442.jpg"
+      }
+    },
+    {
+      "query_id": "87189439",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "87189439",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 02. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "87189442",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "87189442",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 04. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189442-query.jpg"
+      },
+      "candidate": {
+        "id": "87189442",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 04",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189442.jpg"
+      }
+    },
+    {
+      "query_id": "87189442",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "87189442",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 04. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189442-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "87189442",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "87189442",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 04. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189442-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "87189438",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "87189438",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189438-query.jpg"
+      },
+      "candidate": {
+        "id": "87189438",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 03",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189438.jpg"
+      }
+    },
+    {
+      "query_id": "87189438",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "87189438",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189438-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "87189438",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "87189438",
+        "description": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/87189438-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "37325916",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "37325916",
+        "description": "Missing Wallet. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/37325916-query.jpg"
+      },
+      "candidate": {
+        "id": "37325916",
+        "description": "Found: Wallet",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/37325916.jpg"
+      }
+    },
+    {
+      "query_id": "37325916",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "37325916",
+        "description": "Missing Wallet. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/37325916-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "37325916",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "37325916",
+        "description": "Missing Wallet. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/37325916-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "83359816",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "83359816",
+        "description": "Missing Wikidata branded wallet 04. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/83359816-query.jpg"
+      },
+      "candidate": {
+        "id": "83359816",
+        "description": "Found: Wikidata branded wallet 04",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/83359816.jpg"
+      }
+    },
+    {
+      "query_id": "83359816",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "83359816",
+        "description": "Missing Wikidata branded wallet 04. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/83359816-query.jpg"
+      },
+      "candidate": {
+        "id": "87189439",
+        "description": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/87189439.jpg"
+      }
+    },
+    {
+      "query_id": "83359816",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "83359816",
+        "description": "Missing Wikidata branded wallet 04. Please help locate it.",
+        "category": "wallets",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/83359816-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "1602879",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "1602879",
+        "description": "Missing Mobile phone PHS Japan 1997-2003. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879-query.jpg"
+      },
+      "candidate": {
+        "id": "1602879",
+        "description": "Found: Mobile phone PHS Japan 1997-2003",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879.jpg"
+      }
+    },
+    {
+      "query_id": "1602879",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "1602879",
+        "description": "Missing Mobile phone PHS Japan 1997-2003. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879-query.jpg"
+      },
+      "candidate": {
+        "id": "119598140",
+        "description": "Found: Green mobile phone of brand Lecom in India",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/119598140.jpg"
+      }
+    },
+    {
+      "query_id": "1602879",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "1602879",
+        "description": "Missing Mobile phone PHS Japan 1997-2003. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "119598140",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "119598140",
+        "description": "Missing Green mobile phone of brand Lecom in India. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/119598140-query.jpg"
+      },
+      "candidate": {
+        "id": "119598140",
+        "description": "Found: Green mobile phone of brand Lecom in India",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/119598140.jpg"
+      }
+    },
+    {
+      "query_id": "119598140",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "119598140",
+        "description": "Missing Green mobile phone of brand Lecom in India. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/119598140-query.jpg"
+      },
+      "candidate": {
+        "id": "1602879",
+        "description": "Found: Mobile phone PHS Japan 1997-2003",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879.jpg"
+      }
+    },
+    {
+      "query_id": "119598140",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "119598140",
+        "description": "Missing Green mobile phone of brand Lecom in India. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/119598140-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "121479594",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "121479594",
+        "description": "Missing Mobile Phone Museum Launch display 1. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/121479594-query.jpg"
+      },
+      "candidate": {
+        "id": "121479594",
+        "description": "Found: Mobile Phone Museum Launch display 1",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/121479594.jpg"
+      }
+    },
+    {
+      "query_id": "121479594",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "121479594",
+        "description": "Missing Mobile Phone Museum Launch display 1. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/121479594-query.jpg"
+      },
+      "candidate": {
+        "id": "1602879",
+        "description": "Found: Mobile phone PHS Japan 1997-2003",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879.jpg"
+      }
+    },
+    {
+      "query_id": "121479594",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "121479594",
+        "description": "Missing Mobile Phone Museum Launch display 1. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/121479594-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "121479595",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "121479595",
+        "description": "Missing Mobile Phone Museum Launch display 2. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/121479595-query.jpg"
+      },
+      "candidate": {
+        "id": "121479595",
+        "description": "Found: Mobile Phone Museum Launch display 2",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/121479595.jpg"
+      }
+    },
+    {
+      "query_id": "121479595",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "121479595",
+        "description": "Missing Mobile Phone Museum Launch display 2. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/121479595-query.jpg"
+      },
+      "candidate": {
+        "id": "1602879",
+        "description": "Found: Mobile phone PHS Japan 1997-2003",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879.jpg"
+      }
+    },
+    {
+      "query_id": "121479595",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "121479595",
+        "description": "Missing Mobile Phone Museum Launch display 2. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/121479595-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "1427841",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "1427841",
+        "description": "Missing Mobile phone evolution. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1427841-query.jpg"
+      },
+      "candidate": {
+        "id": "1427841",
+        "description": "Found: Mobile phone evolution",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1427841.jpg"
+      }
+    },
+    {
+      "query_id": "1427841",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "1427841",
+        "description": "Missing Mobile phone evolution. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1427841-query.jpg"
+      },
+      "candidate": {
+        "id": "1602879",
+        "description": "Found: Mobile phone PHS Japan 1997-2003",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/1602879.jpg"
+      }
+    },
+    {
+      "query_id": "1427841",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "1427841",
+        "description": "Missing Mobile phone evolution. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/1427841-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "36271517",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "36271517",
+        "description": "Missing Mobile Phone Evolution 1992 - 2014. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517-query.jpg"
+      },
+      "candidate": {
+        "id": "36271517",
+        "description": "Found: Mobile Phone Evolution 1992 - 2014",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517.jpg"
+      }
+    },
+    {
+      "query_id": "36271517",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "36271517",
+        "description": "Missing Mobile Phone Evolution 1992 - 2014. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517-query.jpg"
+      },
+      "candidate": {
+        "id": "74366625",
+        "description": "Found: Mobile phone cage in high school",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/74366625.jpg"
+      }
+    },
+    {
+      "query_id": "36271517",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "36271517",
+        "description": "Missing Mobile Phone Evolution 1992 - 2014. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "74366625",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "74366625",
+        "description": "Missing Mobile phone cage in high school. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/74366625-query.jpg"
+      },
+      "candidate": {
+        "id": "74366625",
+        "description": "Found: Mobile phone cage in high school",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/74366625.jpg"
+      }
+    },
+    {
+      "query_id": "74366625",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "74366625",
+        "description": "Missing Mobile phone cage in high school. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/74366625-query.jpg"
+      },
+      "candidate": {
+        "id": "36271517",
+        "description": "Found: Mobile Phone Evolution 1992 - 2014",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517.jpg"
+      }
+    },
+    {
+      "query_id": "74366625",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "74366625",
+        "description": "Missing Mobile phone cage in high school. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/74366625-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "137817845",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "137817845",
+        "description": "Missing 2086, Lebara Mobile SIM in Sony Ericsson phone. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137817845-query.jpg"
+      },
+      "candidate": {
+        "id": "137817845",
+        "description": "Found: 2086, Lebara Mobile SIM in Sony Ericsson phone",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137817845.jpg"
+      }
+    },
+    {
+      "query_id": "137817845",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "137817845",
+        "description": "Missing 2086, Lebara Mobile SIM in Sony Ericsson phone. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137817845-query.jpg"
+      },
+      "candidate": {
+        "id": "36271517",
+        "description": "Found: Mobile Phone Evolution 1992 - 2014",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517.jpg"
+      }
+    },
+    {
+      "query_id": "137817845",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "137817845",
+        "description": "Missing 2086, Lebara Mobile SIM in Sony Ericsson phone. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137817845-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "191856814",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "191856814",
+        "description": "Missing Late 2010s Doro 1362 mobile phone for seniors. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/191856814-query.jpg"
+      },
+      "candidate": {
+        "id": "191856814",
+        "description": "Found: Late 2010s Doro 1362 mobile phone for seniors",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/191856814.jpg"
+      }
+    },
+    {
+      "query_id": "191856814",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "191856814",
+        "description": "Missing Late 2010s Doro 1362 mobile phone for seniors. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/191856814-query.jpg"
+      },
+      "candidate": {
+        "id": "36271517",
+        "description": "Found: Mobile Phone Evolution 1992 - 2014",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517.jpg"
+      }
+    },
+    {
+      "query_id": "191856814",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "191856814",
+        "description": "Missing Late 2010s Doro 1362 mobile phone for seniors. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/191856814-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "129597785",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "129597785",
+        "description": "Missing Philips Isis mobile phone. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/129597785-query.jpg"
+      },
+      "candidate": {
+        "id": "129597785",
+        "description": "Found: Philips Isis mobile phone",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/129597785.jpg"
+      }
+    },
+    {
+      "query_id": "129597785",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "129597785",
+        "description": "Missing Philips Isis mobile phone. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/129597785-query.jpg"
+      },
+      "candidate": {
+        "id": "36271517",
+        "description": "Found: Mobile Phone Evolution 1992 - 2014",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/36271517.jpg"
+      }
+    },
+    {
+      "query_id": "129597785",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "129597785",
+        "description": "Missing Philips Isis mobile phone. Please help locate it.",
+        "category": "electronics",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/129597785-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "30679923",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "30679923",
+        "description": "Missing Hanna book cover. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923-query.jpg"
+      },
+      "candidate": {
+        "id": "30679923",
+        "description": "Found: Hanna book cover",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923.jpg"
+      }
+    },
+    {
+      "query_id": "30679923",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "30679923",
+        "description": "Missing Hanna book cover. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923-query.jpg"
+      },
+      "candidate": {
+        "id": "37968928",
+        "description": "Found: Norman Saunders - cover of Marvel Science Stories for April-May 1939",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/37968928.jpg"
+      }
+    },
+    {
+      "query_id": "30679923",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "30679923",
+        "description": "Missing Hanna book cover. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "37968928",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "37968928",
+        "description": "Missing Norman Saunders - cover of Marvel Science Stories for April-May 1939. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/37968928-query.jpg"
+      },
+      "candidate": {
+        "id": "37968928",
+        "description": "Found: Norman Saunders - cover of Marvel Science Stories for April-May 1939",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/37968928.jpg"
+      }
+    },
+    {
+      "query_id": "37968928",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "37968928",
+        "description": "Missing Norman Saunders - cover of Marvel Science Stories for April-May 1939. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/37968928-query.jpg"
+      },
+      "candidate": {
+        "id": "30679923",
+        "description": "Found: Hanna book cover",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923.jpg"
+      }
+    },
+    {
+      "query_id": "37968928",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "37968928",
+        "description": "Missing Norman Saunders - cover of Marvel Science Stories for April-May 1939. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/37968928-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "139892636",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "139892636",
+        "description": "Missing Ajar (book cover). Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/139892636-query.jpg"
+      },
+      "candidate": {
+        "id": "139892636",
+        "description": "Found: Ajar (book cover)",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/139892636.jpg"
+      }
+    },
+    {
+      "query_id": "139892636",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "139892636",
+        "description": "Missing Ajar (book cover). Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/139892636-query.jpg"
+      },
+      "candidate": {
+        "id": "30679923",
+        "description": "Found: Hanna book cover",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923.jpg"
+      }
+    },
+    {
+      "query_id": "139892636",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "139892636",
+        "description": "Missing Ajar (book cover). Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/139892636-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "126959272",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "126959272",
+        "description": "Missing Joel Hayward Book Cover Warrior Prophet-2. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/126959272-query.jpg"
+      },
+      "candidate": {
+        "id": "126959272",
+        "description": "Found: Joel Hayward Book Cover Warrior Prophet-2",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/126959272.jpg"
+      }
+    },
+    {
+      "query_id": "126959272",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "126959272",
+        "description": "Missing Joel Hayward Book Cover Warrior Prophet-2. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/126959272-query.jpg"
+      },
+      "candidate": {
+        "id": "30679923",
+        "description": "Found: Hanna book cover",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923.jpg"
+      }
+    },
+    {
+      "query_id": "126959272",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "126959272",
+        "description": "Missing Joel Hayward Book Cover Warrior Prophet-2. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/126959272-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "157545002",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "157545002",
+        "description": "Missing Book Cover \u041d\u0435\u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0439 \u043c\u0438\u0440 \u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 (\u0421. \u0427\u0435\u043a\u0430\u043d\u043e\u0432). Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/157545002-query.jpg"
+      },
+      "candidate": {
+        "id": "157545002",
+        "description": "Found: Book Cover \u041d\u0435\u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0439 \u043c\u0438\u0440 \u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 (\u0421. \u0427\u0435\u043a\u0430\u043d\u043e\u0432)",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/157545002.jpg"
+      }
+    },
+    {
+      "query_id": "157545002",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "157545002",
+        "description": "Missing Book Cover \u041d\u0435\u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0439 \u043c\u0438\u0440 \u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 (\u0421. \u0427\u0435\u043a\u0430\u043d\u043e\u0432). Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/157545002-query.jpg"
+      },
+      "candidate": {
+        "id": "30679923",
+        "description": "Found: Hanna book cover",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/30679923.jpg"
+      }
+    },
+    {
+      "query_id": "157545002",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "157545002",
+        "description": "Missing Book Cover \u041d\u0435\u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0439 \u043c\u0438\u0440 \u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 (\u0421. \u0427\u0435\u043a\u0430\u043d\u043e\u0432). Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/157545002-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "158256776",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "158256776",
+        "description": "Missing Lederarbeiten 003 2025 01 17. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776-query.jpg"
+      },
+      "candidate": {
+        "id": "158256776",
+        "description": "Found: Lederarbeiten 003 2025 01 17",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776.jpg"
+      }
+    },
+    {
+      "query_id": "158256776",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "158256776",
+        "description": "Missing Lederarbeiten 003 2025 01 17. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776-query.jpg"
+      },
+      "candidate": {
+        "id": "154899806",
+        "description": "Found: Cloth book cover of \"Early Vanities\"",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/154899806.jpg"
+      }
+    },
+    {
+      "query_id": "158256776",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "158256776",
+        "description": "Missing Lederarbeiten 003 2025 01 17. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "154899806",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "154899806",
+        "description": "Missing Cloth book cover of \"Early Vanities\". Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/154899806-query.jpg"
+      },
+      "candidate": {
+        "id": "154899806",
+        "description": "Found: Cloth book cover of \"Early Vanities\"",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/154899806.jpg"
+      }
+    },
+    {
+      "query_id": "154899806",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "154899806",
+        "description": "Missing Cloth book cover of \"Early Vanities\". Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/154899806-query.jpg"
+      },
+      "candidate": {
+        "id": "158256776",
+        "description": "Found: Lederarbeiten 003 2025 01 17",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776.jpg"
+      }
+    },
+    {
+      "query_id": "154899806",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "154899806",
+        "description": "Missing Cloth book cover of \"Early Vanities\". Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/154899806-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "140789219",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "140789219",
+        "description": "Missing Cover of RCAHMW book. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/140789219-query.jpg"
+      },
+      "candidate": {
+        "id": "140789219",
+        "description": "Found: Cover of RCAHMW book",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/140789219.jpg"
+      }
+    },
+    {
+      "query_id": "140789219",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "140789219",
+        "description": "Missing Cover of RCAHMW book. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/140789219-query.jpg"
+      },
+      "candidate": {
+        "id": "158256776",
+        "description": "Found: Lederarbeiten 003 2025 01 17",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776.jpg"
+      }
+    },
+    {
+      "query_id": "140789219",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "140789219",
+        "description": "Missing Cover of RCAHMW book. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/140789219-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "95466497",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "95466497",
+        "description": "Missing Tango Secrets Book Cover by Educator X, published by Pablito Greco, 2020. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/95466497-query.jpg"
+      },
+      "candidate": {
+        "id": "95466497",
+        "description": "Found: Tango Secrets Book Cover by Educator X, published by Pablito Greco, 2020",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/95466497.jpg"
+      }
+    },
+    {
+      "query_id": "95466497",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "95466497",
+        "description": "Missing Tango Secrets Book Cover by Educator X, published by Pablito Greco, 2020. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/95466497-query.jpg"
+      },
+      "candidate": {
+        "id": "158256776",
+        "description": "Found: Lederarbeiten 003 2025 01 17",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776.jpg"
+      }
+    },
+    {
+      "query_id": "95466497",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "95466497",
+        "description": "Missing Tango Secrets Book Cover by Educator X, published by Pablito Greco, 2020. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/95466497-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "138904983",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "138904983",
+        "description": "Missing Cover of the book The Independence of the Czecho-Slovak Nation. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/138904983-query.jpg"
+      },
+      "candidate": {
+        "id": "138904983",
+        "description": "Found: Cover of the book The Independence of the Czecho-Slovak Nation",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/138904983.jpg"
+      }
+    },
+    {
+      "query_id": "138904983",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "138904983",
+        "description": "Missing Cover of the book The Independence of the Czecho-Slovak Nation. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/138904983-query.jpg"
+      },
+      "candidate": {
+        "id": "158256776",
+        "description": "Found: Lederarbeiten 003 2025 01 17",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/158256776.jpg"
+      }
+    },
+    {
+      "query_id": "138904983",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "138904983",
+        "description": "Missing Cover of the book The Independence of the Czecho-Slovak Nation. Please help locate it.",
+        "category": "books",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/138904983-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "4469278",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "4469278",
+        "description": "Missing 2008-07-27 Sunglasses. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278-query.jpg"
+      },
+      "candidate": {
+        "id": "4469278",
+        "description": "Found: 2008-07-27 Sunglasses",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278.jpg"
+      }
+    },
+    {
+      "query_id": "4469278",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "4469278",
+        "description": "Missing 2008-07-27 Sunglasses. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278-query.jpg"
+      },
+      "candidate": {
+        "id": "99430534",
+        "description": "Found: 210120-Z-NI803-1657 (50884694388)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/99430534.jpg"
+      }
+    },
+    {
+      "query_id": "4469278",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "4469278",
+        "description": "Missing 2008-07-27 Sunglasses. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "99430534",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "99430534",
+        "description": "Missing 210120-Z-NI803-1657 (50884694388). Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/99430534-query.jpg"
+      },
+      "candidate": {
+        "id": "99430534",
+        "description": "Found: 210120-Z-NI803-1657 (50884694388)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/99430534.jpg"
+      }
+    },
+    {
+      "query_id": "99430534",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "99430534",
+        "description": "Missing 210120-Z-NI803-1657 (50884694388). Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/99430534-query.jpg"
+      },
+      "candidate": {
+        "id": "4469278",
+        "description": "Found: 2008-07-27 Sunglasses",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278.jpg"
+      }
+    },
+    {
+      "query_id": "99430534",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "99430534",
+        "description": "Missing 210120-Z-NI803-1657 (50884694388). Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/99430534-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "137149884",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "137149884",
+        "description": "Missing Sunglasses in Mexico. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137149884-query.jpg"
+      },
+      "candidate": {
+        "id": "137149884",
+        "description": "Found: Sunglasses in Mexico",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137149884.jpg"
+      }
+    },
+    {
+      "query_id": "137149884",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "137149884",
+        "description": "Missing Sunglasses in Mexico. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137149884-query.jpg"
+      },
+      "candidate": {
+        "id": "4469278",
+        "description": "Found: 2008-07-27 Sunglasses",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278.jpg"
+      }
+    },
+    {
+      "query_id": "137149884",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "137149884",
+        "description": "Missing Sunglasses in Mexico. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137149884-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "110783347",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "110783347",
+        "description": "Missing Koh Kut, Thailand, Sunglasses 2. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/110783347-query.jpg"
+      },
+      "candidate": {
+        "id": "110783347",
+        "description": "Found: Koh Kut, Thailand, Sunglasses 2",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/110783347.jpg"
+      }
+    },
+    {
+      "query_id": "110783347",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "110783347",
+        "description": "Missing Koh Kut, Thailand, Sunglasses 2. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/110783347-query.jpg"
+      },
+      "candidate": {
+        "id": "4469278",
+        "description": "Found: 2008-07-27 Sunglasses",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278.jpg"
+      }
+    },
+    {
+      "query_id": "110783347",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "110783347",
+        "description": "Missing Koh Kut, Thailand, Sunglasses 2. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/110783347-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "130406130",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "130406130",
+        "description": "Missing Mezmay, Sports sunglasses, Reflective mirrored sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406130-query.jpg"
+      },
+      "candidate": {
+        "id": "130406130",
+        "description": "Found: Mezmay, Sports sunglasses, Reflective mirrored sunglasses, Russia",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/130406130.jpg"
+      }
+    },
+    {
+      "query_id": "130406130",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "130406130",
+        "description": "Missing Mezmay, Sports sunglasses, Reflective mirrored sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406130-query.jpg"
+      },
+      "candidate": {
+        "id": "4469278",
+        "description": "Found: 2008-07-27 Sunglasses",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/4469278.jpg"
+      }
+    },
+    {
+      "query_id": "130406130",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "130406130",
+        "description": "Missing Mezmay, Sports sunglasses, Reflective mirrored sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406130-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "137040103",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "137040103",
+        "description": "Missing Women's sunglasses VERSACE Violet Gradient (Creative Commons). Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103-query.jpg"
+      },
+      "candidate": {
+        "id": "137040103",
+        "description": "Found: Women's sunglasses VERSACE Violet Gradient (Creative Commons)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103.jpg"
+      }
+    },
+    {
+      "query_id": "137040103",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "137040103",
+        "description": "Missing Women's sunglasses VERSACE Violet Gradient (Creative Commons). Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103-query.jpg"
+      },
+      "candidate": {
+        "id": "135129426",
+        "description": "Found: Sunglasses on ground outside Varnado Hall",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/135129426.jpg"
+      }
+    },
+    {
+      "query_id": "137040103",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "137040103",
+        "description": "Missing Women's sunglasses VERSACE Violet Gradient (Creative Commons). Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "135129426",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "135129426",
+        "description": "Missing Sunglasses on ground outside Varnado Hall. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/135129426-query.jpg"
+      },
+      "candidate": {
+        "id": "135129426",
+        "description": "Found: Sunglasses on ground outside Varnado Hall",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/135129426.jpg"
+      }
+    },
+    {
+      "query_id": "135129426",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "135129426",
+        "description": "Missing Sunglasses on ground outside Varnado Hall. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/135129426-query.jpg"
+      },
+      "candidate": {
+        "id": "137040103",
+        "description": "Found: Women's sunglasses VERSACE Violet Gradient (Creative Commons)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103.jpg"
+      }
+    },
+    {
+      "query_id": "135129426",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "135129426",
+        "description": "Missing Sunglasses on ground outside Varnado Hall. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/135129426-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "130406138",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "130406138",
+        "description": "Missing Mezmay, Sports sunglasses, Black sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406138-query.jpg"
+      },
+      "candidate": {
+        "id": "130406138",
+        "description": "Found: Mezmay, Sports sunglasses, Black sunglasses, Russia",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/130406138.jpg"
+      }
+    },
+    {
+      "query_id": "130406138",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "130406138",
+        "description": "Missing Mezmay, Sports sunglasses, Black sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406138-query.jpg"
+      },
+      "candidate": {
+        "id": "137040103",
+        "description": "Found: Women's sunglasses VERSACE Violet Gradient (Creative Commons)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103.jpg"
+      }
+    },
+    {
+      "query_id": "130406138",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "130406138",
+        "description": "Missing Mezmay, Sports sunglasses, Black sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406138-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "110682102",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "110682102",
+        "description": "Missing Chiang Mai, Thailand, Sunglasses. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/110682102-query.jpg"
+      },
+      "candidate": {
+        "id": "110682102",
+        "description": "Found: Chiang Mai, Thailand, Sunglasses",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/110682102.jpg"
+      }
+    },
+    {
+      "query_id": "110682102",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "110682102",
+        "description": "Missing Chiang Mai, Thailand, Sunglasses. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/110682102-query.jpg"
+      },
+      "candidate": {
+        "id": "137040103",
+        "description": "Found: Women's sunglasses VERSACE Violet Gradient (Creative Commons)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103.jpg"
+      }
+    },
+    {
+      "query_id": "110682102",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "110682102",
+        "description": "Missing Chiang Mai, Thailand, Sunglasses. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/110682102-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "130406131",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "130406131",
+        "description": "Missing Mezmay, Sports sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406131-query.jpg"
+      },
+      "candidate": {
+        "id": "130406131",
+        "description": "Found: Mezmay, Sports sunglasses, Russia",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/130406131.jpg"
+      }
+    },
+    {
+      "query_id": "130406131",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "130406131",
+        "description": "Missing Mezmay, Sports sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406131-query.jpg"
+      },
+      "candidate": {
+        "id": "137040103",
+        "description": "Found: Women's sunglasses VERSACE Violet Gradient (Creative Commons)",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/137040103.jpg"
+      }
+    },
+    {
+      "query_id": "130406131",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "130406131",
+        "description": "Missing Mezmay, Sports sunglasses, Russia. Please help locate it.",
+        "category": "accessories",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/130406131-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "19133709",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "19133709",
+        "description": "Missing Metal Water Bottles. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709-query.jpg"
+      },
+      "candidate": {
+        "id": "19133709",
+        "description": "Found: Metal Water Bottles",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709.jpg"
+      }
+    },
+    {
+      "query_id": "19133709",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "19133709",
+        "description": "Missing Metal Water Bottles. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709-query.jpg"
+      },
+      "candidate": {
+        "id": "113356851",
+        "description": "Found: Metal water bottle",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/113356851.jpg"
+      }
+    },
+    {
+      "query_id": "19133709",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "19133709",
+        "description": "Missing Metal Water Bottles. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "113356851",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "113356851",
+        "description": "Missing Metal water bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/113356851-query.jpg"
+      },
+      "candidate": {
+        "id": "113356851",
+        "description": "Found: Metal water bottle",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/113356851.jpg"
+      }
+    },
+    {
+      "query_id": "113356851",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "113356851",
+        "description": "Missing Metal water bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/113356851-query.jpg"
+      },
+      "candidate": {
+        "id": "19133709",
+        "description": "Found: Metal Water Bottles",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709.jpg"
+      }
+    },
+    {
+      "query_id": "113356851",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "113356851",
+        "description": "Missing Metal water bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/113356851-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "178976421",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "178976421",
+        "description": "Missing Water bottle 11-26-2025. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/178976421-query.jpg"
+      },
+      "candidate": {
+        "id": "178976421",
+        "description": "Found: Water bottle 11-26-2025",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/178976421.jpg"
+      }
+    },
+    {
+      "query_id": "178976421",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "178976421",
+        "description": "Missing Water bottle 11-26-2025. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/178976421-query.jpg"
+      },
+      "candidate": {
+        "id": "19133709",
+        "description": "Found: Metal Water Bottles",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709.jpg"
+      }
+    },
+    {
+      "query_id": "178976421",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "178976421",
+        "description": "Missing Water bottle 11-26-2025. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/178976421-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "180676399",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "180676399",
+        "description": "Missing Sinulog 2026 water bottle Natures Spring. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/180676399-query.jpg"
+      },
+      "candidate": {
+        "id": "180676399",
+        "description": "Found: Sinulog 2026 water bottle Natures Spring",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/180676399.jpg"
+      }
+    },
+    {
+      "query_id": "180676399",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "180676399",
+        "description": "Missing Sinulog 2026 water bottle Natures Spring. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/180676399-query.jpg"
+      },
+      "candidate": {
+        "id": "19133709",
+        "description": "Found: Metal Water Bottles",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709.jpg"
+      }
+    },
+    {
+      "query_id": "180676399",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "180676399",
+        "description": "Missing Sinulog 2026 water bottle Natures Spring. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/180676399-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "153685656",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "153685656",
+        "description": "Missing Blue Waters bottle no label. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/153685656-query.jpg"
+      },
+      "candidate": {
+        "id": "153685656",
+        "description": "Found: Blue Waters bottle no label",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/153685656.jpg"
+      }
+    },
+    {
+      "query_id": "153685656",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "153685656",
+        "description": "Missing Blue Waters bottle no label. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/153685656-query.jpg"
+      },
+      "candidate": {
+        "id": "19133709",
+        "description": "Found: Metal Water Bottles",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/19133709.jpg"
+      }
+    },
+    {
+      "query_id": "153685656",
+      "split": "validation",
+      "label": 0,
+      "query": {
+        "id": "153685656",
+        "description": "Missing Blue Waters bottle no label. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/153685656-query.jpg"
+      },
+      "candidate": {
+        "id": "108964100",
+        "description": "Found: A backpack with trekking poles and shoes",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/108964100.jpg"
+      }
+    },
+    {
+      "query_id": "183494508",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "183494508",
+        "description": "Missing Bottle of Water. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508-query.jpg"
+      },
+      "candidate": {
+        "id": "183494508",
+        "description": "Found: Bottle of Water",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508.jpg"
+      }
+    },
+    {
+      "query_id": "183494508",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "183494508",
+        "description": "Missing Bottle of Water. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508-query.jpg"
+      },
+      "candidate": {
+        "id": "190017180",
+        "description": "Found: A bottle of cold water with droplets",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/190017180.jpg"
+      }
+    },
+    {
+      "query_id": "183494508",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "183494508",
+        "description": "Missing Bottle of Water. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "190017180",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "190017180",
+        "description": "Missing A bottle of cold water with droplets. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/190017180-query.jpg"
+      },
+      "candidate": {
+        "id": "190017180",
+        "description": "Found: A bottle of cold water with droplets",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/190017180.jpg"
+      }
+    },
+    {
+      "query_id": "190017180",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "190017180",
+        "description": "Missing A bottle of cold water with droplets. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/190017180-query.jpg"
+      },
+      "candidate": {
+        "id": "183494508",
+        "description": "Found: Bottle of Water",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508.jpg"
+      }
+    },
+    {
+      "query_id": "190017180",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "190017180",
+        "description": "Missing A bottle of cold water with droplets. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/190017180-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "179038257",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "179038257",
+        "description": "Missing Camelbak water bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/179038257-query.jpg"
+      },
+      "candidate": {
+        "id": "179038257",
+        "description": "Found: Camelbak water bottle",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/179038257.jpg"
+      }
+    },
+    {
+      "query_id": "179038257",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "179038257",
+        "description": "Missing Camelbak water bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/179038257-query.jpg"
+      },
+      "candidate": {
+        "id": "183494508",
+        "description": "Found: Bottle of Water",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508.jpg"
+      }
+    },
+    {
+      "query_id": "179038257",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "179038257",
+        "description": "Missing Camelbak water bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/179038257-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "185973701",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "185973701",
+        "description": "Missing Short water bottles. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/185973701-query.jpg"
+      },
+      "candidate": {
+        "id": "185973701",
+        "description": "Found: Short water bottles",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/185973701.jpg"
+      }
+    },
+    {
+      "query_id": "185973701",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "185973701",
+        "description": "Missing Short water bottles. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/185973701-query.jpg"
+      },
+      "candidate": {
+        "id": "183494508",
+        "description": "Found: Bottle of Water",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508.jpg"
+      }
+    },
+    {
+      "query_id": "185973701",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "185973701",
+        "description": "Missing Short water bottles. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/185973701-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    },
+    {
+      "query_id": "182337243",
+      "split": "test",
+      "label": 1,
+      "query": {
+        "id": "182337243",
+        "description": "Missing Stainless Steel Water Bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/182337243-query.jpg"
+      },
+      "candidate": {
+        "id": "182337243",
+        "description": "Found: Stainless Steel Water Bottle",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/182337243.jpg"
+      }
+    },
+    {
+      "query_id": "182337243",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "182337243",
+        "description": "Missing Stainless Steel Water Bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/182337243-query.jpg"
+      },
+      "candidate": {
+        "id": "183494508",
+        "description": "Found: Bottle of Water",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/183494508.jpg"
+      }
+    },
+    {
+      "query_id": "182337243",
+      "split": "test",
+      "label": 0,
+      "query": {
+        "id": "182337243",
+        "description": "Missing Stainless Steel Water Bottle. Please help locate it.",
+        "category": "bottles",
+        "location": "library",
+        "date": "2026-08-01",
+        "brand": "",
+        "color": "",
+        "image": "images/182337243-query.jpg"
+      },
+      "candidate": {
+        "id": "80611330",
+        "description": "Found: Military backpack 01",
+        "category": "bags",
+        "location": "library",
+        "date": "2026-08-02",
+        "brand": "",
+        "color": "",
+        "image": "images/80611330.jpg"
+      }
+    }
+  ]
+}

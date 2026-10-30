@@ -1,0 +1,43 @@
+{% extends 'shell.html' %}
+{% load static %}
+{% block title %}Search items{% endblock %}
+{% block page_title %}Search items{% endblock %}
+
+{% block main %}
+<div class="section-head">
+  <div><h1>Search lost &amp; found</h1><div class="sub">Results update live as you type — no page reloads.</div></div>
+</div>
+
+<form id="search-form" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
+  <div class="row wrap" style="gap:12px">
+    <div style="flex:1; min-width:220px; position:relative">
+      <label for="query">Search reports</label><input id="query" type="search" name="q" value="{{ q }}" class="field-input" placeholder="Title, description, brand or colour" autocomplete="off">
+      <span id="search-spinner" style="visibility:hidden; position:absolute; right:14px; top:12px">⏳</span>
+    </div>
+    <select name="type" aria-label="Report type" class="field-input" style="max-width:160px">
+      <option value="">All types</option>
+      <option value="lost" {% if sel_type == 'lost' %}selected{% endif %}>🔎 Lost</option>
+      <option value="found" {% if sel_type == 'found' %}selected{% endif %}>🎁 Found</option>
+    </select>
+    <select name="category" aria-label="Category" class="field-input" style="max-width:190px">
+      <option value="">All categories</option>
+      {% for c in categories %}<option value="{{ c.slug }}" {% if sel_category == c.slug %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="location" aria-label="Campus location" class="field-input" style="max-width:190px">
+      <option value="">All locations</option>
+      {% for l in locations %}<option value="{{ l.slug }}" {% if sel_location == l.slug %}selected{% endif %}>📍 {{ l.name }}</option>{% endfor %}
+    </select>
+  </div>
+{% include 'items/partials/date_filters.html' %}
+</form>
+
+<div class="section-head">
+  <div class="sub"><b id="result-count">{{ total }}</b> item(s) found</div>
+</div>
+
+<div id="results">
+  {% include 'items/partials/result_grid.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/search.js' %}"></script>{% endblock %}

@@ -1,0 +1,183 @@
+{
+  "dataset_sha256": "2ecb488b5f044b5dd6d5b414a872a201c088e3e1f3ab9055a245adc462f32f94",
+  "provenance": "Project-constructed source-identity pilot; automatic labels, not human-reviewed campus reports.",
+  "limitations": [
+    "Positive pairs reuse the same photograph with brightness/compression changes.",
+    "Source titles generate descriptions; lexical overlap makes this an optimistic sanity benchmark.",
+    "Negatives use different source files, which are not guaranteed different physical objects.",
+    "Do not interpret metrics as real-world accuracy."
+  ],
+  "model_versions": {
+    "text": "tfidf",
+    "image": "resnet",
+    "text_revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
+    "clip_revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
+    "resnet_revision": "34c2154c194f829b11125337b98c8f5f9965ff19",
+    "weights": {
+      "text": 0.2,
+      "image": 0.4,
+      "location": 0.15,
+      "category": 0.1,
+      "date": 0.1,
+      "attribute": 0.05
+    },
+    "version": "pilot-v2"
+  },
+  "experiments": [
+    {
+      "text": "tfidf",
+      "image": "resnet",
+      "weights": {
+        "text": 0.2,
+        "image": 0.39999999999999997,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      },
+      "threshold": 0.8,
+      "validation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      },
+      "test": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      }
+    },
+    {
+      "text": "tfidf",
+      "image": "clip",
+      "weights": {
+        "text": 0.2,
+        "image": 0.39999999999999997,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      },
+      "threshold": 0.8,
+      "validation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      },
+      "test": {
+        "precision": 0.967741935483871,
+        "recall": 1.0,
+        "f1": 0.9836065573770492,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      }
+    },
+    {
+      "text": "sbert",
+      "image": "resnet",
+      "weights": {
+        "text": 0.2,
+        "image": 0.39999999999999997,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      },
+      "threshold": 0.85,
+      "validation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      },
+      "test": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      }
+    },
+    {
+      "text": "sbert",
+      "image": "clip",
+      "weights": {
+        "text": 0.2,
+        "image": 0.39999999999999997,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      },
+      "threshold": 0.85,
+      "validation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      },
+      "test": {
+        "precision": 0.967741935483871,
+        "recall": 1.0,
+        "f1": 0.9836065573770492,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "pairs": 90
+      }
+    }
+  ],
+  "selected_by_validation": {
+    "text": "tfidf",
+    "image": "resnet",
+    "weights": {
+      "text": 0.2,
+      "image": 0.39999999999999997,
+      "location": 0.15,
+      "category": 0.1,
+      "date": 0.1,
+      "attribute": 0.05
+    },
+    "threshold": 0.8,
+    "validation": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "mrr": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "pairs": 90
+    },
+    "test": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "mrr": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "pairs": 90
+    }
+  }
+}

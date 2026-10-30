@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="shell">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <aside class="sidebar">
+    <a href="{% url 'items:dashboard' %}" class="brand" style="text-decoration:none">
+      <span class="logo">🔗</span>
+      <span class="name">Lost<span>Link</span></span>
+    </a>
+
+    {% with vn=request.resolver_match.view_name %}
+    <nav>
+      <div class="nav-label">Menu</div>
+      <a href="{% url 'items:dashboard' %}" class="nav-item {% if vn == 'items:dashboard' %}active{% endif %}"><span class="ico">🏠</span> Dashboard</a>
+      <a href="{% url 'items:lost' %}" class="nav-item {% if vn == 'items:lost' %}active{% endif %}"><span class="ico">🔎</span> Lost items</a>
+      <a href="{% url 'items:found' %}" class="nav-item {% if vn == 'items:found' %}active{% endif %}"><span class="ico">🎁</span> Found items</a>
+      <a href="{% url 'items:search' %}" class="nav-item {% if vn == 'items:search' %}active{% endif %}"><span class="ico">🔍</span> Search all</a>
+      <a href="{% url 'items:report' %}" class="nav-item {% if vn == 'items:report' %}active{% endif %}"><span class="ico">➕</span> Report item</a>
+      <a href="{% url 'items:mine' %}" class="nav-item {% if vn == 'items:mine' %}active{% endif %}"><span class="ico">📋</span> My reports</a>
+      <a href="{% url 'claims:mine' %}" class="nav-item {% if vn == 'claims:mine' %}active{% endif %}"><span class="ico">🔑</span> My claims</a>
+      <a href="{% url 'notifications:inbox' %}" class="nav-item {% if vn == 'notifications:inbox' %}active{% endif %}"><span class="ico">🔔</span> Notifications {% if unread_notifications %}<span class="pill">{{ unread_notifications }}</span>{% endif %}</a>
+
+      {% if user.is_staff_role %}
+      <div class="nav-label">Moderation</div>
+      <a href="{% url 'dashboard:moderation' %}" class="nav-item {% if vn == 'dashboard:moderation' %}active{% endif %}"><span class="ico">🛡️</span> Review queue</a>
+      {% endif %}
+
+      {% if user.is_administrator %}
+      <div class="nav-label">Administration</div>
+      <a href="{% url 'dashboard:analytics' %}" class="nav-item {% if vn == 'dashboard:analytics' %}active{% endif %}"><span class="ico">📊</span> Analytics</a>
+      <a href="{% url 'dashboard:users' %}" class="nav-item {% if vn == 'dashboard:users' %}active{% endif %}"><span class="ico">👥</span> Users</a>
+      <a href="{% url 'dashboard:taxonomy' %}" class="nav-item {% if vn == 'dashboard:taxonomy' %}active{% endif %}"><span class="ico">🏷️</span> Categories</a>
+      {% endif %}
+    </nav>
+    {% endwith %}
+
+    <div class="foot">
+      <a href="{% url 'accounts:profile' %}" class="nav-item"><span class="ico">⚙️</span> Profile</a>
+      <a href="{% url 'accounts:logout' %}" class="nav-item"><span class="ico">↩️</span> Sign out</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="btn btn-ghost mobile-menu" type="button" aria-expanded="false" aria-label="Open navigation">Menu</button>
+      <div class="page-title">{% block page_title %}{% endblock %}</div>
+      <div class="spacer"></div>
+      <a href="{% url 'items:report' %}" class="btn btn-primary btn-sm">➕ Report item</a>
+      <button type="button" class="icon-btn theme-toggle" data-theme-toggle title="Toggle dark mode"><span class="moon">🌙</span><span class="sun">☀️</span></button>
+      <a href="{% url 'notifications:inbox' %}" class="icon-btn" title="Notifications">🔔{% if unread_notifications %}<span class="dot">{{ unread_notifications }}</span>{% endif %}</a>
+      <div class="usermenu">
+        <div class="avatar" style="background: {{ user.avatar_color|default:'#E8623C' }}">{{ user.initials }}</div>
+        <div class="who">
+          <b>{{ user.display_name }}</b><br>
+          <small>{{ user.get_role_display }}</small>
+        </div>
+      </div>
+    </header>
+
+    <div class="content" id="main-content" tabindex="-1">
+      {% block main %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

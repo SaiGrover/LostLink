@@ -1,0 +1,29 @@
+name: Verify LostLink
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: lostlink
+          POSTGRES_USER: lostlink
+          POSTGRES_PASSWORD: test-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://lostlink:test-only@localhost:5432/lostlink
+      LOSTLINK_TEXT_MODEL: tfidf
+      LOSTLINK_IMAGE_MODEL: histogram
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: pip install -r requirements.txt 'psycopg[binary]>=3.2,<4'
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test
