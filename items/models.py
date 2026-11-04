@@ -131,3 +131,7 @@ class Item(models.Model):
     def is_matchable(self):
         return self.is_active and self.status in (
             self.Status.APPROVED, self.Status.CLAIMED)
+
+    @property
+    def is_demo_photo(self):
+        return bool(self.image and self.image.name.rsplit('/', 1)[-1].startswith('demo-real-'))

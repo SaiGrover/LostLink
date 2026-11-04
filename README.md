@@ -53,6 +53,7 @@ python manage.py migrate
 
 # 4. load demo data (users, items, matches, a claim in progress)
 python manage.py seed_demo --fresh
+python manage.py upgrade_demo_photos  # real object photos for 14 demo reports
 python manage.py rebuild_matches
 
 # 5. run
@@ -91,6 +92,13 @@ Lives in [`matching/engine.py`](matching/engine.py) and
   trained here.**
 
 The active configuration is recorded in `matching/profile.json`. The constructed 180-pair pilot and comparison results are in `evaluation/`; read `docs/EVALUATION.md` before interpreting scores. Pilot results are not estimates of real campus accuracy.
+
+Demo reports can use representative photographs of real objects. Run
+`python manage.py upgrade_demo_photos` after seeding; it changes only generated
+`demo_*.jpg` placeholders and preserves user uploads. [Photo credits and licences](docs/DEMO_IMAGE_CREDITS.json)
+are recorded per report. The two identity-card demos retain abstract placeholders
+to avoid displaying someone's real ID. These illustrative photos are not
+independently captured lost/found evidence.
 
 Research-ready datasets are checked separately from engineering fixtures:
 

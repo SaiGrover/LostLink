@@ -10,6 +10,7 @@
   </div>
   <div class="ic-b">
     <h4>{{ item.title }}</h4>
+    {% if item.is_demo_photo %}<span class="meta muted" style="font-size:.72rem">Representative demo photo</span>{% endif %}
     <div class="meta">
       <span>{{ item.category.icon }} {{ item.category.name }}</span>
       <span>📍 {{ item.location.name }}</span>

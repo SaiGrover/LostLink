@@ -19,6 +19,9 @@ Completed in this implementation pass:
 - Ongoing EDA for photo coverage, report-date gaps and description variation.
 - Research-readiness validation, discovery-study analysis and a production-confirmed-pair export path.
 - A daily host maintenance scheduler for score snapshots and retuning-data export.
+- Credited real-object photographs for 14 demo reports, labelled as representative
+  in cards and detail views. The two identity-card demos retain abstract images
+  to avoid presenting a real person's private card as campus evidence.
 
 Verification: 35 regression tests passed on PostgreSQL 17.11; Django checks and migration checks
 passed. Browser checks exercised 87 route, viewport and role combinations at
@@ -56,6 +59,8 @@ reuse a transformed copy of one photo. Human review and an independently
 photographed/worded holdout set remain necessary before claiming real campus
 matching accuracy. The project now refuses to classify that fixture as
 research-ready and includes the collection, validation and analysis workflow.
+The new demo photos are presentation fixtures and do not change this limitation;
+they must not be counted as independent lost/found research pairs.
 Production hosting is optional in the synopsis and no deployment has been made.
 
 Public repository: https://github.com/SaiGrover/LostLink

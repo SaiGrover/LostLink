@@ -128,12 +128,25 @@ def item_detail(request, pk):
 
     existing_claim = item.claims.filter(claimant=request.user).first()
 
+    photo_credit = None
+    if item.is_demo_photo:
+        import json
+        from django.utils.html import strip_tags
+        credit_file = settings.BASE_DIR / 'docs/DEMO_IMAGE_CREDITS.json'
+        if credit_file.exists():
+            credit = next((row for row in json.loads(credit_file.read_text(encoding='utf-8'))
+                           if row['item_id'] == item.pk), None)
+            if credit:
+                photo_credit = {'source': credit['source'], 'artist': strip_tags(credit['artist']),
+                                'license': credit['license'], 'license_url': credit['license_url']}
+
     return render(request, 'items/item_detail.html', {
         'item': item,
         'is_owner': is_owner,
         'can_review': can_review,
         'match_rows': match_rows,
         'existing_claim': existing_claim,
+        'photo_credit': photo_credit,
     })
 
 
