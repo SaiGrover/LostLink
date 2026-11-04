@@ -1,0 +1,25 @@
+{
+  "provenance": "Replace with consented collection dates, setting and review procedure.",
+  "limitations": ["Incomplete collection template; not evaluation evidence."],
+  "pairs": [
+    {
+      "query_id": "lost-report-001",
+      "split": "validation",
+      "label": 1,
+      "query": {
+        "id": "lost-report-001", "physical_id": "object-001",
+        "description": "", "category": "", "location": "", "date": "",
+        "brand": "", "color": "", "image": ""
+      },
+      "candidate": {
+        "id": "found-report-001", "physical_id": "object-001",
+        "description": "", "category": "", "location": "", "date": "",
+        "brand": "", "color": "", "image": ""
+      },
+      "review": {
+        "label_source": "manual", "status": "pending", "reviewer": "",
+        "independent_photos": null, "independent_descriptions": null
+      }
+    }
+  ]
+}

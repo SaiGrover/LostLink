@@ -11,6 +11,7 @@ from items.models import Item
 def report_record(item):
     return {
         'id': f'report-{item.pk}',
+        'physical_id': '',  # A reviewer must assign a stable real-object identity.
         'description': item.description,
         'category': item.category.slug,
         'location': item.location.slug,
@@ -51,8 +52,9 @@ class Command(BaseCommand):
                 'review': {
                     'label_source': 'moderator-confirmed handover',
                     'reviewer': f'user-{claim.reviewed_by_id}',
-                    'status': 'approved',
-                    'independent_photos': True,
+                    'status': 'needs-research-review',
+                    'independent_photos': None,
+                    'independent_descriptions': None,
                     'claim_id': claim.pk,
                 },
             })
@@ -70,15 +72,18 @@ class Command(BaseCommand):
                         'label_source': 'moderator-confirmed positive with sampled non-match',
                         'reviewer': f'user-{claim.reviewed_by_id}',
                         'status': 'needs-manual-negative-review',
-                        'independent_photos': True,
+                        'independent_photos': None,
+                        'independent_descriptions': None,
                         'claim_id': claim.pk,
                     },
                 })
         payload = {
-            'provenance': 'De-identified pairs from moderator-approved, completed handovers.',
+            'provenance': 'Restricted review export from moderator-approved, completed handovers.',
             'limitations': [
                 'Negative candidates require manual review before research use.',
-                'Export contains no usernames, contact details or verification answers.',
+                'Dedicated username, contact and verification-answer fields are excluded.',
+                'Free-text descriptions and photographs may contain personal data; redact and obtain consent before sharing.',
+                'Photo independence, description authorship and physical identities require research review.',
                 'A minimum sample size and source-disjoint split remain required before retuning.',
             ],
             'confirmed_claims_exported': exported,

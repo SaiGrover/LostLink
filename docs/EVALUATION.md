@@ -17,7 +17,8 @@ validation/test split.
 The boundary is enforced by `python manage.py validate_research_dataset <file>`.
 It requires 150–200 pairs, manual labels, an approved reviewer record,
 independently captured positive photographs, both classes in each split and no
-identity leakage. The bundled source-identity pilot intentionally fails this gate;
+report, physical-object and image leakage, readable photos and independent
+description review. `--allow-small` is a schema check only. The bundled source-identity pilot intentionally fails this gate;
 it remains useful only as an engineering sanity check.
 
 The text evaluation command accepts CSV columns:
@@ -40,7 +41,8 @@ pairs update existing match rows, including rows referenced by historical claims
 
 `python manage.py evaluate_hybrid evaluation/pilot/dataset.json` compares
 TF-IDF/Sentence-BERT with ResNet/CLIP, tests candidate weights and thresholds
-on validation, and measures the untouched test split. `--apply` writes the
+on validation, and measures the untouched test split. `retune` and `--apply`
+require the research-readiness checks to pass; `--apply` writes the
 selected profile and requires app restart plus `rebuild_matches`. The current
 report is `evaluation/results.json`. All four model combinations tied on
 validation F1, precision and MRR; deterministic order selected TF-IDF + ResNet.
@@ -58,8 +60,10 @@ score distribution, not accuracy; a periodic run must be scheduled by the host.
 `python manage.py run_maintenance_scheduler` provides the host process for that
 schedule. It records monitoring snapshots daily by default and exports eligible
 moderator-confirmed completed handovers through `export_confirmed_pairs`. The
-export excludes usernames, contact details and private verification answers;
-sampled negatives still require manual review. Run the scheduler as a supervised
+export excludes dedicated username/contact fields and private verification answers.
+Descriptions and photographs can still contain personal data, so the export is
+restricted review material. Photo independence and text authorship are unknown
+until reviewed; sampled negatives also require manual review. Run the scheduler as a supervised
 service in production, or use `--once` from an external cron/task scheduler.
 
 The AJAX-versus-manual discovery study protocol and machine-readable analysis

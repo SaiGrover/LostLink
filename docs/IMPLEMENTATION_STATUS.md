@@ -20,7 +20,7 @@ Completed in this implementation pass:
 - Research-readiness validation, discovery-study analysis and a production-confirmed-pair export path.
 - A daily host maintenance scheduler for score snapshots and retuning-data export.
 
-Verification: 28 regression tests passed; Django checks and migration checks
+Verification: 35 regression tests passed on PostgreSQL 17.11; Django checks and migration checks
 passed. Browser checks exercised 87 route, viewport and role combinations at
 1440px, 768px and 390px with no horizontal overflow. Landing and report views
 were visually reviewed. Sentence-BERT, CLIP and ResNet inference produced
@@ -35,6 +35,22 @@ review; protected pending media; report editing; pagination; duplicate flags;
 PostgreSQL CI and local Compose configuration. The browser sweep covers all
 three roles at desktop, tablet and phone widths.
 
+PostgreSQL local verification (4 November 2026): the standalone server runs on
+127.0.0.1:54329 using SCRAM authentication, with all migrations applied. All 109
+records copied from SQLite matched exactly when re-exported (including six users,
+16 reports, 15 stored matches and the existing claim). SQLite remains as a backup.
+Browser sign-in, dashboard rendering, live AJAX search and manual-search submission
+were verified against the PostgreSQL-backed app. The earlier 87-combination layout
+sweep remains the UI baseline. Setup and restart commands are in `docs/POSTGRESQL.md`.
+
+Research tooling now rejects missing holdout splits, missing or unreadable photos,
+duplicate pairs, inconsistent labels, and physical-object/image leakage across
+splits. Photo and description independence require explicit reviewer attestations.
+Retuning and profile activation require these checks. Completed-handover exports
+leave research review pending and do not assume independent photographs. The
+study analyser also rejects duplicate observations, blank identifiers and
+non-finite completion times.
+
 Research limitation: source-identity labels are automatic and positive pairs
 reuse a transformed copy of one photo. Human review and an independently
 photographed/worded holdout set remain necessary before claiming real campus
@@ -42,4 +58,5 @@ matching accuracy. The project now refuses to classify that fixture as
 research-ready and includes the collection, validation and analysis workflow.
 Production hosting is optional in the synopsis and no deployment has been made.
 
-Git is initialized locally. No remote repository was created or code published.
+Public repository: https://github.com/SaiGrover/LostLink
+GitHub Actions runs the Django suite against PostgreSQL on pushes and pull requests.

@@ -1,5 +1,7 @@
 # 🔗 LostLink
 
+[![Verify LostLink](https://github.com/SaiGrover/LostLink/actions/workflows/test.yml/badge.svg)](https://github.com/SaiGrover/LostLink/actions/workflows/test.yml)
+
 **An AI-Enabled Full-Stack Platform for Intelligent Lost-and-Found Item Matching and Recovery**
 
 LostLink centralises campus lost-and-found reporting and uses a **hybrid AI
@@ -58,6 +60,11 @@ python manage.py runserver
 ```
 
 Open **http://127.0.0.1:8000/**
+
+For PostgreSQL, including a standalone setup when Docker is unavailable, follow
+[the local PostgreSQL guide](docs/POSTGRESQL.md). Start the verified local setup
+with `python scripts/local_postgres.py start`, then run the app through
+`python scripts/local_postgres.py manage runserver`.
 
 ### Demo logins
 

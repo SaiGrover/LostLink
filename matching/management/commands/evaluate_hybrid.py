@@ -40,6 +40,11 @@ class Command(BaseCommand):
         parser.add_argument('--apply',action='store_true',help='Activate the validation-selected model profile; rebuild operational features afterwards.')
 
     def handle(self,dataset,output,text,image,**options):
+        if options.get('apply'):
+            from matching.research import validate_dataset
+            summary = validate_dataset(dataset)
+            if not summary['research_ready']:
+                raise CommandError('Profile activation requires reviewed research data: ' + '; '.join(summary['errors']))
         import torch
         torch.set_num_threads(2)
         path = Path(dataset)

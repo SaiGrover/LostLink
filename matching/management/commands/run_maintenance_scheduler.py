@@ -1,7 +1,9 @@
 import time
+import math
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
+from django.db import close_old_connections
 
 
 class Command(BaseCommand):
@@ -20,8 +22,8 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(str(exc)))
 
     def handle(self, interval_hours, once=False, export_output=None, **options):
-        if interval_hours <= 0:
-            raise CommandError('--interval-hours must be positive.')
+        if not math.isfinite(interval_hours) or interval_hours <= 0:
+            raise CommandError('--interval-hours must be finite and positive.')
         self.run_cycle(export_output)
         if once:
             return
@@ -30,6 +32,7 @@ class Command(BaseCommand):
         try:
             while True:
                 time.sleep(interval_hours * 3600)
+                close_old_connections()
                 self.run_cycle(export_output)
         except KeyboardInterrupt:
             self.stdout.write('Maintenance scheduler stopped.')

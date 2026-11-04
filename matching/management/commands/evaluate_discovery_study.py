@@ -1,5 +1,6 @@
 import csv
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean, median
@@ -24,6 +25,7 @@ class Command(BaseCommand):
 
         grouped = defaultdict(list)
         participant_modes = defaultdict(set)
+        seen = set()
         for row in rows:
             mode = row['mode'].strip().lower()
             if mode not in {'manual', 'ajax'}:
@@ -33,10 +35,18 @@ class Command(BaseCommand):
                 seconds = float(row['seconds'])
             except ValueError as exc:
                 raise CommandError('success must be 0/1 and seconds must be numeric.') from exc
-            if success not in (0, 1) or seconds <= 0:
-                raise CommandError('success must be 0/1 and seconds must be positive.')
+            if success not in (0, 1) or not math.isfinite(seconds) or seconds <= 0:
+                raise CommandError('success must be 0/1 and seconds must be finite and positive.')
+            participant = row['participant_id'].strip()
+            task = row['task_id'].strip()
+            if not participant or not task:
+                raise CommandError('participant_id and task_id must not be blank.')
+            key = (participant, mode, task)
+            if key in seen:
+                raise CommandError('Duplicate participant/mode/task observation.')
+            seen.add(key)
             grouped[mode].append({'success': success, 'seconds': seconds})
-            participant_modes[row['participant_id']].add(mode)
+            participant_modes[participant].add(mode)
 
         incomplete = sorted(pid for pid, modes in participant_modes.items()
                             if modes != {'manual', 'ajax'})
