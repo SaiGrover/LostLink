@@ -64,6 +64,9 @@ class Item(models.Model):
                                  related_name='items')
     # Date the item was lost / found (not necessarily the report date).
     event_date = models.DateField(default=timezone.localdate)
+    event_time = models.TimeField(
+        null=True, blank=True,
+        help_text='Approximate time the item was lost or found.')
 
     # Optional structured attributes (contribute a small matching signal).
     brand = models.CharField(max_length=60, blank=True)

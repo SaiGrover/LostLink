@@ -3,9 +3,9 @@
     {% for item in items %}{% include 'items/partials/item_card.html' %}{% endfor %}
   </div>
   {% if page_obj.has_other_pages %}<nav class="row wrap" aria-label="Search pages" style="margin-top:24px">
-    {% if page_obj.has_previous %}<button type="button" class="btn btn-ghost" data-page="{{ page_obj.previous_page_number }}">Previous</button>{% endif %}
+    {% if page_obj.has_previous %}{% if manual_mode %}<a class="btn btn-ghost" href="?{{ querystring }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% else %}<button type="button" class="btn btn-ghost" data-page="{{ page_obj.previous_page_number }}">Previous</button>{% endif %}{% endif %}
     <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}<button type="button" class="btn btn-ghost" data-page="{{ page_obj.next_page_number }}">Next</button>{% endif %}
+    {% if page_obj.has_next %}{% if manual_mode %}<a class="btn btn-ghost" href="?{{ querystring }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% else %}<button type="button" class="btn btn-ghost" data-page="{{ page_obj.next_page_number }}">Next</button>{% endif %}{% endif %}
   </nav>{% endif %}
 {% else %}
   <div class="empty">

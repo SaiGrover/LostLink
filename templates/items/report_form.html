@@ -42,10 +42,18 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="{{ form.event_date.id_for_label }}">Date lost / found</label>
-        {{ form.event_date }}
-        {% for e in form.event_date.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+      <div class="grid g-2">
+        <div class="field">
+          <label for="{{ form.event_date.id_for_label }}">Date lost / found</label>
+          {{ form.event_date }}
+          {% for e in form.event_date.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.event_time.id_for_label }}">Approximate time <span class="muted">(optional)</span></label>
+          {{ form.event_time }}
+          <div class="help">An estimate is enough, such as around 2:30 PM.</div>
+          {% for e in form.event_time.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
       </div>
 
       <div class="field">

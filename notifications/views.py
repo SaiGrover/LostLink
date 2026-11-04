@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 
 @login_required
 def inbox(request):
-    notes = request.user.notifications.all()
+    notes = request.user.notifications.select_related('item', 'item__category')
     return render(request, 'notifications/inbox.html', {'notes': notes})
 
 

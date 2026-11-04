@@ -7,7 +7,8 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from matching import engine
-from matching.embeddings import text_vectors, image_vector
+from matching.embeddings import (CLIP_REVISION, RESNET_REVISION, image_vector,
+                                 text_vectors)
 from matching.features import manifest
 from PIL import Image
 
@@ -61,7 +62,11 @@ class Command(BaseCommand):
         cache = {}
         def vector(record, kind):
             image_path = path.parent/record['image']
-            key = hashlib.sha256(image_path.read_bytes()+kind.encode()+json.dumps(manifest(),sort_keys=True).encode()).hexdigest()
+            revision = RESNET_REVISION if kind == 'resnet' else CLIP_REVISION
+            # Image embeddings depend on the source bytes and model revision,
+            # not on hybrid weights or notification thresholds.
+            key = hashlib.sha256(
+                image_path.read_bytes() + kind.encode() + revision.encode()).hexdigest()
             if key not in cache:
                 file = feature_cache/f'{key}.json'
                 if file.exists():

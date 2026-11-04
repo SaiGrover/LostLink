@@ -8,4 +8,7 @@ staticfiles/
 tmp/
 model_cache/
 evaluation/pilot/features/
+evaluation/production/
+evaluation/studies/discovery-study.csv
+evaluation/studies/discovery-results.json
 test-results/

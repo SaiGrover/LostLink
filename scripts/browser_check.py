@@ -18,7 +18,7 @@ with sync_playwright() as p:
         page.locator('[name=password]').fill(password)
         page.locator('button[type=submit]').click()
         page.wait_for_url('**/dashboard/')
-        routes=['/dashboard/','/search/','/report/','/mine/','/claims/mine/','/notifications/','/accounts/profile/']
+        routes=['/dashboard/','/search/','/search/?study=manual','/report/','/mine/','/claims/mine/','/notifications/','/accounts/profile/']
         if role in ('moderator','admin'): routes+=['/manage/moderation/']
         if role=='admin': routes+=['/manage/analytics/','/manage/users/','/manage/taxonomy/']
         for width in (1440,768,390):
@@ -28,7 +28,7 @@ with sync_playwright() as p:
                 overflow=page.evaluate('document.documentElement.scrollWidth > innerWidth')
                 culprits=page.evaluate('''() => [...document.querySelectorAll('*')].filter(e => e.getBoundingClientRect().right > innerWidth + 1).slice(-10).map(e => [e.tagName, String(e.className), Math.round(e.getBoundingClientRect().right)])''') if overflow else []
                 results.append({'role':role,'width':width,'route':route,'status':response.status,'overflow':overflow,'culprits':culprits})
-                if overflow or route in ('/dashboard/','/manage/analytics/','/report/'):
+                if overflow or route in ('/dashboard/','/manage/analytics/','/report/','/notifications/'):
                     page.screenshot(path=str(root/f'{role}-{width}-{route.strip("/").replace("/","-")}.png'),full_page=True)
         if errors: raise RuntimeError(errors)
         context.close()

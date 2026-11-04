@@ -6,11 +6,12 @@ from .models import Category, Item, Location
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ('report_type', 'title', 'category', 'location', 'event_date',
+        fields = ('report_type', 'title', 'category', 'location', 'event_date', 'event_time',
                   'description', 'brand', 'color', 'image')
         widgets = {
             'report_type': forms.RadioSelect(),
             'event_date': forms.DateInput(attrs={'type': 'date'}),
+            'event_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
             'description': forms.Textarea(attrs={'rows': 4}),
         }
 
@@ -29,6 +30,7 @@ class ItemForm(forms.ModelForm):
         self.fields['brand'].widget.attrs['placeholder'] = 'e.g. Apple, Nike (optional)'
         self.fields['color'].widget.attrs['placeholder'] = 'e.g. Black (optional)'
         self.fields['title'].widget.attrs['placeholder'] = 'e.g. Black leather wallet'
+        self.fields['event_time'].label = 'Approximate time'
 
     # --- upload hardening ------------------------------------------------
     MAX_IMAGE_MB = 5

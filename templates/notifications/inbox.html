@@ -13,13 +13,17 @@
   {% if notes %}
     <div class="stack" style="gap:0">
     {% for n in notes %}
-      <a href="{% url 'notifications:open' n.pk %}" class="row" style="gap:14px; padding:16px 20px; border-bottom:1px solid var(--line); text-decoration:none; color:inherit; {% if not n.is_read %}background:var(--primary-t){% endif %}">
-        <span style="font-size:1.4rem">{{ n.icon }}</span>
-        <div style="flex:1">
+      <a href="{% url 'notifications:open' n.pk %}" class="notification-row{% if not n.is_read %} is-unread{% endif %}">
+        <span class="notification-visual" aria-hidden="true">
+          {% if n.item and n.item.image %}<img src="{{ n.item.image.url }}" alt="" loading="lazy" width="56" height="56">
+          {% elif n.item %}<span>{{ n.item.category.icon }}</span>
+          {% else %}<span>{{ n.icon }}</span>{% endif %}
+        </span>
+        <div class="notification-copy">
           <b>{{ n.title }}</b>{% if not n.is_read %} <span class="badge primary" style="background:var(--primary);color:#fff">new</span>{% endif %}
           <div class="muted" style="font-size:.88rem">{{ n.body }}</div>
         </div>
-        <small class="muted">{{ n.created_at|naturaltime }}</small>
+        <small class="muted notification-time">{{ n.created_at|naturaltime }}</small>
       </a>
     {% endfor %}
     </div>

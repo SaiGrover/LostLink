@@ -13,6 +13,10 @@ class Notification(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                              related_name='notifications')
+    item = models.ForeignKey(
+        'items.Item', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='notifications',
+        help_text='Item used for the notification thumbnail and context.')
     kind = models.CharField(max_length=10, choices=Kind.choices,
                             default=Kind.SYSTEM)
     title = models.CharField(max_length=160)

@@ -5,10 +5,11 @@
 
 {% block main %}
 <div class="section-head">
-  <div><h1>Search lost &amp; found</h1><div class="sub">Results update live as you type — no page reloads.</div></div>
+  <div><h1>Search lost &amp; found</h1><div class="sub">{% if manual_mode %}Study baseline: apply filters to reload results.{% else %}Results update live as you type — no page reloads.{% endif %}</div></div>
 </div>
 
-<form id="search-form" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
+<form id="search-form" method="get" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
+  {% if manual_mode %}<input type="hidden" name="study" value="manual">{% endif %}
   <div class="row wrap" style="gap:12px">
     <div style="flex:1; min-width:220px; position:relative">
       <label for="query">Search reports</label><input id="query" type="search" name="q" value="{{ q }}" class="field-input" placeholder="Title, description, brand or colour" autocomplete="off">
@@ -40,4 +41,4 @@
 </div>
 {% endblock %}
 
-{% block scripts %}<script src="{% static 'js/search.js' %}"></script>{% endblock %}
+{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}"></script>{% endif %}{% endblock %}

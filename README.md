@@ -17,7 +17,7 @@ Built with Django for the JIIT Full-Stack Development Lab (PBL).
 | Area | What it does |
 |------|--------------|
 | **Role-based access** | Student, Moderator, Administrator — each sees only what its role needs. |
-| **Report lost/found** | Photo, category, campus zone, date, brand, colour. |
+| **Report lost/found** | Photo, category, campus zone, date, approximate time, brand, colour. |
 | **Hybrid matching** | Versioned text, pretrained image, and metadata scores with explainable High / Medium / Low tiers. |
 | **Explainable matches** | Every match shows a full per-component breakdown, not one opaque number. |
 | **Live AJAX search** | Results filter as you type — no page reloads. |
@@ -25,8 +25,8 @@ Built with Django for the JIIT Full-Stack Development Lab (PBL).
 | **Verified claims + contact exchange** | Private verification questions + moderator approval; once approved, both parties' contact details are revealed to arrange the handover. |
 | **Human verification** | Every approval requires answered private questions and a moderator decision. |
 | **Dark mode** | Theme toggle in the top bar; remembers your choice and respects the OS preference. |
-| **In-app notifications** | Match alerts and claim/report updates. |
-| **Admin analytics** | Most-lost categories, problem locations, confidence-tier distribution, CSV export, PDF summary report. |
+| **In-app notifications** | Match alerts and claim/report updates with item thumbnail context. |
+| **Admin analytics** | Categories, locations, report time gaps, wording variation, photo coverage, confidence tiers, CSV and PDF exports. |
 
 ---
 
@@ -84,6 +84,17 @@ Lives in [`matching/engine.py`](matching/engine.py) and
   trained here.**
 
 The active configuration is recorded in `matching/profile.json`. The constructed 180-pair pilot and comparison results are in `evaluation/`; read `docs/EVALUATION.md` before interpreting scores. Pilot results are not estimates of real campus accuracy.
+
+Research-ready datasets are checked separately from engineering fixtures:
+
+```bash
+python manage.py validate_research_dataset path/to/manually-reviewed-pairs.json
+python manage.py evaluate_hybrid path/to/manually-reviewed-pairs.json
+python manage.py evaluate_discovery_study evaluation/studies/discovery-study.csv
+```
+
+Run operational monitoring once with `python manage.py run_maintenance_scheduler --once`,
+or keep the same command running without `--once` as a host-managed daily service.
 
 ---
 

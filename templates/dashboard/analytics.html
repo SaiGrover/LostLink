@@ -12,6 +12,33 @@
   </div>
 </div>
 
+<section class="card eda-panel" aria-labelledby="eda-title">
+  <div class="card-h">
+    <div><h2 id="eda-title">Operational data quality</h2><p class="muted" style="margin:4px 0 0">Live descriptive analysis of reviewed reports and current-version candidate matches.</p></div>
+    <span class="badge muted">{{ eda.sample_size }} match pair{{ eda.sample_size|pluralize }}</span>
+  </div>
+  <div class="card-b">
+    <div class="grid g-4 eda-kpis">
+      <div class="eda-stat"><span class="k-lab">Reports with photos</span><strong>{{ eda.photo_rate }}%</strong><small>{{ eda.reports_with_photos }} of {{ kpis.reports }}</small></div>
+      <div class="eda-stat"><span class="k-lab">Median report gap</span><strong>{% if eda.median_day_gap != None %}{{ eda.median_day_gap }}d{% else %}–{% endif %}</strong><small>{% if eda.mean_day_gap != None %}Mean {{ eda.mean_day_gap }} days{% else %}Awaiting match data{% endif %}</small></div>
+      <div class="eda-stat"><span class="k-lab">Description similarity</span><strong>{% if eda.mean_text_similarity != None %}{{ eda.mean_text_similarity }}%{% else %}–{% endif %}</strong><small>Mean text component</small></div>
+      <div class="eda-stat"><span class="k-lab">Wording variation</span><strong>{% if eda.wording_variation != None %}{{ eda.wording_variation }}%{% else %}–{% endif %}</strong><small>Inverse of text similarity</small></div>
+    </div>
+    <div class="divider"></div>
+    <h3 style="margin-bottom:12px">Time gap between candidate reports</h3>
+    <div class="eda-bars" role="img" aria-label="Distribution of day gaps between current lost and found match candidates">
+      {% for bucket in date_gap_distribution %}
+      <div class="bar-row eda-bar">
+        <span class="lab">{{ bucket.label }}</span>
+        <div class="meter"><i style="width:{{ bucket.pct }}%"></i></div>
+        <span class="val">{{ bucket.n }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="help" style="margin:14px 0 0">These measures describe submitted data and candidate scores. They do not measure real-world recovery accuracy.</p>
+  </div>
+</section>
+
 <div class="grid g-4" style="margin-bottom:22px">
   <div class="kpi"><div class="k-ico tone-violet">👥</div><div class="k-val">{{ kpis.users }}</div><div class="k-lab">Registered users</div></div>
   <div class="kpi"><div class="k-ico tone-primary">📋</div><div class="k-val">{{ kpis.reports }}</div><div class="k-lab">Total reports</div></div>
@@ -73,7 +100,7 @@
     </div>
   </div>
 </div>
-<section class="card pad" style="margin-top:24px"><h2>Matching history</h2><p class="muted">Recorded score distributions. These describe similarity scores, not measured accuracy.</p><div style="overflow-x:auto"><table class="table"><thead><tr><th>Recorded</th><th>Version</th><th>Matches</th><th>Mean</th><th>High / medium / low</th></tr></thead><tbody>{% for s in snapshots %}<tr><td>{{ s.created_at|date:'d M Y H:i' }}</td><td>{{ s.configuration.version }}</td><td>{{ s.match_count }}</td><td>{{ s.mean_score|floatformat:3 }}</td><td>{{ s.tiers.high }} / {{ s.tiers.medium }} / {{ s.tiers.low }}</td></tr>{% empty %}<tr><td colspan="5">No monitoring snapshots yet.</td></tr>{% endfor %}</tbody></table></div></section>
+<section class="card pad" style="margin-top:24px"><h2>Matching history</h2><p class="muted">Recorded score distributions. These describe similarity scores, not measured accuracy.</p><div style="overflow-x:auto"><table class="table"><caption class="sr-only">Matching score monitoring snapshots</caption><thead><tr><th>Recorded</th><th>Version</th><th>Matches</th><th>Mean</th><th>High / medium / low</th></tr></thead><tbody>{% for s in snapshots %}<tr><td>{{ s.created_at|date:'d M Y H:i' }}</td><td>{{ s.configuration.version }}</td><td>{{ s.match_count }}</td><td>{{ s.mean_score|floatformat:3 }}</td><td>{{ s.tiers.high }} / {{ s.tiers.medium }} / {{ s.tiers.low }}</td></tr>{% empty %}<tr><td colspan="5">No monitoring snapshots yet.</td></tr>{% endfor %}</tbody></table></div></section>
 {% endblock %}
 {% block scripts %}
 <script>

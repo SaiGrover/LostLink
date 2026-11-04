@@ -18,7 +18,8 @@
   </div>
 </div>
 
-<form id="search-form" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
+<form id="search-form" method="get" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
+  {% if manual_mode %}<input type="hidden" name="study" value="manual">{% endif %}
   <input type="hidden" name="type" value="{{ locked_type }}">
   <div class="row wrap" style="gap:12px">
     <div style="flex:1; min-width:220px; position:relative">
@@ -42,4 +43,4 @@
 <div id="results">{% include 'items/partials/result_grid.html' %}</div>
 {% endblock %}
 
-{% block scripts %}<script src="{% static 'js/search.js' %}"></script>{% endblock %}
+{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}"></script>{% endif %}{% endblock %}

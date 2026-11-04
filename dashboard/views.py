@@ -1,5 +1,6 @@
 import csv
 from io import BytesIO
+from statistics import mean, median
 
 from django.contrib import messages
 from django.db.models import Avg, Count
@@ -50,7 +51,7 @@ def review_report(request, pk, decision):
         notify_user(item.reporter, kind='report',
                     title=f'Report approved — “{item.title}”',
                     body='Your report is now visible in search.',
-                    url=item.get_absolute_url())
+                    url=item.get_absolute_url(), item=item)
         messages.success(request, f'Approved “{item.title}”.')
     elif decision == 'reject':
         item.status = Item.Status.REJECTED
@@ -58,7 +59,7 @@ def review_report(request, pk, decision):
         notify_user(item.reporter, kind='report',
                     title=f'Report rejected — “{item.title}”',
                     body='A moderator rejected this report.',
-                    url=item.get_absolute_url())
+                    url=item.get_absolute_url(), item=item)
         messages.info(request, f'Rejected “{item.title}”.')
     return redirect('dashboard:moderation')
 
@@ -79,6 +80,31 @@ def analytics(request):
     by_status = items.values('status').annotate(n=Count('id'))
     tier_dist = current_matches.values('tier').annotate(n=Count('id'))
 
+    # Ongoing EDA promised in synopsis Section 4.3. These are descriptive
+    # operational measures, not claims about matching accuracy.
+    match_observations = list(current_matches.values_list(
+        'lost_item__event_date', 'found_item__event_date', 'text_score'))
+    day_gaps = [abs((lost_date - found_date).days)
+                for lost_date, found_date, _ in match_observations]
+    text_scores = [score for _, _, score in match_observations]
+    gap_ranges = [
+        ('Same day', lambda value: value == 0),
+        ('1–3 days', lambda value: 1 <= value <= 3),
+        ('4–7 days', lambda value: 4 <= value <= 7),
+        ('8–14 days', lambda value: 8 <= value <= 14),
+        ('15+ days', lambda value: value >= 15),
+    ]
+    date_gap_distribution = [
+        {'label': label, 'n': sum(1 for value in day_gaps if predicate(value))}
+        for label, predicate in gap_ranges
+    ]
+    gap_max = max((row['n'] for row in date_gap_distribution), default=1) or 1
+    for row in date_gap_distribution:
+        row['pct'] = round(row['n'] * 100 / gap_max)
+
+    reports_with_photos = items.exclude(image='').exclude(image__isnull=True).count()
+    photo_rate = round(reports_with_photos * 100 / total) if total else 0
+
     cat_max = max([c['n'] for c in by_category], default=1)
     loc_max = max([l['n'] for l in by_location], default=1)
 
@@ -96,6 +122,16 @@ def analytics(request):
         'by_status': list(by_status),
         'tier_dist': list(tier_dist),
         'avg_match': current_matches.aggregate(a=Avg('score'))['a'] or 0,
+        'eda': {
+            'photo_rate': photo_rate,
+            'reports_with_photos': reports_with_photos,
+            'median_day_gap': round(median(day_gaps), 1) if day_gaps else None,
+            'mean_day_gap': round(mean(day_gaps), 1) if day_gaps else None,
+            'mean_text_similarity': round(mean(text_scores) * 100) if text_scores else None,
+            'wording_variation': round((1 - mean(text_scores)) * 100) if text_scores else None,
+            'sample_size': len(match_observations),
+        },
+        'date_gap_distribution': date_gap_distribution,
         'lost_total': items.filter(report_type=Item.Type.LOST).count(),
         'found_total': items.filter(report_type=Item.Type.FOUND).count(),
         'snapshots': ScoreSnapshot.objects.all()[:12],
@@ -155,12 +191,12 @@ def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="lostlink_reports.csv"'
     writer = csv.writer(response)
-    writer.writerow(['ID', 'Type', 'Title', 'Category', 'Location', 'Event date',
+    writer.writerow(['ID', 'Type', 'Title', 'Category', 'Location', 'Event date', 'Approximate time',
                      'Status', 'Brand', 'Color', 'Reporter', 'Created'])
     for it in Item.objects.select_related('category', 'location', 'reporter'):
         row = [
             it.id, it.get_report_type_display(), it.title, it.category.name,
-            it.location.name, it.event_date, it.get_status_display(),
+            it.location.name, it.event_date, it.event_time or '', it.get_status_display(),
             it.brand, it.color, it.reporter.username,
             it.created_at.strftime('%Y-%m-%d %H:%M')]
         writer.writerow(["'"+v if isinstance(v,str) and v.lstrip().startswith(('=','+','-','@')) else v for v in row])

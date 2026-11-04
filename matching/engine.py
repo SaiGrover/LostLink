@@ -50,14 +50,36 @@ _STOPWORDS = {
 
 _WORD_RE = re.compile(r"[a-z0-9]+")
 
+_IRREGULAR_LEMMAS = {
+    'children': 'child', 'feet': 'foot', 'men': 'man', 'mice': 'mouse',
+    'people': 'person', 'teeth': 'tooth', 'women': 'woman',
+}
+
+
+def lemmatize_token(token: str) -> str:
+    """Apply conservative noun lemmatization without a runtime corpus download.
+
+    Lost-and-found descriptions are noun-heavy. These rules normalize common
+    English plural forms while deliberately leaving ambiguous verb forms alone.
+    """
+    if token in _IRREGULAR_LEMMAS:
+        return _IRREGULAR_LEMMAS[token]
+    if len(token) > 4 and token.endswith('ies'):
+        return token[:-3] + 'y'
+    if len(token) > 4 and token.endswith(('ches', 'shes', 'sses', 'xes', 'zes')):
+        return token[:-2]
+    if len(token) > 3 and token.endswith('s') and not token.endswith(('ss', 'us', 'is')):
+        return token[:-1]
+    return token
+
 
 # ---------------------------------------------------------------------------
 # Text
 # ---------------------------------------------------------------------------
 def clean_text(text: str) -> str:
-    """Lowercase, strip punctuation, drop stop-words (Section 4.2)."""
+    """Lowercase, strip punctuation, drop stop-words and lemmatize nouns."""
     tokens = _WORD_RE.findall((text or '').lower())
-    tokens = [t for t in tokens if t not in _STOPWORDS and len(t) > 1]
+    tokens = [lemmatize_token(t) for t in tokens if t not in _STOPWORDS and len(t) > 1]
     return ' '.join(tokens)
 
 

@@ -64,7 +64,7 @@ def start_claim(request, item_id):
             notify_user(item.reporter, kind='claim',
                         title=f'New response on “{item.title}”',
                         body=f'{request.user.display_name()} responded to your report.',
-                        url=claim.get_absolute_url())
+                        url=claim.get_absolute_url(), item=item)
             messages.success(request, 'Submitted. Verification will follow shortly.')
             return redirect(claim.get_absolute_url())
     else:
@@ -151,7 +151,7 @@ def add_question(request, pk):
             notify_user(claim.claimant, kind='claim',
                         title='Verification question added',
                         body=f'Please answer to verify “{claim.item.title}”.',
-                        url=claim.get_absolute_url())
+                        url=claim.get_absolute_url(), item=claim.item)
             messages.success(request, 'Verification question added.')
     return redirect(claim.get_absolute_url())
 
@@ -176,7 +176,7 @@ def answer_question(request, pk, qid):
                 notify_user(claim.item.reporter, kind='claim',
                             title='Claim answers submitted',
                             body=f'“{claim.item.title}” is ready for review.',
-                            url=claim.get_absolute_url())
+                            url=claim.get_absolute_url(), item=claim.item)
             messages.success(request, 'Answer saved.')
     return redirect(claim.get_absolute_url())
 
@@ -215,7 +215,7 @@ def decide_claim(request, pk, decision):
         notify_user(claim.claimant, kind='claim',
                     title=f'Claim approved — “{item.title}”',
                     body='Arrange collection. A moderator will confirm the completed handover.',
-                    url=claim.get_absolute_url())
+                    url=claim.get_absolute_url(), item=item)
         messages.success(request, 'Claim approved. Confirm the handover once collection is complete.')
     else:
         claim.status = Claim.Status.REJECTED
@@ -230,7 +230,7 @@ def decide_claim(request, pk, decision):
         notify_user(claim.claimant, kind='claim',
                     title=f'Claim rejected — “{claim.item.title}”',
                     body=note or 'The claim could not be verified.',
-                    url=claim.get_absolute_url())
+                    url=claim.get_absolute_url(), item=claim.item)
         messages.info(request, 'Claim rejected.')
 
     claim.save()
@@ -256,7 +256,8 @@ def confirm_return(request, pk):
     item.is_active = False
     item.save(update_fields=['status','is_active'])
     for user in (claim.claimant,item.reporter):
-        notify_user(user,kind='claim',title='Handover completed',body=item.title,url=claim.get_absolute_url())
+        notify_user(user,kind='claim',title='Handover completed',body=item.title,
+                    url=claim.get_absolute_url(),item=item)
     messages.success(request,'Handover confirmed. This item is now recorded as returned.')
     return redirect(claim.get_absolute_url())
 

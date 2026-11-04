@@ -13,7 +13,7 @@
     <div class="meta">
       <span>{{ item.category.icon }} {{ item.category.name }}</span>
       <span>📍 {{ item.location.name }}</span>
-      <span>🗓️ {{ item.event_date|naturalday }}</span>
+      <span>🗓️ {{ item.event_date|naturalday }}{% if item.event_time %}, {{ item.event_time|time:"g:i A" }}{% endif %}</span>
     </div>
   </div>
 </a>

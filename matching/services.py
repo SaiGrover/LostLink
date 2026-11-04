@@ -115,11 +115,12 @@ def _notify_matches(item: Item, matches: list[Match]):
         other = match.counterpart_for(item)
         notify_user(other.reporter, kind='match', title=f'Potential match for {other.title}',
                     body=f'{item.title}: {match.percent}% similarity. Human verification required.',
-                    url=other.get_absolute_url())
+                    url=other.get_absolute_url(), item=item)
     notify_user(
         item.reporter,
         kind='match',
         title=f'{len(surfaced)} potential match(es) for “{item.title}”',
         body=f'Top match “{counterpart.title}” at {best.percent}% similarity.',
         url=item.get_absolute_url(),
+        item=counterpart,
     )

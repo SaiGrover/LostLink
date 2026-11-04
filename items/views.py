@@ -191,6 +191,8 @@ def _search_queryset(request):
 def search(request):
     qs = _search_queryset(request)
     page = Paginator(qs, 24).get_page(request.GET.get('page'))
+    query_without_page = request.GET.copy()
+    query_without_page.pop('page', None)
     context = {
         'items': page,
         'page_obj': page,
@@ -201,6 +203,8 @@ def search(request):
         'sel_type': request.GET.get('type', ''),
         'sel_category': request.GET.get('category', ''),
         'sel_location': request.GET.get('location', ''),
+        'manual_mode': request.GET.get('study') == 'manual',
+        'querystring': query_without_page.urlencode(),
     }
     return render(request, 'items/search.html', context)
 
@@ -212,6 +216,8 @@ def browse(request, report_type):
     request.GET['type'] = report_type
     qs = _search_queryset(request)
     page = Paginator(qs, 24).get_page(request.GET.get('page'))
+    query_without_page = request.GET.copy()
+    query_without_page.pop('page', None)
     is_lost = report_type == Item.Type.LOST
     context = {
         'items': page,
@@ -225,6 +231,8 @@ def browse(request, report_type):
         'sel_category': request.GET.get('category', ''),
         'sel_location': request.GET.get('location', ''),
         'page_kind': 'lost' if is_lost else 'found',
+        'manual_mode': request.GET.get('study') == 'manual',
+        'querystring': query_without_page.urlencode(),
     }
     return render(request, 'items/browse.html', context)
 

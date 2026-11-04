@@ -14,6 +14,12 @@ Before making an accuracy claim, manually annotate independent report pairs,
 check licensing and pair identity, and rerun evaluation with a source-disjoint
 validation/test split.
 
+The boundary is enforced by `python manage.py validate_research_dataset <file>`.
+It requires 150–200 pairs, manual labels, an approved reviewer record,
+independently captured positive photographs, both classes in each split and no
+identity leakage. The bundled source-identity pilot intentionally fails this gate;
+it remains useful only as an engineering sanity check.
+
 The text evaluation command accepts CSV columns:
 `query_id,query,candidate,label,split`. Labels are 0/1; splits are validation/test.
 Each query should have several candidates including hard negatives. Run:
@@ -48,6 +54,17 @@ with every experiment. Increment MATCHING.VERSION whenever weights change.
 distribution with the model manifest. It compares compatible snapshots by
 total-variation distance and flags shifts above 0.2 for review. This monitors
 score distribution, not accuracy; a periodic run must be scheduled by the host.
+
+`python manage.py run_maintenance_scheduler` provides the host process for that
+schedule. It records monitoring snapshots daily by default and exports eligible
+moderator-confirmed completed handovers through `export_confirmed_pairs`. The
+export excludes usernames, contact details and private verification answers;
+sampled negatives still require manual review. Run the scheduler as a supervised
+service in production, or use `--once` from an external cron/task scheduler.
+
+The AJAX-versus-manual discovery study protocol and machine-readable analysis
+command are documented in `docs/STUDY_PROTOCOL.md`. The repository contains a
+blank consent-compatible CSV schema, not fabricated participant results.
 
 Before deployment, configure PostgreSQL through DATABASE_URL, a private secret
 key, DEBUG=false, allowed hosts and trusted CSRF origins. Configure WSGI serving,

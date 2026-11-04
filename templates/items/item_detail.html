@@ -25,6 +25,7 @@
         <tr><td class="muted">Category</td><td>{{ item.category.icon }} {{ item.category.name }}</td></tr>
         <tr><td class="muted">Location</td><td>📍 {{ item.location.name }}</td></tr>
         <tr><td class="muted">Date</td><td>🗓️ {{ item.event_date|date:"d M Y" }} ({{ item.event_date|naturalday }})</td></tr>
+        {% if item.event_time %}<tr><td class="muted">Approx. time</td><td>{{ item.event_time|time:"g:i A" }}</td></tr>{% endif %}
         {% if item.brand %}<tr><td class="muted">Brand</td><td>{{ item.brand }}</td></tr>{% endif %}
         {% if item.color %}<tr><td class="muted">Colour</td><td>{{ item.color }}</td></tr>{% endif %}
         <tr><td class="muted">Reported by</td><td>{{ item.reporter.display_name }}</td></tr>

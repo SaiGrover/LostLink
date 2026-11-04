@@ -13,9 +13,15 @@ Completed in this implementation pass:
 - Pretrained adapters: Sentence-BERT, CLIP, ResNet; explicit baseline modes remain defaults.
 - Text evaluation CLI with precision, recall, F1, ROC-AUC, P@3 and MRR.
 - Model rebuild CLI and evaluation protocol.
+- Approximate event time throughout reporting, detail views and CSV export.
+- Conservative noun lemmatization in the deployed text-cleaning pipeline.
+- Item thumbnail context in accessible, responsive in-app notifications.
+- Ongoing EDA for photo coverage, report-date gaps and description variation.
+- Research-readiness validation, discovery-study analysis and a production-confirmed-pair export path.
+- A daily host maintenance scheduler for score snapshots and retuning-data export.
 
-Verification: 20 regression tests passed; Django checks and migration checks
-passed. Browser checks exercised 78 route, viewport and role combinations at
+Verification: 28 regression tests passed; Django checks and migration checks
+passed. Browser checks exercised 87 route, viewport and role combinations at
 1440px, 768px and 390px with no horizontal overflow. Landing and report views
 were visually reviewed. Sentence-BERT, CLIP and ResNet inference produced
 384, 512 and 2048-dimensional vectors respectively.
@@ -32,7 +38,8 @@ three roles at desktop, tablet and phone widths.
 Research limitation: source-identity labels are automatic and positive pairs
 reuse a transformed copy of one photo. Human review and an independently
 photographed/worded holdout set remain necessary before claiming real campus
-matching accuracy. Production hosting is optional in the synopsis and no
-deployment has been made.
+matching accuracy. The project now refuses to classify that fixture as
+research-ready and includes the collection, validation and analysis workflow.
+Production hosting is optional in the synopsis and no deployment has been made.
 
 Git is initialized locally. No remote repository was created or code published.
