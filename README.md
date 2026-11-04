@@ -67,6 +67,10 @@ For PostgreSQL, including a standalone setup when Docker is unavailable, follow
 with `python scripts/local_postgres.py start`, then run the app through
 `python scripts/local_postgres.py manage runserver`.
 
+For a live Django deployment from GitHub, follow the
+[Render deployment guide](docs/DEPLOY_RENDER.md). It uses managed PostgreSQL,
+production static assets, and a persistent disk for protected uploads.
+
 ### Demo logins
 
 | Role | Username | Password |

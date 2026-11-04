@@ -19,6 +19,11 @@ SECRET_KEY = os.environ.get(
 # Debug is on only when explicitly enabled (defaults to on for local dev).
 DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() != 'false'
 
+if not DEBUG and not os.environ.get('DJANGO_SECRET_KEY'):
+    raise RuntimeError('DJANGO_SECRET_KEY is required when DJANGO_DEBUG=false.')
+if not DEBUG and not os.environ.get('DATABASE_URL'):
+    raise RuntimeError('DATABASE_URL is required when DJANGO_DEBUG=false.')
+
 ALLOWED_HOSTS = os.environ.get(
     'DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -45,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -116,13 +122,21 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Media files (user-uploaded item photographs)
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = Path(os.environ.get('LOSTLINK_MEDIA_ROOT', BASE_DIR / 'media'))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

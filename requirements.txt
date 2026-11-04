@@ -4,6 +4,8 @@ Pillow>=10.0            # image handling + image-similarity descriptor
 scikit-learn>=1.3       # TF-IDF + cosine text similarity (Section 4.5)
 numpy>=1.24
 reportlab>=4.0          # PDF summary reports (Section 7.4)
+gunicorn>=22,<24        # production WSGI server
+whitenoise>=6.8,<7      # production static files (never user uploads)
 
 # The selected profile uses pretrained ResNet features. Install
 # requirements-ml.txt for the default setup. Core-only installs can set
