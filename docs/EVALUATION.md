@@ -39,6 +39,17 @@ vectors must not be mixed. This command refreshes derived matches without deleti
 reports or claims. The application displays only current-version matches. Recomputed
 pairs update existing match rows, including rows referenced by historical claims.
 
+**Deployed profile.** `matching/profile.json` uses the synopsis Section 4.9
+weights (0.30 text, 0.30 image, 0.15 location, 0.10 category, 0.10 date,
+0.05 attributes) and tiers (above 85% high, 70–85% medium, below 70% low)
+with TF-IDF text and ResNet-50 images, engine version `synopsis-v1`. The
+pilot-tuned variant below (text 0.2, image 0.4, thresholds 0.8/0.9, `pilot-v4`)
+is recorded as an experiment only, because the pilot cannot justify replacing
+the synopsis defaults. Components without evidence (no photo; no brand or
+colour on both reports) are dropped and the remaining weights renormalised.
+The pilot evaluation command uses its own fixed component set and is not
+affected by this policy.
+
 `python manage.py evaluate_hybrid evaluation/pilot/dataset.json` compares
 TF-IDF/Sentence-BERT with ResNet/CLIP, tests candidate weights and thresholds
 on validation, and measures the untouched test split. `retune` and `--apply`

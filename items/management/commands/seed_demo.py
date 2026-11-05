@@ -46,6 +46,12 @@ ADJACENCY = [
     ('Parking Lot', 'Main Gate'),
 ]
 
+# Compatible categories earn partial category credit (synopsis Section 4.7).
+RELATED_CATEGORIES = [
+    ('Bags & Wallets', 'Others'), ('Electronics', 'Others'), ('Keys', 'ID & Cards'),
+    ('Jewellery', 'Eyewear'), ('Books & Stationery', 'Others'), ('Clothing', 'Others'),
+]
+
 COLOR_MAP = {
     'black': (35, 35, 40), 'blue': (40, 90, 200), 'navy': (25, 40, 90),
     'red': (200, 55, 55), 'silver': (170, 175, 180), 'brown': (110, 70, 40),
@@ -160,6 +166,8 @@ class Command(BaseCommand):
             locs[name] = l
         for a, b in ADJACENCY:
             locs[a].adjacent.add(locs[b])
+        for a, b in RELATED_CATEGORIES:
+            cats[a].related.add(cats[b])
         self.stdout.write(self.style.SUCCESS(
             f'{len(cats)} categories, {len(locs)} locations ready.'))
 
@@ -265,6 +273,21 @@ class Command(BaseCommand):
             if wallet_found.status == Item.Status.APPROVED:
                 wallet_found.status = Item.Status.CLAIMED
                 wallet_found.save(update_fields=['status'])
+
+        # --- a user flag and an audit record so the moderator queue is populated
+        from dashboard.models import ModerationDecision, record_decision
+        from items.models import ReportFlag
+        hoodie = Item.objects.filter(title__icontains='hoodie').first()
+        if hoodie and hoodie.status == Item.Status.APPROVED:
+            flagger = next((s for s in students if s != hoodie.reporter), students[0])
+            ReportFlag.objects.get_or_create(
+                item=hoodie, reporter=flagger, resolved_at=None,
+                defaults={'reason': ReportFlag.Reason.SUSPICIOUS,
+                          'note': 'The photo looks like a stock image, not the hoodie.'})
+        for item in Item.objects.filter(status__in=[Item.Status.APPROVED, Item.Status.CLAIMED])[:6]:
+            if not item.moderation_decisions.exists():
+                record_decision(mod, ModerationDecision.Action.REPORT_APPROVED, item=item,
+                                note='Seeded demo approval')
 
         self.stdout.write(self.style.SUCCESS('\n[OK] Demo seed complete.'))
         self.stdout.write('  Admin:      admin / admin123')

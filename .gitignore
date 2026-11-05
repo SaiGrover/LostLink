@@ -13,3 +13,4 @@ evaluation/research/data/
 evaluation/studies/discovery-study.csv
 evaluation/studies/discovery-results.json
 test-results/
+.claude/

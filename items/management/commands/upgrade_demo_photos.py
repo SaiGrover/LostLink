@@ -97,7 +97,8 @@ class Command(BaseCommand):
         if credits:
             target = ROOT / 'docs/DEMO_IMAGE_CREDITS.json'
             existing = json.loads(target.read_text(encoding='utf-8')) if target.exists() else []
-            by_item = {row['item_id']: row for row in existing}
-            by_item.update({row['item_id']: row for row in credits})
+            # Keyed by the stable demo title: database IDs change on every reseed.
+            by_item = {row['item_title']: row for row in existing}
+            by_item.update({row['item_title']: row for row in credits})
             target.write_text(json.dumps(list(by_item.values()), indent=2, ensure_ascii=False), encoding='utf-8')
         self.stdout.write(self.style.SUCCESS(f'{changed} demo photos updated. Run rebuild_matches next.'))

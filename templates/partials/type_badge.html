@@ -1,0 +1,1 @@
+{% load ui %}<span class="type type--{{ item.report_type }}">{% if item.is_lost %}{% icon 'lost' %}{% else %}{% icon 'found' %}{% endif %}{{ item.get_report_type_display }}</span>

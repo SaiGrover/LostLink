@@ -15,6 +15,10 @@ class Category(models.Model):
     icon = models.CharField(max_length=8, default='📦',
                             help_text='Emoji shown in the UI.')
     description = models.CharField(max_length=200, blank=True)
+    # Compatible categories receive partial category credit (e.g. a wallet
+    # reported under "Bags & Wallets" versus "Others"); identical categories
+    # score 1.0, related 0.5, unrelated 0.0 (synopsis Section 4.7).
+    related = models.ManyToManyField('self', blank=True, symmetrical=True)
 
     class Meta:
         verbose_name_plural = 'categories'
@@ -133,5 +137,49 @@ class Item(models.Model):
             self.Status.APPROVED, self.Status.CLAIMED)
 
     @property
+    def is_public(self):
+        """Visible in discovery and eligible for matching."""
+        return self.is_active and self.status in (self.Status.APPROVED, self.Status.CLAIMED)
+
+    @property
     def is_demo_photo(self):
         return bool(self.image and self.image.name.rsplit('/', 1)[-1].startswith('demo-real-'))
+
+    @property
+    def open_flag_count(self):
+        return self.flags.filter(resolved_at__isnull=True).count()
+
+
+class ReportFlag(models.Model):
+    """A user-raised concern about a report (suspicious, duplicate, wrong).
+
+    Flags never change a report by themselves; they queue it for moderator
+    attention. One open flag per user per report.
+    """
+
+    class Reason(models.TextChoices):
+        DUPLICATE = 'duplicate', 'Duplicate of another report'
+        SUSPICIOUS = 'suspicious', 'Suspicious or misleading'
+        INAPPROPRIATE = 'inappropriate', 'Inappropriate content or photo'
+        OTHER = 'other', 'Something else'
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='flags')
+    reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                 related_name='raised_flags')
+    reason = models.CharField(max_length=16, choices=Reason.choices, default=Reason.OTHER)
+    note = models.CharField(max_length=280, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                    on_delete=models.SET_NULL, related_name='resolved_flags')
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(fields=['item', 'reporter'],
+                                    condition=models.Q(resolved_at__isnull=True),
+                                    name='one_open_flag_per_user_per_item'),
+        ]
+
+    def __str__(self):
+        return f'Flag on {self.item_id} ({self.get_reason_display()})'

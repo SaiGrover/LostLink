@@ -32,6 +32,15 @@ class Notification(models.Model):
         return f'{self.get_kind_display()} → {self.user_id}: {self.title}'
 
     @property
+    def day(self):
+        from django.utils import timezone
+        return timezone.localtime(self.created_at).date()
+
+    @property
+    def icon_name(self):
+        return {'match': 'link', 'claim': 'key', 'report': 'file', 'system': 'bell'}.get(self.kind, 'bell')
+
+    @property
     def icon(self):
         return {'match': '🎯', 'claim': '🔑', 'report': '📋',
                 'system': '🔔'}.get(self.kind, '🔔')

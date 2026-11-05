@@ -1,42 +1,70 @@
 {% extends 'shell.html' %}
-{% block title %}Categories & locations{% endblock %}
-{% block page_title %}Administration · Categories &amp; Locations{% endblock %}
+{% load ui %}
+{% block title %}Categories & zones{% endblock %}
+{% block page_title %}Categories &amp; zones{% endblock %}
 
 {% block main %}
-<div class="section-head"><div><h1>Categories &amp; locations 🏷️</h1><div class="sub">The controlled vocabularies the matching engine uses for metadata.</div></div></div>
-
-<div class="grid g-2" style="align-items:start">
-  <div class="card">
-    <div class="card-h"><h2>📦 Categories</h2></div>
-    <div class="card-b">
-      <form method="post" class="row" style="gap:8px; margin-bottom:16px">
-        {% csrf_token %}
-        <input type="hidden" name="kind" value="category">
-        <input name="icon" class="field-input" style="max-width:64px" placeholder="📦" maxlength="4">
-        <input name="name" class="field-input" placeholder="New category name" required>
-        <button class="btn btn-primary btn-sm">Add</button>
-      </form>
-      <table class="table">
-        <thead><tr><th>Category</th><th>Reports</th></tr></thead>
-        <tbody>{% for c in categories %}<tr><td>{{ c.icon }} {{ c.name }}</td><td>{{ c.n }}</td></tr>{% endfor %}</tbody>
-      </table>
-    </div>
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">{% icon 'layers' %}Administration</span>
+    <h1>Categories &amp; campus zones</h1>
+    <p class="lede">Controlled vocabularies used when reporting and matching. Compatible categories and adjacent zones earn partial credit in the match score.</p>
   </div>
+</header>
 
-  <div class="card">
-    <div class="card-h"><h2>📍 Locations</h2></div>
-    <div class="card-b">
-      <form method="post" class="row" style="gap:8px; margin-bottom:16px">
-        {% csrf_token %}
-        <input type="hidden" name="kind" value="location">
-        <input name="name" class="field-input" placeholder="New location / zone name" required>
-        <button class="btn btn-accent btn-sm">Add</button>
-      </form>
-      <table class="table">
-        <thead><tr><th>Location</th><th>Reports</th></tr></thead>
-        <tbody>{% for l in locations %}<tr><td>📍 {{ l.name }}</td><td>{{ l.n }}</td></tr>{% endfor %}</tbody>
-      </table>
+<div class="analytics-grid">
+  <section class="panel panel--flush" aria-labelledby="cat-title">
+    <div class="panel__head"><h2 id="cat-title">Categories</h2><span class="actions"><span class="count">{{ categories|length }}</span></span></div>
+    <div class="list">
+      {% for c in categories %}
+      <div class="list-row">
+        <span class="thumb thumb--sm" aria-hidden="true">{{ c.icon }}</span>
+        <span><span class="list-row__title">{{ c.name }}</span><span class="list-row__meta">{{ c.n }} report{{ c.n|pluralize }}{% if c.related.all %} · compatible with {% for r in c.related.all %}{{ r.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</span></span>
+        <span class="list-row__aside">
+          <a class="btn btn-ghost btn-sm btn-icon" href="{% url 'dashboard:taxonomy_edit' 'category' c.pk %}" aria-label="Edit {{ c.name }}">{% icon 'edit' %}</a>
+          {% if not c.n %}<form method="post" action="{% url 'dashboard:taxonomy_delete' 'category' c.pk %}" data-confirm="Delete “{{ c.name }}”?" data-confirm-text="No reports use it. This cannot be undone." data-confirm-tone="danger" data-confirm-label="Delete">{% csrf_token %}<button class="btn btn-ghost btn-sm btn-icon" type="submit" aria-label="Delete {{ c.name }}">{% icon 'trash' %}</button></form>{% endif %}
+        </span>
+      </div>
+      {% empty %}{% include 'partials/empty.html' with compact=True icon='layers' title='No categories yet' %}{% endfor %}
     </div>
-  </div>
+    <form method="post" class="panel__foot stack stack-sm" novalidate>
+      {% csrf_token %}<input type="hidden" name="kind" value="category">
+      <span class="label">Add a category</span>
+      {% if category_form.errors %}<ul class="errorlist">{% for f in category_form %}{% for e in f.errors %}<li>{{ f.label }}: {{ e }}</li>{% endfor %}{% endfor %}</ul>{% endif %}
+      <div class="row">
+        <label class="sr-only" for="{{ category_form.icon.id_for_label }}">Icon</label><span style="width:72px;flex:none">{{ category_form.icon }}</span>
+        <label class="sr-only" for="{{ category_form.name.id_for_label }}">Name</label><span class="grow">{{ category_form.name }}</span>
+        <button class="btn btn-primary" type="submit">{% icon 'plus' %}Add</button>
+      </div>
+      <details class="disclosure"><summary>Description and compatible categories{% icon 'chevron-down' %}</summary>
+        <div class="stack stack-sm mt-2">{{ category_form.description }}<label class="label" for="{{ category_form.related.id_for_label }}">{{ category_form.related.label }}</label>{{ category_form.related }}<span class="hint">Hold Ctrl or ⌘ to select several.</span></div>
+      </details>
+    </form>
+  </section>
+
+  <section class="panel panel--flush" aria-labelledby="loc-title">
+    <div class="panel__head"><h2 id="loc-title">Campus zones</h2><span class="actions"><span class="count">{{ locations|length }}</span></span></div>
+    <div class="list">
+      {% for l in locations %}
+      <div class="list-row">
+        <span class="thumb thumb--sm">{% icon 'pin' %}</span>
+        <span><span class="list-row__title">{{ l.name }}</span><span class="list-row__meta">{{ l.n }} report{{ l.n|pluralize }}{% if l.adjacent.all %} · next to {% for a in l.adjacent.all %}{{ a.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</span></span>
+        <span class="list-row__aside">
+          <a class="btn btn-ghost btn-sm btn-icon" href="{% url 'dashboard:taxonomy_edit' 'location' l.pk %}" aria-label="Edit {{ l.name }}">{% icon 'edit' %}</a>
+          {% if not l.n %}<form method="post" action="{% url 'dashboard:taxonomy_delete' 'location' l.pk %}" data-confirm="Delete “{{ l.name }}”?" data-confirm-text="No reports use it. This cannot be undone." data-confirm-tone="danger" data-confirm-label="Delete">{% csrf_token %}<button class="btn btn-ghost btn-sm btn-icon" type="submit" aria-label="Delete {{ l.name }}">{% icon 'trash' %}</button></form>{% endif %}
+        </span>
+      </div>
+      {% empty %}{% include 'partials/empty.html' with compact=True icon='pin' title='No zones yet' %}{% endfor %}
+    </div>
+    <form method="post" class="panel__foot stack stack-sm" novalidate>
+      {% csrf_token %}<input type="hidden" name="kind" value="location">
+      <span class="label">Add a campus zone</span>
+      {% if location_form.errors %}<ul class="errorlist">{% for f in location_form %}{% for e in f.errors %}<li>{{ f.label }}: {{ e }}</li>{% endfor %}{% endfor %}</ul>{% endif %}
+      <div class="row"><label class="sr-only" for="{{ location_form.name.id_for_label }}">Name</label><span class="grow">{{ location_form.name }}</span><button class="btn btn-primary" type="submit">{% icon 'plus' %}Add</button></div>
+      <details class="disclosure"><summary>Adjacent zones{% icon 'chevron-down' %}</summary>
+        <div class="stack stack-sm mt-2"><label class="label" for="{{ location_form.adjacent.id_for_label }}">{{ location_form.adjacent.label }}</label>{{ location_form.adjacent }}<span class="hint">Adjacency is symmetric: both zones earn partial credit.</span></div>
+      </details>
+    </form>
+  </section>
 </div>
 {% endblock %}

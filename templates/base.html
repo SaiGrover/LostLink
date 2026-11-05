@@ -2,38 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <script>
-    // Apply saved theme before first paint to avoid a flash.
+    /* Apply the saved theme before first paint and flag JS support. */
     (function () {
-      try {
-        var t = localStorage.getItem('lostlink-theme');
-        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {}
+      var d = document.documentElement; d.classList.add('js');
+      try { var t = localStorage.getItem('lostlink-theme'); if (t === 'dark' || t === 'light') d.setAttribute('data-theme', t); } catch (e) {}
     })();
   </script>
   <title>{% block title %}LostLink{% endblock %} · LostLink</title>
-  <meta name="description" content="LostLink — AI-enabled campus lost-and-found matching and recovery.">
+  <meta name="description" content="{% block description %}LostLink is a campus lost-and-found platform that links lost and found reports with explainable AI matching and human-verified claims.{% endblock %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/refinement.css' %}">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='9' width='16' height='14' rx='7' fill='none' stroke='%23222' stroke-width='3'/><rect x='13' y='9' width='16' height='14' rx='7' fill='none' stroke='%23222' stroke-width='3'/></svg>">
+  {% block head %}{% endblock %}
 </head>
-<body>
-  {% if messages %}
-  <div class="toasts" id="toasts">
+<body class="{% block body_class %}{% endblock %}">
+  {% include 'partials/icons.svg' %}
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <div class="toasts" id="toasts" role="region" aria-label="Notifications" aria-live="polite">
     {% for message in messages %}
-      <div class="toast {{ message.tags }}">{{ message }}</div>
+      <div class="toast toast--{{ message.tags|default:'info' }}" role="{% if message.tags == 'danger' %}alert{% else %}status{% endif %}">
+        <svg class="icon" aria-hidden="true"><use href="#i-{% if message.tags == 'success' %}check{% elif message.tags == 'danger' or message.tags == 'warning' %}alert{% else %}info{% endif %}"></use></svg>
+        <div>{{ message }}</div>
+        <button type="button" class="toast__close" aria-label="Dismiss"><svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></button>
+      </div>
     {% endfor %}
   </div>
-  {% endif %}
 
   {% block body %}{% endblock %}
 
-  <script src="{% static 'js/main.js' %}"></script>
+  <dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <div class="dialog__body">
+      <span class="dialog__icon" data-confirm-icon><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg></span>
+      <h2 class="dialog__title" id="confirm-title" data-confirm-title>Are you sure?</h2>
+      <p class="dialog__text" id="confirm-text" data-confirm-text></p>
+      <div class="field" data-confirm-note hidden>
+        <label class="label" for="confirm-note">Note <span class="optional">shared with the reporter or claimant</span></label>
+        <textarea class="input" id="confirm-note" rows="3" maxlength="280"></textarea>
+      </div>
+    </div>
+    <div class="dialog__foot">
+      <button type="button" class="btn btn-secondary" data-confirm-cancel>Cancel</button>
+      <button type="button" class="btn btn-primary" data-confirm-ok>Confirm</button>
+    </div>
+  </dialog>
+
+  <script src="{% static 'js/app.js' %}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

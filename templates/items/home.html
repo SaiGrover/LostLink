@@ -1,8 +1,141 @@
 {% extends 'base.html' %}
-{% block title %}Find your way back{% endblock %}
+{% load ui %}
+{% block title %}Campus lost & found, linked{% endblock %}
+{% block body_class %}landing{% endblock %}
+
 {% block body %}
-<div class="welcome">
-<header class="welcome-nav"><a class="wordmark" href="/">LostLink / CAMPUS</a><nav><a href="{% url 'items:search' %}">Explore items</a><a class="btn btn-primary" href="{% url 'accounts:login' %}">Sign in →</a></nav></header>
-<main><section class="welcome-hero"><div><p class="eyebrow">A LITTLE LOST. NOT GONE FOREVER.</p><h1>Good things<br>find their<br><em>way back.</em></h1><p class="hero-description">Your keys. Your favourite notebook. The bag with everything in it. One place to reconnect with the things that matter.</p><div class="row wrap"><a class="btn btn-primary" href="{% url 'items:report' %}?type=lost">I lost something →</a><a class="btn btn-ghost" href="{% url 'items:report' %}?type=found">I found something</a></div><p class="hero-note">Made for campus. Verified by people.</p></div><div class="recovery-art"><div class="paper-tag"><span>LOST &amp; FOUND</span><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M35 45V32a25 25 0 0 1 50 0v13M24 43h72l8 63H16z" fill="none" stroke="currentColor" stroke-width="4"/><path d="M43 68q17 25 34 0" fill="none" stroke="currentColor" stroke-width="4"/></svg><h2>A familiar feeling.</h2><p>Back where it belongs.</p><div class="tag-line">REPORT · MATCH · REUNITE</div></div><div class="small-tag">A campus that looks out<br>for each other. ↗</div></div></section>
-<section class="how-section"><p class="eyebrow">FROM MISSING TO REUNITED</p><h2>A little help goes a long way.</h2><div class="grid g-3"><article><span>01 / REPORT</span><h3>Tell us what happened.</h3><p>Share a description, location and photo. A moderator reviews your report.</p></article><article><span>02 / DISCOVER</span><h3>Find a connection.</h3><p>Explore potential matches with a clear explanation of what looks similar.</p></article><article><span>03 / REUNITE</span><h3>Make it yours again.</h3><p>Answer private questions. After human approval, arrange a safe handover.</p></article></div></section></main><footer class="welcome-nav"><span class="wordmark">LostLink</span><a href="{% url 'accounts:register' %}">Join your campus →</a></footer></div>
+<header class="landing-nav">
+  <div class="landing-nav__inner">
+    {% include 'partials/brand.html' with href='/' %}
+    <nav class="landing-nav__links" aria-label="Sections">
+      <a href="#how">How it works</a><a href="#matching">Matching</a><a href="#trust">Verification</a><a href="{% url 'items:search' %}">Browse reports</a>
+    </nav>
+    <a class="btn btn-ghost btn-sm" href="{% url 'accounts:login' %}">Sign in</a>
+    <a class="btn btn-primary btn-sm hide-mobile" href="{% url 'accounts:register' %}">Create account</a>
+    <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
+  </div>
+</header>
+
+<main id="main-content" tabindex="-1">
+  <section class="wrap hero">
+    <div class="enter">
+      <span class="eyebrow">Campus lost &amp; found</span>
+      <h1 class="mt-4">Lost on one side.<br>Found on the other.<br><span class="quiet">Linked in between.</span></h1>
+      <p class="lede">LostLink replaces scattered group chats and notice boards with one searchable record. It compares every lost report with every found report, explains why two might be the same item, and leaves the final decision to people.</p>
+      <div class="hero__cta">
+        <a class="btn btn-primary btn-lg" href="{% url 'items:report' %}?type=lost">{% icon 'lost' %}I lost something</a>
+        <a class="btn btn-secondary btn-lg" href="{% url 'items:report' %}?type=found">{% icon 'found' %}I found something</a>
+      </div>
+      <p class="hero__fine">{% icon 'shield' %}Nothing changes hands until a moderator verifies the owner.</p>
+    </div>
+
+    <figure class="link-demo" aria-label="Illustration: how a lost report and a found report are compared" style="margin:0" data-reveal>
+      <div class="link-demo__cards">
+        <div class="demo-tag">
+          <span class="type type--lost">{% icon 'lost' %}Lost</span>
+          <b>Black leather wallet</b>
+          <span class="demo-tag__text">“Black leather wallet, silver logo on the front, library card inside.”</span>
+          <span class="demo-tag__meta"><span>Central Library</span><span>Tue 14:20</span></span>
+        </div>
+        <span class="link-demo__wire" aria-hidden="true"></span>
+        <div class="demo-tag">
+          <span class="type type--found">{% icon 'found' %}Found</span>
+          <b>Wallet near reading room</b>
+          <span class="demo-tag__text">“Black wallet made of leather with silver branding, left on a desk.”</span>
+          <span class="demo-tag__meta"><span>Academic Block A</span><span>Wed 09:05</span></span>
+        </div>
+      </div>
+      <div class="link-demo__result">
+        <div class="dial-wrap tier-high" style="--size:92px"><span class="dial" style="--p:88"></span><span class="dial__value">88<small>%</small></span></div>
+        <div class="link-demo__rows" aria-label="Example score breakdown">
+          <div><span>Description</span><div class="meter"><i style="--w:81%;--meter-color:var(--comp-text)"></i></div><span class="num">81</span></div>
+          <div><span>Photo</span><div class="meter"><i style="--w:92%;--meter-color:var(--comp-image)"></i></div><span class="num">92</span></div>
+          <div><span>Location</span><div class="meter"><i style="--w:50%;--meter-color:var(--comp-location)"></i></div><span class="num">50</span></div>
+          <div><span>Category</span><div class="meter"><i style="--w:100%;--meter-color:var(--comp-category)"></i></div><span class="num">100</span></div>
+          <div><span>Date</span><div class="meter"><i style="--w:93%;--meter-color:var(--comp-date)"></i></div><span class="num">93</span></div>
+        </div>
+      </div>
+      <figcaption class="link-demo__caption">{% icon 'info' %}Illustrative example. Real matches show the scores the engine actually computed.</figcaption>
+    </figure>
+  </section>
+
+  <section class="band" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="band__head">
+        <h2 id="how-title" data-reveal>From missing<br>to handed back.</h2>
+        <p class="lede" data-reveal style="--i:1">Four steps, each with a clear owner. The software does the searching; people make the decisions that matter.</p>
+      </div>
+      <ol class="steps">
+        <li data-reveal style="--i:0"><span class="step-n">01 · Report</span><h3>Describe it once</h3><p>Lost or found, with a campus zone, date, description and an optional photo. A moderator reviews it before it becomes searchable.</p></li>
+        <li data-reveal style="--i:1"><span class="step-n">02 · Match</span><h3>Compared automatically</h3><p>Every approved report is scored against opposite reports. Strong candidates notify both people.</p></li>
+        <li data-reveal style="--i:2"><span class="step-n">03 · Verify</span><h3>Prove it privately</h3><p>The claimant answers questions only the owner could know. A moderator reviews the answers and the evidence.</p></li>
+        <li data-reveal style="--i:3"><span class="step-n">04 · Return</span><h3>Hand it over</h3><p>Contact details are shared only after approval. The case closes when the physical handover is confirmed.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band band--subtle" id="matching" aria-labelledby="matching-title">
+    <div class="wrap">
+      <div class="band__head">
+        <h2 id="matching-title" data-reveal>One score.<br>Six reasons.</h2>
+        <p class="lede" data-reveal style="--i:1">Pretrained language and vision models read the descriptions and photos. Structured details add context. Each match shows exactly how much every signal contributed.</p>
+      </div>
+      <div class="formula" data-reveal>
+        <div class="formula__bar" role="img" aria-label="Score weights: text {{ weights.text|times100 }}%, photo {{ weights.image|times100 }}%, location {{ weights.location|times100 }}%, category {{ weights.category|times100 }}%, date {{ weights.date|times100 }}%, brand and colour {{ weights.attribute|times100 }}%">
+          <div class="comp-text" style="--w:{{ weights.text|times100 }}%;--i:0">{{ weights.text|times100 }}%</div>
+          <div class="comp-image" style="--w:{{ weights.image|times100 }}%;--i:1">{{ weights.image|times100 }}%</div>
+          <div class="comp-location" style="--w:{{ weights.location|times100 }}%;--i:2">{{ weights.location|times100 }}%</div>
+          <div class="comp-category" style="--w:{{ weights.category|times100 }}%;--i:3">{{ weights.category|times100 }}%</div>
+          <div class="comp-date" style="--w:{{ weights.date|times100 }}%;--i:4">{{ weights.date|times100 }}%</div>
+          <div class="comp-attribute" style="--w:{{ weights.attribute|times100 }}%;--i:5">{{ weights.attribute|times100 }}%</div>
+        </div>
+        <div class="formula__rows">
+          <div><b><i class="swatch comp-text"></i>Description</b><span>TF-IDF or Sentence-BERT similarity, so “black leather wallet” finds “wallet made of black leather”.</span></div>
+          <div><b><i class="swatch comp-image"></i>Photograph</b><span>Pretrained ResNet or CLIP image embeddings compared by cosine similarity.</span></div>
+          <div><b><i class="swatch comp-location"></i>Campus zone</b><span>Same zone counts fully; neighbouring zones count half.</span></div>
+          <div><b><i class="swatch comp-category"></i>Category</b><span>Same or compatible categories, such as a wallet filed under “Others”.</span></div>
+          <div><b><i class="swatch comp-date"></i>Date</b><span>Closer dates score higher. An item can't be found before it was lost.</span></div>
+          <div><b><i class="swatch comp-attribute"></i>Brand &amp; colour</b><span>A small tie-breaker that never overrides stronger evidence.</span></div>
+        </div>
+        <p class="hint">Missing evidence isn't counted against a match: if either report has no photo, the photo weight is shared across the other signals.</p>
+      </div>
+      <div class="tiers">
+        <div data-reveal style="--i:0">{% include 'partials/tier_badge.html' with tier='high' %}<b>Above 85%</b><p>Both people get a notification straight away.</p></div>
+        <div data-reveal style="--i:1">{% include 'partials/tier_badge.html' with tier='medium' %}<b>70–85%</b><p>Listed among potential matches, ranked below high-confidence ones.</p></div>
+        <div data-reveal style="--i:2">{% include 'partials/tier_badge.html' with tier='low' %}<b>Below 70%</b><p>No alert. Still discoverable through search.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="trust" aria-labelledby="trust-title">
+    <div class="wrap trust-grid">
+      <div class="stack" data-reveal>
+        <span class="eyebrow">{% icon 'shield' %}Human verification</span>
+        <h2 id="trust-title" class="h1">A similarity score is a lead, not a verdict.</h2>
+        <p class="lede">Valuable things attract false claims. LostLink keeps every consequential step with a person and leaves a record of who decided what.</p>
+      </div>
+      <div class="trust-points">
+        <div data-reveal style="--i:0">{% icon 'question' %}<div><b>Private verification questions</b><span>Asked by the finder or a moderator, answered by the claimant, visible only to the people involved.</span></div></div>
+        <div data-reveal style="--i:1">{% icon 'shield' %}<div><b>Moderator approval</b><span>Approval needs answered questions. A moderator can never approve their own claim, and the database allows only one verified owner per item.</span></div></div>
+        <div data-reveal style="--i:2">{% icon 'lock' %}<div><b>Contact details on approval</b><span>Phone numbers and emails stay hidden until a claim is approved.</span></div></div>
+        <div data-reveal style="--i:3">{% icon 'history' %}<div><b>Decision log</b><span>Approvals, rejections, disputes and handovers are recorded with the moderator and their note.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band" aria-labelledby="cta-title">
+    <div class="wrap stack" style="align-items:center">
+      <h2 id="cta-title" data-reveal>Somebody may already have it.</h2>
+      <p class="lede" style="text-align:center" data-reveal>Search reviewed reports without an account, or sign in to report and get matched.</p>
+      <div class="hero__cta">
+        <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Create an account{% icon 'arrow-right' %}</a>
+        <a class="btn btn-secondary btn-lg" href="{% url 'items:search' %}">{% icon 'search' %}Browse reports</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap"><span>LostLink · Full Stack Development Lab project, JIIT Noida</span><span>Pretrained models rank. People verify.</span></div>
+</footer>
 {% endblock %}

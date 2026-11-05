@@ -1,20 +1,16 @@
-{% load humanize %}
-<a href="{% url 'items:detail' item.pk %}" class="item-card">
-  <div class="thumb">
-    {% if item.image %}
-      <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
-    {% else %}
-      <div class="noimg">{{ item.category.icon }}</div>
-    {% endif %}
-    <span class="tag badge {{ item.report_type }}">{{ item.get_report_type_display }}</span>
+{% load ui %}<a href="{% url 'items:detail' item.pk %}" class="item-card">
+  <div class="item-card__media">
+    {% if item.image %}<img src="{{ item.image.url }}" alt="Photo of {{ item.title }}" loading="lazy" decoding="async">
+    {% else %}<div class="placeholder-media" aria-hidden="true">{{ item.category.icon }}</div>{% endif %}
+    {% include 'partials/type_badge.html' %}
+    {% if item.status != 'approved' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}{% endif %}
   </div>
-  <div class="ic-b">
-    <h4>{{ item.title }}</h4>
-    {% if item.is_demo_photo %}<span class="meta muted" style="font-size:.72rem">Representative demo photo</span>{% endif %}
-    <div class="meta">
-      <span>{{ item.category.icon }} {{ item.category.name }}</span>
-      <span>📍 {{ item.location.name }}</span>
-      <span>🗓️ {{ item.event_date|naturalday }}{% if item.event_time %}, {{ item.event_time|time:"g:i A" }}{% endif %}</span>
+  <div class="item-card__body">
+    <div class="item-card__top"><span class="ref">{{ item.pk|report_id }}</span>{% if item.is_demo_photo %}<span class="demo-note">Representative photo</span>{% endif %}</div>
+    <h3 class="item-card__title clamp-2">{{ item.title }}</h3>
+    <div class="item-card__meta">
+      <span>{% icon 'pin' %}<span class="truncate">{{ item.location.name }}</span></span>
+      <span>{% icon 'calendar' %}{{ item.event_date|date:"j M Y" }}{% if item.event_time %}, {{ item.event_time|time:"H:i" }}{% endif %}</span>
     </div>
   </div>
 </a>

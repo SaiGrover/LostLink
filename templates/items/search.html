@@ -1,44 +1,35 @@
 {% extends 'shell.html' %}
-{% load static %}
-{% block title %}Search items{% endblock %}
-{% block page_title %}Search items{% endblock %}
+{% load static ui %}
+{% block title %}Discover reports{% endblock %}
+{% block page_title %}Discover{% endblock %}
 
 {% block main %}
-<div class="section-head">
-  <div><h1>Search lost &amp; found</h1><div class="sub">{% if manual_mode %}Study baseline: apply filters to reload results.{% else %}Results update live as you type — no page reloads.{% endif %}</div></div>
-</div>
-
-<form id="search-form" method="get" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
-  {% if manual_mode %}<input type="hidden" name="study" value="manual">{% endif %}
-  <div class="row wrap" style="gap:12px">
-    <div style="flex:1; min-width:220px; position:relative">
-      <label for="query">Search reports</label><input id="query" type="search" name="q" value="{{ q }}" class="field-input" placeholder="Title, description, brand or colour" autocomplete="off">
-      <span id="search-spinner" style="visibility:hidden; position:absolute; right:14px; top:12px">⏳</span>
-    </div>
-    <select name="type" aria-label="Report type" class="field-input" style="max-width:160px">
-      <option value="">All types</option>
-      <option value="lost" {% if sel_type == 'lost' %}selected{% endif %}>🔎 Lost</option>
-      <option value="found" {% if sel_type == 'found' %}selected{% endif %}>🎁 Found</option>
-    </select>
-    <select name="category" aria-label="Category" class="field-input" style="max-width:190px">
-      <option value="">All categories</option>
-      {% for c in categories %}<option value="{{ c.slug }}" {% if sel_category == c.slug %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>{% endfor %}
-    </select>
-    <select name="location" aria-label="Campus location" class="field-input" style="max-width:190px">
-      <option value="">All locations</option>
-      {% for l in locations %}<option value="{{ l.slug }}" {% if sel_location == l.slug %}selected{% endif %}>📍 {{ l.name }}</option>{% endfor %}
-    </select>
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">Discover · all reviewed reports</span>
+    <h1>Find what's been lost or found</h1>
+    <p class="lede">{% if manual_mode %}Usability-study mode: results reload only when you apply filters.{% else %}Results update as you type. Only moderator-approved reports appear here.{% endif %}</p>
   </div>
-{% include 'items/partials/date_filters.html' %}
-</form>
+  <div class="page-head__actions">
+    <a class="btn btn-secondary" href="{% url 'items:lost' %}">{% icon 'lost' %}Lost only</a>
+    <a class="btn btn-secondary" href="{% url 'items:found' %}">{% icon 'found' %}Found only</a>
+  </div>
+</header>
 
-<div class="section-head">
-  <div class="sub"><b id="result-count">{{ total }}</b> item(s) found</div>
+<nav class="chip-scroll" aria-label="Browse by category" style="margin-bottom:var(--s-2)">
+  {% for c in categories %}<button type="button" class="chip" data-category-chip="{{ c.slug }}" aria-pressed="{% if sel_category == c.slug %}true{% else %}false{% endif %}"><span aria-hidden="true">{{ c.icon }}</span>{{ c.name }}</button>{% endfor %}
+</nav>
+
+{% include 'items/partials/filterbar.html' %}
+
+<div class="results-head">
+  <span><b id="result-count">{{ total }}</b> report{{ total|pluralize }}</span>
+  <span id="search-feedback" class="sr-only" role="status" aria-live="polite"></span>
+  <span class="subtle hide-mobile">Press <span class="kbd">/</span> to search from anywhere</span>
 </div>
-
 <div id="results">
   {% include 'items/partials/result_grid.html' %}
 </div>
 {% endblock %}
 
-{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}"></script>{% endif %}{% endblock %}
+{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}" defer></script>{% endif %}{% endblock %}

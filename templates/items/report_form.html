@@ -1,99 +1,155 @@
 {% extends 'shell.html' %}
-{% block title %}Report an item{% endblock %}
-{% block page_title %}Report an item{% endblock %}
+{% load ui %}
+{% block title %}{% if editing %}Edit report{% else %}New report{% endif %}{% endblock %}
+{% block page_title %}{% if editing %}Edit report{% else %}New report{% endif %}{% endblock %}
 
 {% block main %}
-<div class="trail"><a href="{% url 'items:dashboard' %}">Dashboard</a> / Report item</div>
-
-<div class="grid" style="grid-template-columns: 1.6fr .9fr; align-items:start">
-  <div class="card pad">
-    <h1>{% if editing %}Edit your report{% else %}Report a lost or found item{% endif %}</h1>
-    <p class="muted">The more detail you add, the better the AI can match it. A clear photo helps a lot.</p>
-
-    <form method="post" enctype="multipart/form-data" novalidate>
-      {% csrf_token %}
-
-      <div class="field">
-        <label>What are you reporting?</label>
-        <div class="segmented">
-          {% for radio in form.report_type %}
-            <label>{{ radio.tag }}<span>{{ radio.choice_label }} item</span></label>
-          {% endfor %}
-        </div>
-        {% for e in form.report_type.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="field">
-        <label for="{{ form.title.id_for_label }}">Item title</label>
-        {{ form.title }}
-        {% for e in form.title.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="grid g-2">
-        <div class="field">
-          <label for="{{ form.category.id_for_label }}">Category</label>
-          {{ form.category }}
-          {% for e in form.category.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-        </div>
-        <div class="field">
-          <label for="{{ form.location.id_for_label }}">Location / zone</label>
-          {{ form.location }}
-          {% for e in form.location.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-        </div>
-      </div>
-
-      <div class="grid g-2">
-        <div class="field">
-          <label for="{{ form.event_date.id_for_label }}">Date lost / found</label>
-          {{ form.event_date }}
-          {% for e in form.event_date.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-        </div>
-        <div class="field">
-          <label for="{{ form.event_time.id_for_label }}">Approximate time <span class="muted">(optional)</span></label>
-          {{ form.event_time }}
-          <div class="help">An estimate is enough, such as around 2:30 PM.</div>
-          {% for e in form.event_time.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="{{ form.description.id_for_label }}">Description</label>
-        {{ form.description }}
-        <div class="help">Colour, material, brand, distinctive marks — anything that identifies it.</div>
-        {% for e in form.description.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="grid g-2">
-        <div class="field">
-          <label for="{{ form.brand.id_for_label }}">Brand <span class="muted">(optional)</span></label>
-          {{ form.brand }}
-        </div>
-        <div class="field">
-          <label for="{{ form.color.id_for_label }}">Colour <span class="muted">(optional)</span></label>
-          {{ form.color }}
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="{{ form.image.id_for_label }}">Photo <span class="muted">(optional, recommended)</span></label>
-        {{ form.image }}
-        {% for e in form.image.errors %}<p class="errorlist">{{ e }}</p>{% endfor %}
-        <div class="help">A photo powers the image-similarity part of the match score.</div>
-      </div>
-
-      <button type="submit" class="btn btn-primary">{% if editing %}Save for review{% else %}Submit report →{% endif %}</button>
-    </form>
+<nav class="crumbs" aria-label="Breadcrumb">
+  {% if editing %}<a href="{% url 'items:mine' %}">My reports</a>{% icon 'chevron-right' %}<a href="{{ item.get_absolute_url }}">{{ item.pk|report_id }}</a>{% icon 'chevron-right' %}<span>Edit</span>
+  {% else %}<a href="{% url 'items:dashboard' %}">Overview</a>{% icon 'chevron-right' %}<span>New report</span>{% endif %}
+</nav>
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">{% if editing %}Editing {{ item.pk|report_id }}{% else %}Takes about a minute{% endif %}</span>
+    <h1>{% if editing %}Update your report{% else %}Report a lost or found item{% endif %}</h1>
+    <p class="lede">{% if editing %}Saving sends the report back to a moderator. Earlier match scores are cleared and recalculated after approval.{% else %}Specific details make matching work. A moderator reviews every report before it appears in search.{% endif %}</p>
   </div>
+</header>
 
-  <aside class="card pad">
-    <h3>🤖 How matching works</h3>
-    <p class="muted" style="font-size:.9rem">After moderator approval, LostLink compares your report with reviewed reports using text, photographs and campus details. Similarity helps discovery; it is not proof of ownership.</p>
-    <div style="margin-top:10px">
-      <p class="muted">Descriptions and photos provide the strongest signals. Location, category, date, brand and colour add context. Every suggested match includes its component scores.</p>
+{% if form.non_field_errors %}<div class="callout callout--danger" role="alert" style="margin-bottom:var(--s-5)">{% icon 'alert' %}<div>{{ form.non_field_errors|join:" " }}</div></div>{% endif %}
+{% if form.errors and not form.non_field_errors %}<div class="callout callout--danger" role="alert" style="margin-bottom:var(--s-5)">{% icon 'alert' %}<div><b>Please check the highlighted fields.</b> Nothing has been saved yet.</div></div>{% endif %}
+
+<form method="post" enctype="multipart/form-data" novalidate data-report-form>
+  {% csrf_token %}
+  <div class="split" style="--aside:300px">
+    <div class="form-steps">
+      <section class="form-step" aria-labelledby="step-what">
+        <div class="form-step__intro"><h2 id="step-what">What happened?</h2><p>Lost reports look for found ones, and found reports look for lost ones.</p></div>
+        <div class="stack">
+          <fieldset style="border:0;padding:0" class="field{% if form.report_type.errors %} has-error{% endif %}">
+            <legend class="label" style="margin-bottom:var(--s-2)">Report type</legend>
+            <div class="choice-tiles">
+              {% for radio in form.report_type %}
+              <label class="choice-tile">
+                {{ radio.tag }}
+                {% if radio.data.value == 'lost' %}{% icon 'lost' %}<b>I lost something</b><span>You're looking for an item that's yours.</span>
+                {% else %}{% icon 'found' %}<b>I found something</b><span>You have, or handed in, someone else's item.</span>{% endif %}
+              </label>
+              {% endfor %}
+            </div>
+            {{ form.report_type.errors }}
+          </fieldset>
+          <div class="field{% if form.title.errors %} has-error{% endif %}">
+            <label class="label" for="{{ form.title.id_for_label }}">Item name</label>
+            {{ form.title }}
+            <span class="hint">Short and plain, e.g. “Black leather wallet” or “Blue Milton water bottle”.</span>
+            {{ form.title.errors }}
+          </div>
+          <div class="field{% if form.category.errors %} has-error{% endif %}">
+            <label class="label" for="{{ form.category.id_for_label }}">Category</label>
+            {{ form.category }}
+            {{ form.category.errors }}
+          </div>
+        </div>
+      </section>
+
+      <section class="form-step" aria-labelledby="step-where">
+        <div class="form-step__intro"><h2 id="step-where">Where and when?</h2><p>Use the campus zone and the day it was lost or found. An approximate time is enough.</p></div>
+        <div class="stack">
+          <div class="field{% if form.location.errors %} has-error{% endif %}">
+            <label class="label" for="{{ form.location.id_for_label }}">Campus zone</label>
+            {{ form.location }}
+            <span class="hint">Neighbouring zones still count as partial evidence when matching.</span>
+            {{ form.location.errors }}
+          </div>
+          <div class="field-row">
+            <div class="field{% if form.event_date.errors %} has-error{% endif %}">
+              <label class="label" for="{{ form.event_date.id_for_label }}">Date</label>
+              {{ form.event_date }}
+              {{ form.event_date.errors }}
+            </div>
+            <div class="field{% if form.event_time.errors %} has-error{% endif %}">
+              <label class="label" for="{{ form.event_time.id_for_label }}">Approximate time <span class="optional">optional</span></label>
+              {{ form.event_time }}
+              {{ form.event_time.errors }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-step" aria-labelledby="step-describe">
+        <div class="form-step__intro"><h2 id="step-describe">Describe it</h2><p>Colour, material, marks, stickers, contents. Keep private details (like what's inside) for verification questions later.</p></div>
+        <div class="stack">
+          <div class="field{% if form.description.errors %} has-error{% endif %}">
+            <label class="label" for="{{ form.description.id_for_label }}">Description <span class="counter" id="desc-count" aria-live="off"></span></label>
+            {{ form.description }}
+            {{ form.description.errors }}
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="{{ form.brand.id_for_label }}">Brand <span class="optional">optional</span></label>
+              {{ form.brand }}{{ form.brand.errors }}
+            </div>
+            <div class="field">
+              <label class="label" for="{{ form.color.id_for_label }}">Main colour <span class="optional">optional</span></label>
+              {{ form.color }}{{ form.color.errors }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-step" aria-labelledby="step-photo">
+        <div class="form-step__intro"><h2 id="step-photo">Add a photo</h2><p>Optional, but a clear photo powers the visual part of the match score. Photos stay private until the report is approved.</p></div>
+        <div class="field{% if form.image.errors %} has-error{% endif %}">
+          <span class="label" id="photo-label">Photo <span class="optional">JPG, PNG, WEBP or GIF · up to 5 MB</span></span>
+          <div class="dropzone{% if editing and item.image %} has-file{% endif %}" data-dropzone data-max-mb="5">
+            <div class="dropzone__prompt">
+              {% icon 'camera' %}
+              <span><b>Choose a photo</b> or drag it here</span>
+            </div>
+            <div class="dropzone__preview" {% if not editing or not item.image %}hidden{% endif %}>
+              <img alt="Selected photo preview" {% if editing and item.image %}src="{{ item.image.url }}"{% endif %}>
+            </div>
+            <div class="cluster cluster-between w-full" style="position:relative;z-index:1">
+              <span class="hint" data-file-name>{% if editing and item.image %}Current photo kept unless you choose another{% endif %}</span>
+            </div>
+            <input type="file" name="{{ form.image.html_name }}" id="{{ form.image.id_for_label }}" accept="image/jpeg,image/png,image/webp,image/gif" aria-labelledby="photo-label">
+          </div>
+          <span class="error-text" data-file-error role="alert"></span>
+          {{ form.image.errors }}
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <span class="hint">{% icon 'lock' %} Your contact details are never shown on the report.</span>
+        <div class="cluster cluster-sm">
+          <a class="btn btn-ghost" href="{% if editing %}{{ item.get_absolute_url }}{% else %}{% url 'items:dashboard' %}{% endif %}">Cancel</a>
+          <button type="submit" class="btn btn-primary btn-lg">{% if editing %}Save and resubmit{% else %}Submit for review{% endif %}{% icon 'arrow-right' %}</button>
+        </div>
+      </div>
     </div>
-    <div class="divider"></div>
-    <p class="muted" style="font-size:.86rem; margin:0">A match never hands over your item automatically — a claim is always
-      verified by a moderator first. 🔐</p>
-  </aside>
-</div>
+
+    <aside class="sticky stack" aria-label="Report preview">
+      <span class="eyebrow">Preview</span>
+      <div class="preview-card" data-preview-card aria-hidden="true">
+        <div class="item-card">
+          <div class="item-card__media" data-p="media">{% if editing and item.image %}<img alt="" src="{{ item.image.url }}">{% else %}<div class="placeholder-media">·</div>{% endif %}</div>
+          <span class="type type--lost" data-p="type" style="position:absolute;top:var(--s-3);left:var(--s-3)"><svg class="icon" aria-hidden="true"><use href="#i-lost"></use></svg><span data-p="type-label">Lost</span></span>
+          <div class="item-card__body">
+            <span class="ref">{% if editing %}{{ item.pk|report_id }}{% else %}LL-····{% endif %}</span>
+            <h3 class="item-card__title" data-p="title">Untitled item</h3>
+            <div class="item-card__meta"><span>{% icon 'layers' %}<span data-p="category">Category</span></span><span>{% icon 'pin' %}<span data-p="location">Campus zone</span></span><span>{% icon 'calendar' %}<span data-p="date">Date</span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="callout">{% icon 'shield' %}<div><b>What happens next</b><br>A moderator reviews the report. Once approved, LostLink compares it with opposite reports and notifies both people about strong candidates. Nothing is handed over without verification.</div></div>
+    </aside>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () { var d = document.getElementById('{{ form.description.id_for_label }}'); if (d) { d.setAttribute('data-counter', 'desc-count'); d.setAttribute('maxlength', '2000'); } })();
+</script>
 {% endblock %}

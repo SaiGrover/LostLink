@@ -1,67 +1,80 @@
-# Implementation verification
+# Implementation status
 
-Completed in this implementation pass:
-- Report visibility and matching restricted to reviewed reports.
-- Validated claim-to-match ownership; removed AI approval code.
-- Private answers required for moderator approval; closed claims cannot be reopened by answering.
-- Atomic moderator decisions with database row locking (effective on PostgreSQL).
-- Match notifications to both parties and dashboard visibility filtering.
-- Date filtering with AJAX controls, feedback, reset and error handling.
-- Shared editorial theme, new landing page, auth restyling and mobile menu.
-- Removed unsupported landing-page accuracy, adoption and recovery statistics.
-- PostgreSQL connection configuration, environment example and Git exclusions.
-- Pretrained adapters: Sentence-BERT, CLIP, ResNet; explicit baseline modes remain defaults.
-- Text evaluation CLI with precision, recall, F1, ROC-AUC, P@3 and MRR.
-- Model rebuild CLI and evaluation protocol.
-- Approximate event time throughout reporting, detail views and CSV export.
-- Conservative noun lemmatization in the deployed text-cleaning pipeline.
-- Item thumbnail context in accessible, responsive in-app notifications.
-- Ongoing EDA for photo coverage, report-date gaps and description variation.
-- Research-readiness validation, discovery-study analysis and a production-confirmed-pair export path.
-- A daily host maintenance scheduler for score snapshots and retuning-data export.
-- Credited real-object photographs for 14 demo reports, labelled as representative
-  in cards and detail views. The two identity-card demos retain abstract images
-  to avoid presenting a real person's private card as campus evidence.
+Last verified: 5 November 2026, on Windows 11 with Python 3.13, Django 6.1,
+SQLite and PostgreSQL 17.11 (Docker).
 
-Verification: 35 regression tests passed on PostgreSQL 17.11; Django checks and migration checks
-passed. Browser checks exercised 87 route, viewport and role combinations at
-1440px, 768px and 390px with no horizontal overflow. Landing and report views
-were visually reviewed. Sentence-BERT, CLIP and ResNet inference produced
-384, 512 and 2048-dimensional vectors respectively.
+## Verification results
 
-Implemented since the initial pass: a Commons-sourced 180-pair constructed
-pilot with attribution manifest; four-configuration hybrid comparison and
-validation-only selection; verified ResNet and CLIP inference; active versioned
-TF-IDF + ResNet profile; operational feature rebuilding; score snapshots;
-moderator-approved claim and separate physical-handover confirmation; dispute
-review; protected pending media; report editing; pagination; duplicate flags;
-PostgreSQL CI and local Compose configuration. The browser sweep covers all
-three roles at desktop, tablet and phone widths.
+| Check | Result |
+| --- | --- |
+| `python manage.py check` | No issues |
+| `python manage.py makemigrations --check --dry-run` | No changes |
+| `python manage.py migrate` on an empty PostgreSQL 17.11 database | All migrations applied |
+| `python manage.py migrate` on the existing populated SQLite database | 4 new additive migrations applied, data kept |
+| `python manage.py test` on SQLite | 118 tests, all passing, 1 skipped (pretrained smoke test, opt-in) |
+| `python manage.py test` on PostgreSQL 17.11 | 118 tests, all passing, 1 skipped |
+| `scripts/browser_check.py` (4 roles, 24 routes, 390/768/1440 px, light and dark) | 318 page checks, no HTTP errors, overflow, JS errors or heading faults |
+| `scripts/e2e_workflow.py` | Full journey through the real UI passes (below) |
+| `seed_demo`, `upgrade_demo_photos`, `rebuild_matches` (ResNet-50) | 6 true lost/found pairs scored 72–87% (1 high, 5 medium) |
+| `monitor_matching` | Snapshot recorded |
 
-PostgreSQL local verification (4 November 2026): the standalone server runs on
-127.0.0.1:54329 using SCRAM authentication, with all migrations applied. All 109
-records copied from SQLite matched exactly when re-exported (including six users,
-16 reports, 15 stored matches and the existing claim). SQLite remains as a backup.
-Browser sign-in, dashboard rendering, live AJAX search and manual-search submission
-were verified against the PostgreSQL-backed app. The earlier 87-combination layout
-sweep remains the UI baseline. Setup and restart commands are in `docs/POSTGRESQL.md`.
+The end-to-end script signs in as two students and a moderator and, in a real
+browser: reports a found and a lost item with photos, approves both through
+the confirmation dialog, confirms the owner sees the scored match and a
+notification, starts a claim from the match, asks and answers a private
+question, checks contact details are hidden before approval and visible
+after, approves, confirms the handover, and checks the timeline and decision
+log. Analytics then showed the returned item.
 
-Research tooling now rejects missing holdout splits, missing or unreadable photos,
-duplicate pairs, inconsistent labels, and physical-object/image leakage across
-splits. Photo and description independence require explicit reviewer attestations.
-Retuning and profile activation require these checks. Completed-handover exports
-leave research review pending and do not assume independent photographs. The
-study analyser also rejects duplicate observations, blank identifiers and
-non-finite completion times.
+## Defects found and fixed
 
-Research limitation: source-identity labels are automatic and positive pairs
-reuse a transformed copy of one photo. Human review and an independently
-photographed/worded holdout set remain necessary before claiming real campus
-matching accuracy. The project now refuses to classify that fixture as
-research-ready and includes the collection, validation and analysis workflow.
-The new demo photos are presentation fixtures and do not change this limitation;
-they must not be counted as independent lost/found research pairs.
-Production hosting is optional in the synopsis and no deployment has been made.
+| Defect | Fix |
+| --- | --- |
+| 10 of the 35 original tests errored: templates required a `collectstatic` manifest even in tests. | Hashed manifest storage only when `DJANGO_DEBUG=false`. |
+| The active profile had replaced the synopsis weights and tiers (0.2/0.4 text/image, tiers 0.8/0.9) using a pilot that the project's own gate marks as not research-valid. | Restored the synopsis weights 0.30/0.30/0.15/0.10/0.10/0.05 and tiers (>85 high, 70–85 medium); pilot variant kept as a recorded experiment. |
+| Tier boundary used `>=` for high, contradicting “> 85%”. | Exact boundaries with tests at 0.70, 0.85 and just above. |
+| Missing brand/colour scored as 0 (negative evidence). | Dropped and renormalised like a missing photo; stored per match. |
+| Found-before-lost pairs were scored by absolute day gap. | Directional rule; impossible pairs never stored. |
+| Category comparison was exact only. | Administrator-defined compatible categories earn 0.5. |
+| TF-IDF was fitted per pair, so IDF weighting did nothing. | One fit over the whole candidate pool. |
+| Stale matches survived edits, rejections, withdrawals and drops below the minimum score. | Matches are cleared or deleted in each case. |
+| Rescores never re-notified a pair that rose from low to medium/high; re-runs could duplicate notifications. | Notify on first entry into a surfaced tier; identical unread notifications de-duplicated. |
+| Model or inference failure raised inside the request. | Logged; text and metadata matching continue; features retried later. |
+| Rival claims were rejected without notifying their claimants; moderators could decide their own claims; answers could be rewritten. | Rival claimants notified; self-decision forbidden; answers immutable. |
+| No database guarantee against two verified owners. | Partial unique constraint on approved/returned claims per item. |
+| No record of moderation decisions; no user flags; no dispute notification. | `ModerationDecision` audit log, `ReportFlag`, notifications on disputes. |
+| CSV exposed usernames; PDF was all-time only. | CSV uses reporter ID and date filters; PDF by month or range. |
+| `review_report` accepted an arbitrary `next` URL. | Restricted to same-host URLs. |
+| Demo credentials always shown on the sign-in page. | Shown only while `DEBUG` is on. |
+| Demo photo credits keyed by database ID, duplicated on every reseed. | Keyed by the stable demo title. |
 
-Public repository: https://github.com/SaiGrover/LostLink
-GitHub Actions runs the Django suite against PostgreSQL on pushes and pull requests.
+## Requirement coverage
+
+| Synopsis requirement | Status |
+| --- | --- |
+| Roles with server-side checks (Student, Moderator, Administrator) | Implemented and tested |
+| Report lifecycle: create, view, edit, withdraw, flag, moderate, return | Implemented and tested |
+| AJAX search: keyword, type, category, zone, status, dates, sort, pagination | Implemented and tested |
+| Hybrid matching with synopsis weights, explanations, versioning | Implemented and tested |
+| TF-IDF vs Sentence-BERT, ResNet vs CLIP comparison | Implemented (`evaluate_hybrid`); run on the constructed pilot only |
+| Claim workflow with private questions, moderator approval, handover | Implemented and tested end to end |
+| In-app notifications | Implemented and tested |
+| Analytics, CSV and PDF | Implemented and tested |
+| SQLite and PostgreSQL | Both verified |
+| Responsive, accessible interface with a token-based design system | Implemented; see `docs/FRONTEND.md` |
+
+## Remaining limitations
+
+- **Accuracy is unmeasured on real data.** The 180-pair pilot is constructed
+  (transformed copies of the same photo; titles as descriptions) and fails the
+  research-readiness gate by design. Its results are engineering checks only.
+  A manually reviewed, independently photographed set of 150–200 pairs is
+  still needed, as is the AJAX-versus-manual participant study (DQ4).
+- Pretrained inference was exercised for ResNet-50 on the demo data. CLIP and
+  Sentence-BERT run through the same code but were not re-run this session;
+  `LOSTLINK_TEST_PRETRAINED=1` enables their smoke test.
+- Matching runs synchronously on moderator approval; at large scale this
+  would need a background queue.
+- One photo per report.
+- The visual palette is provisional by request; see `docs/FRONTEND.md`.
+- No hosted deployment has been made.

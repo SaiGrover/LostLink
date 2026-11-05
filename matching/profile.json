@@ -1,9 +1,11 @@
 {
-  "version": "pilot-v4",
+  "version": "synopsis-v1",
   "text": "tfidf",
   "image": "resnet",
-  "weights": {"text": 0.2, "image": 0.4, "location": 0.15, "category": 0.1, "date": 0.1, "attribute": 0.05},
-  "medium": 0.8,
-  "high": 0.9,
-  "selection": "Curated 180-pair engineering pilot with noun lemmatization: validation F1/precision/MRR selection, TF-IDF + ResNet. Selected notification threshold 0.8. Constructed source-identity pilot only, not real-world calibrated probabilities."
+  "weights": {"text": 0.3, "image": 0.3, "location": 0.15, "category": 0.1, "date": 0.1, "attribute": 0.05},
+  "medium": 0.7,
+  "high": 0.85,
+  "selection": "Synopsis Section 4.9 initial weights and Section 4.9 confidence tiers (>85% high, 70-85% medium, <70% low). TF-IDF + ResNet-50 were selected from the four-way pilot comparison in evaluation/results.json, where all combinations tied on validation F1 and deterministic order picked TF-IDF + ResNet. The pilot-tuned weight variant (text 0.2 / image 0.4, thresholds 0.8 / 0.9) is recorded there as an experiment only: the constructed pilot fails the research-readiness gate, so it must not override the synopsis defaults in production.",
+  "missing_data_policy": "Components with no evidence on one or both reports (no photograph; no brand and no colour) are dropped and the remaining weights are renormalised. Dropped components are stored per match.",
+  "temporal_rule": "A found report dated more than 1 day before the lost report is impossible and is never stored as a match."
 }

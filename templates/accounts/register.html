@@ -1,151 +1,65 @@
-{% load static %}<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Create your account · LostLink</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
-        crossorigin="anonymous" referrerpolicy="no-referrer">
-  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/auth-refinement.css' %}">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
-</head>
-<body class="auth-body">
-<div class="auth-wrap">
+{% extends 'accounts/auth_base.html' %}
+{% load ui %}
+{% block title %}Create account{% endblock %}
+{% block aside_eyebrow %}Join your campus{% endblock %}
+{% block aside_title %}One place for everything lost and found.{% endblock %}
 
-  <!-- ============ LEFT ============ -->
-  <aside class="auth-left">
-    <a class="brand" href="{% url 'items:home' %}" style="text-decoration:none">
-      <span class="logo"><i class="fa-solid fa-link"></i></span>
-      <span class="name">Lost<span>Link</span></span>
-    </a>
+{% block form %}
+<span class="eyebrow">Create account</span>
+<h1 class="mt-2">Join LostLink</h1>
+<p class="muted mt-2">Already have an account? <a class="link" href="{% url 'accounts:login' %}">Sign in</a></p>
 
-    <div class="illust" aria-hidden="true">
-      <div class="glow"></div>
-      <div class="orbit"></div>
-      <div class="orb search"><i class="fa-solid fa-magnifying-glass"></i></div>
-      <div class="orb gift"><i class="fa-solid fa-gift"></i></div>
-      <div class="orb shield"><i class="fa-solid fa-shield-halved"></i></div>
-      <div class="tile"><i class="fa-solid fa-link"></i></div>
+<form method="post" novalidate class="stack" data-validate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="callout callout--danger" role="alert">{% icon 'alert' %}<div>{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div></div>{% endif %}
+  <div class="field-row">
+    <div class="field{% if form.first_name.errors %} has-error{% endif %}">
+      <label class="label" for="id_first_name">First name</label>
+      <input class="input" id="id_first_name" name="first_name" value="{{ form.first_name.value|default:'' }}" autocomplete="given-name" required maxlength="60">
+      {{ form.first_name.errors }}
     </div>
-
-    <h1 class="left-title">Join <span>LostLink</span>.</h1>
-    <p class="left-sub">Report what you’ve lost or found and let the AI do the
-      searching. It takes <span>under a minute</span>.</p>
-
-    <div class="features">
-      <div class="feature">
-        <div class="f-ico violet"><i class="fa-solid fa-camera"></i></div>
-        <div><h3>Report lost &amp; found items with a photo</h3>
-          <p>Add photos and details to help others identify items.</p></div>
-      </div>
-      <div class="feature">
-        <div class="f-ico teal"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <div><h3>Get matched automatically across campus</h3>
-          <p>Our AI finds the best matches in seconds.</p></div>
-      </div>
-      <div class="feature">
-        <div class="f-ico orange"><i class="fa-solid fa-shield-halved"></i></div>
-        <div><h3>Recover items through verified claims</h3>
-          <p>Secure claims process ensures items reach you safely.</p></div>
-      </div>
+    <div class="field">
+      <label class="label" for="id_last_name">Last name <span class="optional">optional</span></label>
+      <input class="input" id="id_last_name" name="last_name" value="{{ form.last_name.value|default:'' }}" autocomplete="family-name" maxlength="60">
     </div>
-
-    <div class="left-foot">
-      <i class="fa-solid fa-shield-halved"></i> Trusted by students. Powered by <span>AI</span>.
+  </div>
+  <div class="field{% if form.username.errors %} has-error{% endif %}">
+    <label class="label" for="id_username">Username</label>
+    <input class="input" id="id_username" name="username" value="{{ form.username.value|default:'' }}" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="150" pattern="[\w.@+\-]+">
+    <span class="hint">Letters, digits and @ . + - _ only.</span>
+    {{ form.username.errors }}
+  </div>
+  <div class="field{% if form.email.errors %} has-error{% endif %}">
+    <label class="label" for="id_email">College email</label>
+    <input class="input" id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="email" required>
+    <span class="error-text" id="id_email-live-error" aria-live="polite"></span>
+    {{ form.email.errors }}
+  </div>
+  <div class="field">
+    <label class="label" for="id_enrolment_no">Enrolment number <span class="optional">optional</span></label>
+    <input class="input mono" id="id_enrolment_no" name="enrolment_no" value="{{ form.enrolment_no.value|default:'' }}" maxlength="30">
+  </div>
+  <div class="field{% if form.password1.errors %} has-error{% endif %}">
+    <label class="label" for="id_password1">Password</label>
+    <div class="input-group">
+      <input class="input" type="password" id="id_password1" name="password1" autocomplete="new-password" required data-password-strength="pw-checks" data-confirm-with="id_password2" aria-describedby="pw-checks">
+      <button type="button" class="btn btn-ghost btn-icon btn-sm input-action" data-reveal-password aria-controls="id_password1" aria-pressed="false" aria-label="Show password"><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg></button>
     </div>
-  </aside>
-
-  <!-- ============ RIGHT ============ -->
-  <main class="auth-right">
-    <form class="auth-form" method="post" novalidate>
-      {% csrf_token %}
-      <h2>Create your account</h2>
-      <p class="sub">Already a member? <a href="{% url 'accounts:login' %}">Sign in</a>.</p>
-
-      {% if form.non_field_errors %}
-        <div class="non-field"><ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
-      {% endif %}
-
-      <div class="two">
-        <div class="fld">
-          <label for="{{ form.first_name.id_for_label }}">First name</label>
-          <div class="input-wrap"><i class="ic fa-solid fa-user"></i>{{ form.first_name }}</div>
-          {% for e in form.first_name.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-        </div>
-        <div class="fld">
-          <label for="{{ form.last_name.id_for_label }}">Last name</label>
-          <div class="input-wrap"><i class="ic fa-solid fa-user"></i>{{ form.last_name }}</div>
-          {% for e in form.last_name.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-        </div>
-      </div>
-
-      <div class="fld">
-        <label for="{{ form.username.id_for_label }}">Username</label>
-        <div class="input-wrap"><i class="ic fa-solid fa-at"></i>{{ form.username }}</div>
-        <div class="help">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
-        {% for e in form.username.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="fld">
-        <label for="{{ form.email.id_for_label }}">Email</label>
-        <div class="input-wrap"><i class="ic fa-solid fa-envelope"></i>{{ form.email }}</div>
-        {% for e in form.email.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="fld">
-        <label for="{{ form.enrolment_no.id_for_label }}">Enrolment number</label>
-        <div class="input-wrap"><i class="ic fa-solid fa-id-badge"></i>{{ form.enrolment_no }}</div>
-        {% for e in form.enrolment_no.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="fld">
-        <label for="{{ form.password1.id_for_label }}">Password</label>
-        <div class="input-wrap">
-          <i class="ic fa-solid fa-lock"></i>{{ form.password1 }}
-          <button type="button" class="eye" data-eye="{{ form.password1.id_for_label }}" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
-        </div>
-        <div class="reqs">
-          <div class="req"><i class="fa-solid fa-circle-check"></i> At least 6 characters</div>
-          <div class="req"><i class="fa-solid fa-circle-check"></i> Not a commonly used password</div>
-          <div class="req"><i class="fa-solid fa-circle-check"></i> Not too similar to your info</div>
-          <div class="req"><i class="fa-solid fa-circle-check"></i> Can’t be entirely numeric</div>
-        </div>
-        {% for e in form.password1.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="fld">
-        <label for="{{ form.password2.id_for_label }}">Password confirmation</label>
-        <div class="input-wrap">
-          <i class="ic fa-solid fa-lock"></i>{{ form.password2 }}
-          <button type="button" class="eye" data-eye="{{ form.password2.id_for_label }}" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
-        </div>
-        <div class="help">Enter the same password as before, for verification.</div>
-        {% for e in form.password2.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <button type="submit" class="submit">Create account <i class="fa-solid fa-arrow-right"></i></button>
-
-      <p class="terms">Report details are used for campus lost-and-found matching. Claim contact details are shared with the other party only after moderator approval.</p>
-    </form>
-  </main>
-</div>
-
-<script>
-  document.querySelectorAll('.eye').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var input = document.getElementById(btn.dataset.eye);
-      if (!input) return;
-      var show = input.type === 'password';
-      input.type = show ? 'text' : 'password';
-      btn.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-    });
-  });
-</script>
-</body>
-</html>
+    <span class="caps-warning" id="id_password1-caps" hidden>{% icon 'alert' %}Caps Lock is on</span>
+    <ul class="pw-checks" id="pw-checks" style="padding:0" aria-label="Password guidance">
+      <li data-rule="length">8 or more characters</li>
+      <li data-rule="mix">Letters and other characters</li>
+      <li data-rule="numeric">Not only numbers</li>
+      <li data-rule="match">Both passwords match</li>
+    </ul>
+    {{ form.password1.errors }}
+  </div>
+  <div class="field{% if form.password2.errors %} has-error{% endif %}">
+    <label class="label" for="id_password2">Confirm password</label>
+    <input class="input" type="password" id="id_password2" name="password2" autocomplete="new-password" required>
+    {{ form.password2.errors }}
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Create account{% icon 'arrow-right' %}</button>
+  <p class="hint">Report details are used only for campus lost-and-found matching. Contact details are shared with the other person in a claim only after moderator approval.</p>
+</form>
+{% endblock %}

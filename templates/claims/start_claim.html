@@ -1,56 +1,66 @@
 {% extends 'shell.html' %}
+{% load ui %}
 {% block title %}{% if is_found %}Claim item{% else %}Offer to return{% endif %}{% endblock %}
-{% block page_title %}{% if is_found %}Claim an item{% else %}Return an item{% endif %}{% endblock %}
+{% block page_title %}{% if is_found %}Start a claim{% else %}Offer to return{% endif %}{% endblock %}
 
 {% block main %}
-<div class="trail"><a href="{% url 'items:detail' item.pk %}">{{ item.title|truncatechars:34 }}</a> / {% if is_found %}Claim{% else %}Return{% endif %}</div>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="{{ item.get_absolute_url }}">{{ item.pk|report_id }} · {{ item.title|truncatechars:32 }}</a>{% icon 'chevron-right' %}<span>{% if is_found %}Claim{% else %}Return offer{% endif %}</span></nav>
 
-<div class="grid" style="grid-template-columns: 1.4fr 1fr; align-items:start">
-  <div class="card pad">
-    {% if is_found %}
-      <h1>Claim “{{ item.title }}”</h1>
-      <p class="muted">This item was <b>found</b> and handed in. Tell us why it’s yours — a
-        moderator (or the finder) may ask private verification questions before approving.</p>
-    {% else %}
-      <h1>Return “{{ item.title }}”</h1>
-      <p class="muted">Someone reported this <b>lost</b>. Let them know you found it and how
-        you can hand it back — the owner will confirm it’s theirs.</p>
+<div class="split" style="--aside:360px">
+  <div>
+    <header class="page-head" style="margin-bottom:var(--s-6)">
+      <div class="page-head__text">
+        <span class="eyebrow">{% if is_found %}{% icon 'key' %}Claiming a found item{% else %}{% icon 'swap' %}Responding to a lost report{% endif %}</span>
+        <h1>{% if is_found %}Tell us why “{{ item.title }}” is yours{% else %}Let the owner know you found it{% endif %}</h1>
+        <p class="lede">{% if is_found %}Describe something about the item that isn't in the public report. The finder or a moderator will follow up with private questions.{% else %}Say where and when you found it and how it can be identified. The owner will be asked to prove it's theirs before anything changes hands.{% endif %}</p>
+      </div>
+    </header>
+
+    {% if match %}
+    <div class="callout callout--info" style="margin-bottom:var(--s-5)">{% icon 'link' %}<div>Linked to a <b>{{ match.percent }}% {{ match.get_tier_display|lower }}</b> match with your report. The score is context for the moderator, not proof.</div></div>
     {% endif %}
 
-    <form method="post" novalidate>
+    <form method="post" novalidate class="panel panel__body stack" data-validate>
       {% csrf_token %}
-      <div class="field">
-        <label for="{{ form.statement.id_for_label }}">{{ form.statement.label }}</label>
+      <div class="field{% if form.statement.errors %} has-error{% endif %}">
+        <label class="label" for="{{ form.statement.id_for_label }}">{{ form.statement.label }} <span class="counter" id="statement-count"></span></label>
         {{ form.statement }}
-        <div class="help">{{ form.statement.help_text }}</div>
-        {% for e in form.statement.errors %}<ul class="errorlist"><li>{{ e }}</li></ul>{% endfor %}
+        <span class="hint">{{ form.statement.help_text }}</span>
+        {{ form.statement.errors }}
       </div>
-      <div class="grid g-2">
+      <div class="field-row">
         <div class="field">
-          <label for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }}</label>
-          {{ form.contact_phone }}
+          <label class="label" for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }} <span class="optional">optional</span></label>
+          {{ form.contact_phone }}{{ form.contact_phone.errors }}
         </div>
-        <div class="field">
-          <label for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }}</label>
-          {{ form.contact_email }}
+        <div class="field{% if form.contact_email.errors %} has-error{% endif %}">
+          <label class="label" for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }} <span class="optional">optional</span></label>
+          {{ form.contact_email }}<span class="error-text" id="{{ form.contact_email.id_for_label }}-live-error" aria-live="polite"></span>{{ form.contact_email.errors }}
         </div>
       </div>
-      <div class="help" style="margin:-6px 0 16px">🔒 Your contact details are shared with the other party <b>only after the {% if is_found %}claim{% else %}return{% endif %} is approved</b>.</div>
-      <button type="submit" class="btn btn-primary">{% if is_found %}Submit claim{% else %}Offer to return{% endif %} →</button>
-      <a href="{% url 'items:detail' item.pk %}" class="btn btn-ghost">Cancel</a>
+      <div class="callout">{% icon 'lock' %}<div>Contact details stay hidden from the other person until a moderator approves this {% if is_found %}claim{% else %}offer{% endif %}.</div></div>
+      <div class="cluster" style="justify-content:flex-end">
+        <a href="{{ item.get_absolute_url }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">{% if is_found %}Submit claim{% else %}Send return offer{% endif %}{% icon 'arrow-right' %}</button>
+      </div>
     </form>
   </div>
 
-  <aside class="card pad">
-    <h3>🔐 How verification works</h3>
-    <div class="stack" style="gap:14px; margin-top:12px">
-      <div class="row" style="gap:10px"><span class="badge info">1</span><span>You submit this {% if is_found %}claim{% else %}offer{% endif %} with your details.</span></div>
-      <div class="row" style="gap:10px"><span class="badge warning">2</span><span>Private verification questions are exchanged.</span></div>
-      <div class="row" style="gap:10px"><span class="badge accent">3</span><span>A moderator verifies your answers before approving the claim.</span></div>
-      <div class="row" style="gap:10px"><span class="badge success">4</span><span>Contacts are shared so you can arrange the handover.</span></div>
-    </div>
-    <div class="divider"></div>
-    <p class="muted" style="font-size:.85rem; margin:0">An item is never handed over on a guess — every recovery is verified.</p>
+  <aside class="stack sticky" aria-label="Item and process">
+    <a class="item-card" href="{{ item.get_absolute_url }}" style="max-width:none">
+      <div class="item-card__media">{% if item.image %}<img src="{{ item.image.url }}" alt="Photo of {{ item.title }}">{% else %}<div class="placeholder-media" aria-hidden="true">{{ item.category.icon }}</div>{% endif %}{% include 'partials/type_badge.html' %}</div>
+      <div class="item-card__body"><span class="ref">{{ item.pk|report_id }}</span><h2 class="item-card__title">{{ item.title }}</h2><div class="item-card__meta"><span>{% icon 'pin' %}{{ item.location.name }}</span><span>{% icon 'calendar' %}{{ item.event_date|date:"j M Y" }}</span></div></div>
+    </a>
+    <section class="panel panel__body">
+      <h2 class="h4" style="margin-bottom:var(--s-4)">How verification works</h2>
+      <ol class="timeline">
+        <li class="timeline__step is-current"><span class="timeline__marker"></span><div><div class="timeline__title">You submit</div><div class="timeline__detail">Statement and contact details are recorded.</div></div></li>
+        <li class="timeline__step"><span class="timeline__marker">2</span><div><div class="timeline__title">Private questions</div><div class="timeline__detail">{% if is_found %}The finder or a moderator asks what only the owner would know.{% else %}You or a moderator can ask the owner to prove ownership.{% endif %}</div></div></li>
+        <li class="timeline__step"><span class="timeline__marker">3</span><div><div class="timeline__title">Moderator decision</div><div class="timeline__detail">A person approves or rejects. AI scores are only context.</div></div></li>
+        <li class="timeline__step"><span class="timeline__marker">4</span><div><div class="timeline__title">Handover</div><div class="timeline__detail">Contacts are shared, then a moderator confirms the return.</div></div></li>
+      </ol>
+    </section>
   </aside>
 </div>
 {% endblock %}
+{% block scripts %}<script>(function(){var s=document.getElementById('{{ form.statement.id_for_label }}');if(s){s.setAttribute('data-counter','statement-count');s.setAttribute('maxlength','1500');s.setAttribute('required','');}})();</script>{% endblock %}

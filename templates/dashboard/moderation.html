@@ -1,65 +1,134 @@
 {% extends 'shell.html' %}
-{% load humanize %}
+{% load humanize ui %}
 {% block title %}Review queue{% endblock %}
-{% block page_title %}Moderation · Review queue{% endblock %}
+{% block page_title %}Moderation{% endblock %}
 
 {% block main %}
-<div class="section-head"><div><h1>Review queue 🛡️</h1><div class="sub">Approve reports and verify claims before items change hands.</div></div></div>
-
-<div class="grid g-2" style="margin-bottom:22px">
-  <div class="kpi"><div class="k-ico tone-gold">📋</div><div class="k-val">{{ pending_count }}</div><div class="k-lab">Reports awaiting approval</div></div>
-  <div class="kpi"><div class="k-ico tone-accent">🔑</div><div class="k-val">{{ claim_count }}</div><div class="k-lab">Open claims to review</div></div>
-</div>
-
-<div class="card" style="margin-bottom:22px">
-  <div class="card-h"><h2>📋 Reports awaiting approval</h2></div>
-  <div class="card-b">
-    {% if pending_items %}
-      <table class="table">
-        <thead><tr><th>Item</th><th>Type</th><th>Category</th><th>Reporter</th><th>When</th><th></th></tr></thead>
-        <tbody>
-        {% for item in pending_items %}
-          <tr>
-            <td><a href="{% url 'items:detail' item.pk %}"><b>{{ item.title }}</b></a><br><small class="muted">📍 {{ item.location.name }}</small></td>
-            <td><span class="badge {{ item.report_type }}">{{ item.get_report_type_display }}</span></td>
-            <td>{{ item.category.name }}{% if item.duplicate_of %}<br><a href="{{ item.duplicate_of.get_absolute_url }}" class="badge warning">Possible duplicate — review</a>{% endif %}</td>
-            <td>{{ item.reporter.display_name }}</td>
-            <td>{{ item.created_at|naturaltime }}</td>
-            <td style="text-align:right; white-space:nowrap">
-              <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" style="display:inline">{% csrf_token %}<button class="btn btn-accent btn-sm">✓</button></form>
-              <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" style="display:inline">{% csrf_token %}<button class="btn btn-ghost btn-sm">✕</button></form>
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="empty"><span class="em">✅</span>No reports waiting — all caught up!</div>
-    {% endif %}
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">{% icon 'shield' %}Moderator workspace</span>
+    <h1>Review queue</h1>
+    <p class="lede">Approve reports before they become searchable, verify claims before contact details are shared, and record every handover.</p>
   </div>
+  <div class="page-head__actions"><a class="btn btn-secondary" href="{% url 'dashboard:decisions' %}">{% icon 'history' %}Decision log</a></div>
+</header>
+
+<div class="stats" style="margin-bottom:var(--s-6)">
+  <a class="stat" href="#q-reports"><span class="stat__label">Reports to review</span><span class="stat__value">{{ pending_count }}</span><span class="stat__meta">{% if duplicate_count %}{{ duplicate_count }} possible duplicate{{ duplicate_count|pluralize }}{% else %}Oldest first{% endif %}</span></a>
+  <a class="stat" href="#q-claims"><span class="stat__label">Claims to verify</span><span class="stat__value">{{ claim_count }}</span><span class="stat__meta">Awaiting questions or decision</span></a>
+  <a class="stat" href="#q-disputes"><span class="stat__label">Disputes</span><span class="stat__value">{{ dispute_count }}</span><span class="stat__meta">Need a closer look</span></a>
+  <a class="stat" href="#q-handovers"><span class="stat__label">Handovers</span><span class="stat__value">{{ handover_count }}</span><span class="stat__meta">Approved, not yet returned</span></a>
+  <a class="stat" href="#q-flags"><span class="stat__label">Flagged reports</span><span class="stat__value">{{ flag_count }}</span><span class="stat__meta">Raised by users</span></a>
 </div>
 
-<div class="card">
-  <div class="card-h"><h2>🔑 Open claims</h2></div>
-  <div class="card-b">
-    {% if open_claims %}
-      <table class="table">
-        <thead><tr><th>Item</th><th>Claimant</th><th>Status</th><th>When</th><th></th></tr></thead>
-        <tbody>
-        {% for c in open_claims %}
-          <tr>
-            <td><b>{{ c.item.title }}</b></td>
-            <td>{{ c.claimant.display_name }}</td>
-            <td><span class="badge {{ c.status_tone }}">{{ c.get_status_display }}</span></td>
-            <td>{{ c.created_at|naturaltime }}</td>
-            <td style="text-align:right"><a href="{% url 'claims:detail' c.pk %}" class="btn btn-primary btn-sm">Review →</a></td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <div class="empty"><span class="em">🎉</span>No open claims right now.</div>
-    {% endif %}
+<div data-tabs>
+  <div class="tabs" role="tablist" aria-label="Queues" style="margin-bottom:var(--s-5)">
+    <a class="tab" role="tab" href="#q-reports" id="t-reports" aria-controls="q-reports">Reports <span class="count">{{ pending_count }}</span></a>
+    <a class="tab" role="tab" href="#q-claims" id="t-claims" aria-controls="q-claims">Claims <span class="count">{{ claim_count }}</span></a>
+    <a class="tab" role="tab" href="#q-disputes" id="t-disputes" aria-controls="q-disputes">Disputes <span class="count{% if dispute_count %} count--strong{% endif %}">{{ dispute_count }}</span></a>
+    <a class="tab" role="tab" href="#q-handovers" id="t-handovers" aria-controls="q-handovers">Handovers <span class="count">{{ handover_count }}</span></a>
+    <a class="tab" role="tab" href="#q-flags" id="t-flags" aria-controls="q-flags">Flags <span class="count{% if flag_count %} count--strong{% endif %}">{{ flag_count }}</span></a>
   </div>
+
+  <section class="tab-panel panel panel--flush" id="q-reports" role="tabpanel" aria-labelledby="t-reports">
+    <div class="panel__head"><h2>Reports awaiting approval</h2><span class="actions subtle" style="font-size:var(--text-xs)">Approving publishes the report and runs matching</span></div>
+    {% for item in pending_items %}
+      <div class="queue-row">
+        {% include 'partials/thumb.html' with item=item cls='thumb--lg' %}
+        <div style="min-width:0">
+          <div class="cluster cluster-sm">{% include 'partials/type_badge.html' %}<a class="queue-row__title link-quiet" href="{{ item.get_absolute_url }}">{{ item.title }}</a><span class="ref">{{ item.pk|report_id }}</span></div>
+          <p class="queue-row__desc clamp-2">{{ item.description }}</p>
+          <div class="queue-row__meta">
+            <span>{% icon 'layers' %} {{ item.category.name }}</span><span>{% icon 'pin' %} {{ item.location.name }}</span><span>{% icon 'calendar' %} {{ item.event_date|date:"j M" }}</span>
+            <span>{% icon 'user' %} {{ item.reporter.display_name }}</span><span>submitted {{ item.created_at|naturaltime }}</span>
+            {% if not item.image %}<span class="badge">No photo</span>{% endif %}
+            {% if item.duplicate_of %}<a class="status status--warning" href="{{ item.duplicate_of.get_absolute_url }}">{% icon 'alert' %}Possible duplicate of {{ item.duplicate_of.pk|report_id }}</a>{% endif %}
+          </div>
+        </div>
+        <div class="queue-row__actions">
+          <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve “{{ item.title }}”?" data-confirm-text="It becomes visible in search and is compared with opposite reports. Reporters of strong candidates are notified." data-confirm-tone="success" data-confirm-label="Approve" data-confirm-note="Optional note to the reporter">{% csrf_token %}<button class="btn btn-success btn-sm" type="submit">{% icon 'check' %}Approve</button></form>
+          <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" data-confirm="Reject “{{ item.title }}”?" data-confirm-text="It stays hidden from search and matching. The reporter sees your reason and can edit and resubmit." data-confirm-tone="danger" data-confirm-label="Reject" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger-quiet btn-sm" type="submit">{% icon 'x' %}Reject</button></form>
+        </div>
+      </div>
+    {% empty %}
+      {% include 'partials/empty.html' with icon='check' title='No reports waiting' text='New reports appear here oldest first.' %}
+    {% endfor %}
+    <div style="padding:0 var(--s-5)">{% include 'partials/pagination.html' %}</div>
+  </section>
+
+  <section class="tab-panel panel panel--flush" id="q-claims" role="tabpanel" aria-labelledby="t-claims">
+    <div class="panel__head"><h2>Claims and return offers to verify</h2></div>
+    {% for c in open_claims %}
+      <a class="list-row" href="{% url 'claims:detail' c.pk %}">
+        {% include 'partials/thumb.html' with item=c.item %}
+        <span>
+          <span class="list-row__title">{{ c.item.title }}</span>
+          <span class="list-row__meta"><span class="ref">{{ c.pk|claim_id }}</span><span>{% if c.item.is_found %}Ownership claim{% else %}Return offer{% endif %} by {{ c.claimant.display_name }}</span><span>updated {{ c.updated_at|naturaltime }}</span></span>
+        </span>
+        <span class="list-row__aside">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}<span class="btn btn-secondary btn-sm">Review</span></span>
+      </a>
+    {% empty %}
+      {% include 'partials/empty.html' with icon='key' title='No open claims' text='Claims appear here as soon as someone responds to a report.' %}
+    {% endfor %}
+  </section>
+
+  <section class="tab-panel panel panel--flush" id="q-disputes" role="tabpanel" aria-labelledby="t-disputes">
+    <div class="panel__head"><h2>Disputed claims</h2><span class="actions subtle" style="font-size:var(--text-xs)">Resolve by approving or rejecting on the claim page</span></div>
+    {% for c in disputes %}
+      <a class="list-row" href="{% url 'claims:detail' c.pk %}">
+        {% include 'partials/thumb.html' with item=c.item %}
+        <span>
+          <span class="list-row__title">{{ c.item.title }} <span class="ref">{{ c.pk|claim_id }}</span></span>
+          <span class="flag-note">{% icon 'alert' %}<span>{{ c.decision_note }}</span></span>
+        </span>
+        <span class="list-row__aside"><span class="btn btn-secondary btn-sm">Investigate</span></span>
+      </a>
+    {% empty %}
+      {% include 'partials/empty.html' with icon='scale' title='No disputes' text='Either person in a claim, or a moderator, can raise a concern. It pauses the claim for review.' %}
+    {% endfor %}
+  </section>
+
+  <section class="tab-panel panel panel--flush" id="q-handovers" role="tabpanel" aria-labelledby="t-handovers">
+    <div class="panel__head"><h2>Approved, awaiting handover</h2></div>
+    {% for c in handovers %}
+      <a class="list-row" href="{% url 'claims:detail' c.pk %}">
+        {% include 'partials/thumb.html' with item=c.item %}
+        <span><span class="list-row__title">{{ c.item.title }}</span><span class="list-row__meta"><span class="ref">{{ c.pk|claim_id }}</span>{{ c.claimant.display_name }} · approved {{ c.updated_at|naturaltime }}</span></span>
+        <span class="list-row__aside"><span class="btn btn-secondary btn-sm">Confirm handover</span></span>
+      </a>
+    {% empty %}
+      {% include 'partials/empty.html' with icon='swap' title='No pending handovers' text='Approved claims wait here until a moderator confirms the item changed hands.' %}
+    {% endfor %}
+  </section>
+
+  <section class="tab-panel panel panel--flush" id="q-flags" role="tabpanel" aria-labelledby="t-flags">
+    <div class="panel__head"><h2>Reports flagged by users</h2></div>
+    {% for item in flagged %}
+      <div class="queue-row">
+        {% include 'partials/thumb.html' with item=item cls='thumb--lg' %}
+        <div style="min-width:0">
+          <div class="cluster cluster-sm">{% include 'partials/type_badge.html' %}<a class="queue-row__title link-quiet" href="{{ item.get_absolute_url }}">{{ item.title }}</a><span class="ref">{{ item.pk|report_id }}</span><span class="count count--strong">{{ item.flag_count }}</span></div>
+          {% for f in item.open_flags %}<div class="flag-note">{% icon 'flag' %}<span><b>{{ f.get_reason_display }}</b>{% if f.note %} · {{ f.note }}{% endif %} <span class="subtle">· {{ f.created_at|naturaltime }}</span></span></div>{% endfor %}
+        </div>
+        <div class="queue-row__actions">
+          <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'dismiss' %}">{% csrf_token %}<button class="btn btn-secondary btn-sm" type="submit">Dismiss</button></form>
+          <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove “{{ item.title }}”?" data-confirm-text="The report is rejected and deactivated, its matches are removed and the reporter is notified." data-confirm-tone="danger" data-confirm-label="Remove report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger-quiet btn-sm" type="submit">Remove</button></form>
+        </div>
+      </div>
+    {% empty %}
+      {% include 'partials/empty.html' with icon='flag' title='No flagged reports' text='Students can flag suspicious, duplicate or inappropriate listings from any report page.' %}
+    {% endfor %}
+  </section>
 </div>
+
+<section class="panel panel--flush mt-8" aria-labelledby="recent-title">
+  <div class="panel__head"><h2 id="recent-title">Recent decisions</h2><span class="actions"><a class="btn btn-ghost btn-sm" href="{% url 'dashboard:decisions' %}">Full log</a></span></div>
+  {% for d in history %}
+    <div class="list-row"><span class="status status--{{ d.tone }}">{{ d.get_action_display }}</span>
+      <span><span class="list-row__title">{% if d.claim %}<a class="link-quiet" href="{{ d.claim.get_absolute_url }}">{{ d.claim_id|claim_id }}</a> · {% endif %}{% if d.item %}<a class="link-quiet" href="{{ d.item.get_absolute_url }}">{{ d.item.title }}</a>{% elif d.subject_user %}{{ d.subject_user.display_name }}{% endif %}</span>{% if d.note %}<span class="list-row__meta">{{ d.note }}</span>{% endif %}</span>
+      <span class="list-row__aside subtle" style="font-size:var(--text-xs)">{{ d.actor.display_name|default:"—" }} · {{ d.created_at|naturaltime }}</span></div>
+  {% empty %}
+    {% include 'partials/empty.html' with compact=True icon='history' title='No decisions yet' %}
+  {% endfor %}
+</section>
 {% endblock %}
