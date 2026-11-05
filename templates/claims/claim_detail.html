@@ -1,36 +1,30 @@
 {% extends 'shell.html' %}
 {% load humanize ui %}
-{% block title %}Claim {{ claim.pk|claim_id }}{% endblock %}
-{% block page_title %}{{ claim.pk|claim_id }}{% endblock %}
+{% block title %}Case {{ claim.pk|claim_id }}{% endblock %}
 
 {% block main %}
 {% with item=claim.item %}
-<nav class="crumbs" aria-label="Breadcrumb">
-  <a href="{% if can_moderate and not is_claimant and not is_finder %}{% url 'dashboard:moderation' %}{% else %}{% url 'claims:mine' %}{% endif %}">{% if can_moderate and not is_claimant and not is_finder %}Review queue{% else %}Claims{% endif %}</a>{% icon 'chevron-right' %}<span>{{ claim.pk|claim_id }}</span>
-</nav>
-
-<header class="claim-head">
-  <div class="stack stack-sm">
-    <div class="cluster cluster-sm">
-      <span class="ref">{{ claim.pk|claim_id }}</span>
-      {% include 'partials/status_badge.html' with tone=claim.status_tone label=claim.get_status_display %}
-      <span class="badge">{% if item.is_found %}{% icon 'key' %}Ownership claim{% else %}{% icon 'swap' %}Return offer{% endif %}</span>
-    </div>
-    <h1>{% if item.is_found %}Claim on “{{ item.title }}”{% else %}Return offer for “{{ item.title }}”{% endif %}</h1>
-    <p class="muted" style="font-size:var(--text-sm)">
-      {% if is_claimant %}You submitted this {{ claim.created_at|naturaltime }}.{% else %}Submitted by {{ claim.claimant.display_name }} ({{ claim.role_label|lower }}) {{ claim.created_at|naturaltime }}.{% endif %}
-      {% if claim.reviewed_by %} Reviewed by {{ claim.reviewed_by.display_name }}.{% endif %}
+<header class="claim-hero">
+  <div class="stack stack-4">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="{% if can_moderate and not is_claimant and not is_finder %}{% url 'dashboard:moderation' %}{% else %}{% url 'claims:mine' %}{% endif %}">{% if can_moderate and not is_claimant and not is_finder %}Review desk{% else %}Cases{% endif %}</a><span>/</span><span>{{ claim.pk|claim_id }}</span></nav>
+    <h1 class="title">{% if item.is_found %}Is “{{ item.title }}” <em>theirs</em>?{% else %}Did they <em>find</em> “{{ item.title }}”?{% endif %}</h1>
+    <p class="muted small">
+      {% if item.is_found %}Ownership claim{% else %}Return offer{% endif %} ·
+      {% if is_claimant %}you submitted it {{ claim.created_at|naturaltime }}{% else %}{{ claim.claimant.display_name }} ({{ claim.role_label|lower }}) submitted it {{ claim.created_at|naturaltime }}{% endif %}{% if claim.reviewed_by %} · reviewed by {{ claim.reviewed_by.display_name }}{% endif %}
     </p>
   </div>
-  <a href="{{ item.get_absolute_url }}" class="btn btn-secondary">{% icon 'file' %}View report {{ item.pk|report_id }}</a>
+  <div class="stack stack-3" style="align-items:flex-end">
+    <span class="stamp stamp--xl stamp--{{ claim.status_tone }} is-stamped" style="--rot:-5deg">{{ claim.get_status_display }}</span>
+    <a href="{{ item.get_absolute_url }}" class="btn btn-paper btn-sm">{% icon 'file' %}Tag {{ item.pk|report_id }}</a>
+  </div>
 </header>
 
-<section class="panel panel__body" aria-label="Recovery progress" style="margin-bottom:var(--s-6)">
-  <ol class="timeline timeline--h">
+<section class="claim-route" aria-label="Recovery route">
+  <ol class="route">
     {% for s in timeline %}
-    <li class="timeline__step is-{{ s.state }}">
-      <span class="timeline__marker">{% if s.state == 'done' %}{% icon 'check' %}{% elif s.state == 'blocked' %}{% icon 'x' %}{% elif s.state == 'pending' %}{{ forloop.counter }}{% endif %}</span>
-      <div><div class="timeline__title">{{ s.title }}</div><div class="timeline__detail">{{ s.detail }}</div></div>
+    <li class="route__stop is-{{ s.state }}">
+      <span class="route__pin">{% if s.state == 'done' %}{% icon 'check' %}{% elif s.state == 'blocked' %}{% icon 'x' %}{% elif s.state == 'pending' %}{{ forloop.counter }}{% endif %}</span>
+      <div><div class="route__title">{{ s.title }}</div><div class="route__detail">{{ s.detail }}</div></div>
       <span class="sr-only">({{ s.state }})</span>
     </li>
     {% endfor %}
@@ -38,147 +32,142 @@
 </section>
 
 {% if claim.status == 'approved' %}
-  <div class="callout callout--success" style="margin-bottom:var(--s-6)">{% icon 'check' %}<div><b>Approved, not yet returned.</b> Use the contact details below to arrange a safe handover, ideally at a staffed campus desk. A moderator records the return once the item has physically changed hands.</div></div>
+  <div class="note note--ok" style="margin-bottom:var(--s8)">{% icon 'check' %}<div><b>Approved, not yet returned.</b> Contacts are unsealed below. Meet somewhere staffed, ideally the campus desk. A moderator records the return once the item has physically changed hands.</div></div>
 {% elif claim.status == 'disputed' %}
-  <div class="callout callout--warning" style="margin-bottom:var(--s-6)">{% icon 'alert' %}<div><b>Disputed.</b> {{ claim.decision_note }} A moderator will review the evidence before any further step.</div></div>
+  <div class="note note--warn" style="margin-bottom:var(--s8)">{% icon 'alert' %}<div><b>Disputed.</b> {{ claim.decision_note }} A moderator will review the evidence before anything else happens.</div></div>
 {% elif claim.status == 'rejected' %}
-  <div class="callout callout--danger" style="margin-bottom:var(--s-6)">{% icon 'x' %}<div><b>Rejected.</b> {{ claim.decision_note|default:"The claim could not be verified." }}</div></div>
+  <div class="note note--bad" style="margin-bottom:var(--s8)">{% icon 'x' %}<div><b>Rejected.</b> {{ claim.decision_note|default:"The claim could not be verified." }}</div></div>
 {% elif is_claimant and unanswered %}
-  <div class="callout callout--info" style="margin-bottom:var(--s-6)">{% icon 'question' %}<div><b>{{ unanswered }} question{{ unanswered|pluralize }} waiting for you.</b> Answer below so a moderator can review your {% if item.is_found %}claim{% else %}offer{% endif %}.</div></div>
+  <div class="note note--info" style="margin-bottom:var(--s8)">{% icon 'question' %}<div><b>{{ unanswered }} question{{ unanswered|pluralize }} waiting for you.</b> Answer below so a moderator can decide.</div></div>
 {% endif %}
 
-<div class="split" style="--aside:380px">
-  <div class="stack stack-lg">
+<div class="cols" style="--a:1.5fr;--b:1fr;--gap:var(--s10)">
+  <div class="stack stack-10">
     <section aria-labelledby="statement-title">
-      <div class="section-title"><h2 id="statement-title">{% if item.is_found %}Proof of ownership{% else %}How it was found{% endif %}</h2></div>
-      <blockquote class="statement" style="margin:0">{{ claim.statement }}</blockquote>
+      <span class="kicker" id="statement-title">{% if item.is_found %}Why they say it's theirs{% else %}How it was found{% endif %}</span>
+      <blockquote class="statement mt-4">{{ claim.statement }}</blockquote>
     </section>
 
-    <section class="panel" aria-labelledby="questions-title">
-      <div class="panel__head"><h2 id="questions-title">{% icon 'lock' %} Private verification</h2><span class="actions subtle" style="font-size:var(--text-xs)">Visible only to the two people involved and moderators</span></div>
-      <div class="panel__body" style="padding-top:0;padding-bottom:var(--s-2)">
+    <section aria-labelledby="interview-title">
+      <div class="section__head"><h2 class="title-sm" id="interview-title">{% icon 'lock' %} Private <em>interview</em></h2><span class="margin-note">Only the two people involved and moderators</span></div>
+      <div class="transcript">
         {% for q in questions %}
           <div class="qa">
-            <div class="qa__q">{% icon 'question' %}<div>{{ q.text }}<div class="qa__meta">Asked by {% if q.asked_by_id == claim.item.reporter_id %}the reporter{% elif q.asked_by %}a moderator{% else %}—{% endif %} · {{ q.created_at|naturaltime }}</div></div></div>
-            {% if q.answer %}
-              <div class="qa__a">{% icon 'message' %}<div>{{ q.answer }}<div class="qa__meta">Answered {{ q.answered_at|naturaltime }}</div></div></div>
-            {% elif is_claimant and claim.is_open %}
-              <form method="post" action="{% url 'claims:answer' claim.pk q.pk %}" class="stack stack-sm">
-                {% csrf_token %}
-                <label class="sr-only" for="answer-{{ q.pk }}">Your answer to: {{ q.text }}</label>
-                <textarea class="input" id="answer-{{ q.pk }}" name="answer" rows="2" required placeholder="Your answer"></textarea>
-                <div><button class="btn btn-primary btn-sm" type="submit">Submit answer</button></div>
-              </form>
-            {% else %}
-              <div class="qa__meta">{% icon 'clock' %} Waiting for the {{ claim.role_label|lower }} to answer.</div>
-            {% endif %}
+            <span class="qa__who">Q{{ forloop.counter }}</span>
+            <div class="stack stack-3">
+              <p class="qa__q">{{ q.text }}</p>
+              <span class="qa__meta">Asked by {% if q.asked_by_id == claim.item.reporter_id %}the {% if item.is_found %}finder{% else %}owner{% endif %}{% elif q.asked_by %}a moderator{% else %}—{% endif %} · {{ q.created_at|naturaltime }}</span>
+              {% if q.answer %}
+                <div class="qa__a">{{ q.answer }}<div class="qa__meta mt-2">Answered {{ q.answered_at|naturaltime }}</div></div>
+              {% elif is_claimant and claim.is_open %}
+                <form method="post" action="{% url 'claims:answer' claim.pk q.pk %}" class="stack stack-2">
+                  {% csrf_token %}
+                  <label class="sr-only" for="answer-{{ q.pk }}">Your answer to: {{ q.text }}</label>
+                  <textarea class="input" id="answer-{{ q.pk }}" name="answer" rows="2" required placeholder="Your answer"></textarea>
+                  <div><button class="btn btn-ink btn-sm" type="submit">Submit answer</button></div>
+                </form>
+              {% else %}
+                <span class="qa__meta">{% icon 'clock' %} Waiting for the {{ claim.role_label|lower }} to answer.</span>
+              {% endif %}
+            </div>
           </div>
         {% empty %}
-          {% include 'partials/empty.html' with compact=True icon='question' title='No questions yet' text='The reporter or a moderator asks something only the genuine owner would know, like a scratch, a sticker, or what is inside.' %}
+          {% include 'partials/empty.html' with compact=True icon='question' title='No questions yet' text='The reporter or a moderator asks something only the real owner would know: a scratch, a sticker, what is inside.' %}
         {% endfor %}
       </div>
       {% if is_finder or can_moderate %}{% if claim.is_open %}
-      <form method="post" action="{% url 'claims:add_question' claim.pk %}" class="panel__foot stack stack-sm">
+      <form method="post" action="{% url 'claims:add_question' claim.pk %}" class="stack stack-2 mt-6" style="padding-top:var(--s5);border-top:1.5px solid var(--ink)">
         {% csrf_token %}
-        <label class="label" for="{{ question_form.text.id_for_label }}">Ask a verification question</label>
-        <div class="row">{{ question_form.text }}<button class="btn btn-secondary" type="submit">{% icon 'plus' %}Ask</button></div>
-        <span class="hint">Ask about details that are not in the public report. Avoid yes/no questions.</span>
+        <label class="label" for="{{ question_form.text.id_for_label }}">Ask a private question</label>
+        <div class="row">{{ question_form.text }}<button class="btn btn-ink" type="submit">{% icon 'plus' %}Ask</button></div>
+        <span class="hint">Ask about details that aren't on the public tag. Avoid yes/no questions.</span>
       </form>
       {% endif %}{% endif %}
     </section>
 
     {% if decisions %}
-    <section class="panel panel--flush" aria-labelledby="audit-title">
-      <div class="panel__head"><h2 id="audit-title">{% icon 'history' %} Decision record</h2></div>
-      <div class="list">
-        {% for d in decisions %}
-        <div class="list-row"><span class="status status--{{ d.tone }}">{{ d.get_action_display }}</span><span><span class="list-row__title">{{ d.actor.display_name|default:"—" }}</span>{% if d.note %}<span class="list-row__meta">{{ d.note }}</span>{% endif %}</span><span class="list-row__aside subtle" style="font-size:var(--text-xs)">{{ d.created_at|date:"j M Y, H:i" }}</span></div>
-        {% endfor %}
-      </div>
+    <section aria-labelledby="audit-title">
+      <div class="section__head"><h2 class="title-sm" id="audit-title">Decision <em>record</em></h2></div>
+      <div class="timeline-ed">{% for d in decisions %}<div class="timeline-ed__item"><span class="timeline-ed__when">{{ d.created_at|date:"j M" }}<br>{{ d.created_at|time:"H:i" }}</span><span><span class="timeline-ed__title"><span class="stamp stamp--{{ d.tone }}">{{ d.get_action_display }}</span> {{ d.actor.display_name|default:"—" }}</span>{% if d.note %}<span class="timeline-ed__body" style="display:block">{{ d.note }}</span>{% endif %}</span></div>{% endfor %}</div>
     </section>
     {% endif %}
 
     {% if not claim.is_finalised %}
-    <details class="disclosure panel" style="padding:var(--s-2) var(--s-4)">
-      <summary>{% icon 'flag' %}Raise a concern about this claim{% icon 'chevron-down' %}</summary>
-      <form method="post" action="{% url 'claims:dispute' claim.pk %}" class="stack stack-sm" style="padding:var(--s-2) 0 var(--s-3)" data-confirm="Send this claim to dispute review?" data-confirm-text="The claim is paused for moderator review and the other person is notified that a concern was raised." data-confirm-tone="danger" data-confirm-label="Raise dispute">
+    <details class="disclosure">
+      <summary>{% icon 'flag' %}Raise a concern about this case{% icon 'chevron-down' 'chev' %}</summary>
+      <form method="post" action="{% url 'claims:dispute' claim.pk %}" class="stack stack-3 mt-2" data-confirm="Send this case to dispute review?" data-confirm-text="The claim pauses for a moderator and the other person is told a concern was raised." data-confirm-tone="danger" data-confirm-label="Raise dispute" data-confirm-stamp="Dispute">
         {% csrf_token %}
         <label class="label" for="dispute-reason">What's wrong?</label>
-        <textarea class="input" id="dispute-reason" name="reason" maxlength="280" rows="3" required placeholder="e.g. The scratch described is on the wrong side"></textarea>
-        <div><button class="btn btn-secondary btn-sm" type="submit">Send to moderators</button></div>
+        <textarea class="input" id="dispute-reason" name="reason" maxlength="280" rows="3" required placeholder="e.g. The scratch they describe is on the other side"></textarea>
+        <div><button class="btn btn-paper btn-sm" type="submit">Send to moderators</button></div>
       </form>
     </details>
     {% endif %}
   </div>
 
-  <aside class="stack sticky" aria-label="Item, people and decision">
-    <a class="pair-tag" href="{{ item.get_absolute_url }}" style="padding:var(--s-3)">
-      {% include 'partials/thumb.html' with item=item cls='thumb--lg' %}
-      <span class="pair-tag__kind">{{ item.get_report_type_display }} · {{ item.location.name }} · {{ item.event_date|date:"j M" }}</span>
-      <span class="pair-tag__title">{{ item.title }}</span>
-    </a>
+  <aside class="stack stack-6 sticky" aria-label="People, evidence and decision">
+    <div style="max-width:280px">{% include 'items/partials/item_card.html' %}</div>
 
-    <section class="panel panel__body stack" aria-labelledby="people-title">
-      <h2 class="h4" id="people-title">People</h2>
-      <div class="party">
+    <section class="stack stack-3" aria-labelledby="people-title">
+      <span class="kicker" id="people-title">The people</span>
+      <div class="party{% if not contacts_visible %} party--sealed{% endif %}">
         <span class="avatar" aria-hidden="true">{{ item.reporter.initials }}</span>
-        <span class="party__role">{% if item.is_found %}Finder{% else %}Owner{% endif %} · reported the item</span>
-        <span>{% if is_finder %}You{% elif contacts_visible or can_moderate %}{{ item.reporter.display_name }}{% else %}Hidden until approval{% endif %}</span>
-        {% if contacts_visible and not is_finder %}<span class="party__contact">{% if item.reporter.email %}<a href="mailto:{{ item.reporter.email }}">{{ item.reporter.email }}</a>{% endif %}{% if item.reporter.phone %}<a href="tel:{{ item.reporter.phone }}">{{ item.reporter.phone }}</a>{% endif %}</span>{% endif %}
+        <span class="party__role">{% if item.is_found %}Finder{% else %}Owner{% endif %} · filed the tag</span>
+        <span class="party__name">{% if is_finder %}You{% elif contacts_visible or can_moderate %}{{ item.reporter.display_name }}{% else %}Hidden until approval{% endif %}</span>
+        {% if contacts_visible and not is_finder %}<span class="party__contact">{% if item.reporter.email %}<a href="mailto:{{ item.reporter.email }}">{{ item.reporter.email }}</a>{% endif %}{% if item.reporter.phone %}<a href="tel:{{ item.reporter.phone }}">{{ item.reporter.phone }}</a>{% endif %}</span>{% elif not contacts_visible and not is_finder %}<span class="party__contact">{% icon 'lock' %} Sealed until approval</span>{% endif %}
       </div>
-      <div class="party">
+      <div class="party{% if not contacts_visible %} party--sealed{% endif %}">
         <span class="avatar" aria-hidden="true">{{ claim.claimant.initials }}</span>
         <span class="party__role">{{ claim.role_label }} · responded</span>
-        <span>{% if is_claimant %}You{% else %}{{ claim.claimant.display_name }}{% endif %}</span>
-        {% if contacts_visible and not is_claimant %}<span class="party__contact">{% if claim.contact_email %}<a href="mailto:{{ claim.contact_email }}">{{ claim.contact_email }}</a>{% endif %}{% if claim.contact_phone %}<a href="tel:{{ claim.contact_phone }}">{{ claim.contact_phone }}</a>{% endif %}</span>{% endif %}
+        <span class="party__name">{% if is_claimant %}You{% else %}{{ claim.claimant.display_name }}{% endif %}</span>
+        {% if contacts_visible and not is_claimant %}<span class="party__contact">{% if claim.contact_email %}<a href="mailto:{{ claim.contact_email }}">{{ claim.contact_email }}</a>{% endif %}{% if claim.contact_phone %}<a href="tel:{{ claim.contact_phone }}">{{ claim.contact_phone }}</a>{% endif %}</span>{% elif not contacts_visible and not is_claimant %}<span class="party__contact">{% icon 'lock' %} Sealed until approval</span>{% endif %}
       </div>
-      {% if not contacts_visible %}<p class="hint">{% icon 'lock' %} Contact details are shared only after a moderator approves.</p>{% endif %}
     </section>
 
     {% if assessment %}
-    <section class="panel panel__body stack" aria-labelledby="ai-title">
-      <div class="row"><h2 class="h4 grow" id="ai-title">{% icon 'spark' %} Matching evidence</h2><span class="badge">Decision support</span></div>
-      {% if assessment.match %}
-        <div class="row">
-          <div class="dial-wrap dial-wrap--sm tier-{{ assessment.match.tier }}" role="img" aria-label="{{ assessment.match.percent }} percent similarity"><span class="dial" style="--p:{{ assessment.match.percent }}"></span><span class="dial__value">{{ assessment.match.percent }}</span></div>
-          <div><div class="cluster cluster-sm">{% include 'partials/tier_badge.html' with tier=assessment.match.tier %}</div><div class="hint mt-2">Similarity between the {{ claim.role_label|lower }}'s own report and this one.</div></div>
-        </div>
-        <div class="hbars">
-          {% for c in assessment.match.breakdown %}
-          <div class="hbar" style="grid-template-columns:110px minmax(0,1fr) 34px"><span class="hbar__label">{{ c.label }}</span>{% if c.missing %}<div class="meter meter--missing" title="{{ c.missing_reason }}"></div><span class="hbar__value subtle">—</span>{% else %}<div class="meter"><i style="--w:{{ c.percent }}%; --meter-color: var(--comp-{{ c.key }})"></i></div><span class="hbar__value">{{ c.percent }}</span>{% endif %}</div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p class="muted" style="font-size:var(--text-sm)">The {{ claim.role_label|lower }} has no matching report on file. Rely on the statement and the private answers.</p>
-      {% endif %}
-      <div class="hbar" style="grid-template-columns:110px minmax(0,1fr) 34px"><span class="hbar__label">Statement fit</span><div class="meter"><i style="--w:{{ assessment.statement_sim }}%"></i></div><span class="hbar__value">{{ assessment.statement_sim }}</span></div>
-      <p class="hint">Text similarity between the written statement and the report description. Scores rank evidence; they never decide ownership.</p>
+    <section class="sheet" aria-labelledby="ai-title">
+      <div class="sheet__head"><h2 class="heading" id="ai-title">{% icon 'spark' %} Matching evidence</h2><span class="stamp stamp--muted">Context only</span></div>
+      <div class="sheet__body stack stack-4">
+        {% if assessment.match %}
+          <div class="row"><span class="num" style="font-size:3.4rem;line-height:.8">{{ assessment.match.percent }}<small class="faint" style="font-size:.4em">/100</small></span>{% include 'partials/tier_badge.html' with tier=assessment.match.tier %}</div>
+          <p class="hint">Similarity between the {{ claim.role_label|lower }}'s own tag and this one.</p>
+          <div class="hbars">
+            {% for c in assessment.match.breakdown %}
+            <div class="hbar" style="grid-template-columns:110px minmax(0,1fr) 32px"><span class="hbar__k">{{ c.label }}</span>{% if c.missing %}<div class="bar bar--hatch" title="{{ c.missing_reason }}"></div><span class="hbar__v faint">—</span>{% else %}<div class="bar"><i class="sig-{{ c.key }}" style="--w:{{ c.percent }}%;--c:var(--seg);--i:{{ forloop.counter0 }}"></i></div><span class="hbar__v">{{ c.percent }}</span>{% endif %}</div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted small">The {{ claim.role_label|lower }} has no matching tag on file. Rely on the statement and the private answers.</p>
+        {% endif %}
+        <div class="hbar" style="grid-template-columns:110px minmax(0,1fr) 32px"><span class="hbar__k">Statement fit</span><div class="bar"><i style="--w:{{ assessment.statement_sim }}%"></i></div><span class="hbar__v">{{ assessment.statement_sim }}</span></div>
+        <p class="disclaimer">{% icon 'info' %}<span>Text similarity between the statement and the tag. Scores rank evidence; people decide ownership.</span></p>
+      </div>
     </section>
     {% endif %}
 
     {% if can_moderate and claim.is_open %}
-    <section class="panel panel__body stack" aria-labelledby="decide-title">
-      <h2 class="h4" id="decide-title">{% icon 'shield' %} Moderator decision</h2>
+    <section class="decision-desk" aria-labelledby="decide-title">
+      <span class="kicker" id="decide-title">{% icon 'shield' %}Moderator's decision</span>
       {% if is_claimant %}
-        <p class="muted" style="font-size:var(--text-sm)">You submitted this claim, so another moderator must decide it.</p>
+        <p class="muted small">You submitted this claim, so another moderator has to decide it.</p>
       {% else %}
-        {% if not claim.all_answered %}<div class="callout callout--warning">{% icon 'alert' %}<div>Approval needs at least one verification question, with every question answered.</div></div>{% endif %}
-        <form method="post" action="{% url 'claims:decide' claim.pk 'approve' %}" data-confirm="Approve this {% if item.is_found %}claim{% else %}return offer{% endif %}?" data-confirm-text="Contact details are shared with both people so they can arrange the handover. Other open claims on this item are closed. The item is not marked returned until you confirm the handover." data-confirm-tone="success" data-confirm-label="Approve" data-confirm-note="Optional note to the claimant">
-          {% csrf_token %}<button class="btn btn-success btn-block" type="submit" {% if not claim.all_answered %}disabled{% endif %}>{% icon 'check' %}Approve after verification</button>
+        {% if not claim.all_answered %}<div class="note note--warn">{% icon 'alert' %}<div>Approval needs at least one private question, with every question answered.</div></div>{% endif %}
+        <form method="post" action="{% url 'claims:decide' claim.pk 'approve' %}" data-confirm="Approve this {% if item.is_found %}claim{% else %}return offer{% endif %}?" data-confirm-text="Contact details unseal for both people. Other open claims on this item close. The item isn't marked returned until you confirm the handover." data-confirm-tone="success" data-confirm-label="Approve" data-confirm-note="Optional note to the claimant">
+          {% csrf_token %}<button class="btn btn-ok btn-block btn-lg" type="submit" {% if not claim.all_answered %}disabled{% endif %}>{% icon 'check' %}Approve after verification</button>
         </form>
-        <form method="post" action="{% url 'claims:decide' claim.pk 'reject' %}" data-confirm="Reject this {% if item.is_found %}claim{% else %}return offer{% endif %}?" data-confirm-text="The claimant is notified with your note. The report returns to open search if no other claim is active." data-confirm-tone="danger" data-confirm-label="Reject" data-confirm-note="Reason shared with the claimant">
-          {% csrf_token %}<button class="btn btn-danger-quiet btn-block" type="submit">{% icon 'x' %}Reject</button>
+        <form method="post" action="{% url 'claims:decide' claim.pk 'reject' %}" data-confirm="Reject this {% if item.is_found %}claim{% else %}return offer{% endif %}?" data-confirm-text="The claimant sees your note. The tag goes back on the wall if no other claim is active." data-confirm-tone="danger" data-confirm-label="Reject" data-confirm-note="Reason shared with the claimant">
+          {% csrf_token %}<button class="btn btn-bad btn-block" type="submit">{% icon 'x' %}Reject</button>
         </form>
       {% endif %}
     </section>
     {% endif %}
 
     {% if can_moderate and claim.status == 'approved' %}
-    <section class="panel panel__body stack" aria-labelledby="handover-title">
-      <h2 class="h4" id="handover-title">{% icon 'swap' %} Confirm handover</h2>
-      <p class="muted" style="font-size:var(--text-sm)">Only confirm once the physical item has been handed over. This closes the case and marks the report returned.</p>
-      <form method="post" action="{% url 'claims:return' claim.pk %}" data-confirm="Confirm the item was handed over?" data-confirm-text="The report is marked returned and removed from search and matching. Both people are notified. This is recorded in the decision log." data-confirm-tone="success" data-confirm-label="Mark item returned" data-confirm-note="Where and how was it handed over? (optional)">
-        {% csrf_token %}<button class="btn btn-primary btn-block" type="submit">Mark item returned</button>
+    <section class="decision-desk" aria-labelledby="handover-title">
+      <span class="kicker" id="handover-title">{% icon 'swap' %}Handover</span>
+      <p class="muted small">Only confirm once the physical item has changed hands. This closes the case and marks the tag returned.</p>
+      <form method="post" action="{% url 'claims:return' claim.pk %}" data-confirm="Confirm the item was handed over?" data-confirm-text="The tag is marked returned and leaves the wall and matching. Both people are told, and it goes in the decision log." data-confirm-tone="success" data-confirm-label="Mark item returned" data-confirm-stamp="Returned" data-confirm-note="Where and how was it handed over? (optional)">
+        {% csrf_token %}<button class="btn btn-ink btn-block btn-lg" type="submit">Mark item returned</button>
       </form>
     </section>
     {% endif %}

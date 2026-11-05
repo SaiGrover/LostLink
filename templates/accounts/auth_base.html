@@ -2,27 +2,30 @@
 {% load ui %}
 {% block body %}
 <div class="auth">
-  <div class="auth__form-side">
-    <div class="cluster cluster-between">
+  <div class="auth__form">
+    <div class="cluster between">
       {% include 'partials/brand.html' with href='/' %}
-      <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
+      <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch light or dark"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
     </div>
-    <main class="auth__form-wrap enter" id="main-content" tabindex="-1">
+    <main class="auth__form-in" id="main-content" tabindex="-1">
       {% block form %}{% endblock %}
     </main>
-    <p class="subtle" style="font-size:var(--text-xs)">Campus lost &amp; found · AI ranks, people verify.</p>
+    <p class="serial">Models rank. People verify.</p>
   </div>
-  <aside class="auth__aside" aria-label="About LostLink">
-    <svg class="auth__aside-art" viewBox="0 0 400 400" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
-      <rect x="20" y="120" width="230" height="160" rx="80"/><rect x="150" y="120" width="230" height="160" rx="80"/>
-      <rect x="60" y="150" width="150" height="100" rx="50" stroke-dasharray="4 6"/><rect x="190" y="150" width="150" height="100" rx="50" stroke-dasharray="4 6"/>
-    </svg>
-    <span class="eyebrow">{% block aside_eyebrow %}LostLink{% endblock %}</span>
-    <h2>{% block aside_title %}Good things find their way back.{% endblock %}</h2>
-    <div class="trust-points">
-      <div>{% icon 'link' %}<div><b>Matched, not guessed</b><span>Text, photo, place, date and attributes combine into one explainable score.</span></div></div>
-      <div>{% icon 'shield' %}<div><b>Verified by people</b><span>Private questions and a moderator decision come before any handover.</span></div></div>
-      <div>{% icon 'lock' %}<div><b>Private by default</b><span>Contact details stay hidden until a claim is approved.</span></div></div>
+  <aside class="auth__art" aria-label="About LostLink">
+    <div class="auth__hang" aria-hidden="true">
+      <div class="tag tag--found"><div class="tag__paper">
+        <div class="tag__head"><span class="stamp stamp--found">{% icon 'found' %}Found</span><span class="serial">LL-0042</span></div>
+        <div class="tag__media"><div class="tag__placeholder">🔑</div></div>
+        <div class="tag__perf"></div>
+        <div class="tag__body"><div class="tag__title">Keys on a red ring</div><div class="tag__meta"><span>Main gate</span><span>Tue · 09:40</span></div></div>
+      </div></div>
+    </div>
+    <h2>{% block aside_title %}Good things <em>find their way</em> back.{% endblock %}</h2>
+    <div class="auth__points">
+      <div>{% icon 'link' %}<div><b>Tied together, with reasons</b>Words, photos, place and date combine into one score you can read thread by thread.</div></div>
+      <div>{% icon 'shield' %}<div><b>Checked by a person</b>Private questions and a moderator decision come before any handover.</div></div>
+      <div>{% icon 'lock' %}<div><b>Sealed contacts</b>Phone numbers and emails stay hidden until a claim is approved.</div></div>
     </div>
   </aside>
 </div>

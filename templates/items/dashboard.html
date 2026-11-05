@@ -1,112 +1,97 @@
 {% extends 'shell.html' %}
 {% load humanize ui %}
-{% block title %}Overview{% endblock %}
-{% block page_title %}Overview{% endblock %}
+{% block title %}Your desk{% endblock %}
 
 {% block main %}
-<header class="greeting">
-  <div class="stack stack-sm">
-    <span class="eyebrow">{% now "l, j F" %}</span>
-    <h1>Hello, {{ user.first_name|default:user.username }}.</h1>
-    <p class="lede">{% if top_matches %}There {{ match_count|pluralize:"is,are" }} {{ match_count }} potential match{{ match_count|pluralize:"es" }} for your reports.{% elif my_item_count %}Your reports are being watched. We'll notify you when a likely match appears.{% else %}Lost something, or found something that isn't yours? Start with a report.{% endif %}</p>
+<section class="desk-hero" aria-labelledby="greet">
+  <div class="desk-hero__greet">
+    <span class="kicker">{% now "l · j F Y" %} · Recovery desk</span>
+    <h1 class="display" id="greet"><span class="wipe-line"><span>Hello,</span></span><span class="wipe-line" style="--i:1"><span><em>{{ user.first_name|default:user.username }}.</em></span></span></h1>
+    <p class="brief">
+      {% if match_count %}<a href="#threads"><span class="num">{{ match_count }}</span> thread{{ match_count|pluralize }}</a> tie{{ match_count|pluralize:"s," }} your tags to someone else's{% else %}No threads yet: nothing on the wall resembles your tags{% endif %}{% if open_claims %}, and <a href="{% url 'claims:mine' %}"><span class="num">{{ open_claims }}</span> case{{ open_claims|pluralize }}</a> {{ open_claims|pluralize:"is,are" }} moving{% endif %}{% if my_pending %}. <a href="{% url 'items:mine' %}?status=active"><span class="num">{{ my_pending }}</span> tag{{ my_pending|pluralize }}</a> {{ my_pending|pluralize:"is,are" }} with a moderator{% endif %}.
+    </p>
+    <div class="cluster">
+      <a href="{% url 'items:report' %}?type=lost" class="btn btn-ink btn-lg">{% icon 'lost' %}I lost something</a>
+      <a href="{% url 'items:report' %}?type=found" class="btn btn-lg">{% icon 'found' %}I found something</a>
+    </div>
   </div>
-  <div class="cluster">
-    <a href="{% url 'items:report' %}?type=lost" class="btn btn-secondary">{% icon 'lost' %}I lost something</a>
-    <a href="{% url 'items:report' %}?type=found" class="btn btn-primary">{% icon 'found' %}I found something</a>
+  <div class="desk-tally" aria-label="Your numbers">
+    <a class="figure" href="{% url 'items:mine' %}"><span class="figure__meta">Tags filed</span><span class="num figure__n" data-count="{{ my_item_count }}">{{ my_item_count }}</span><span class="figure__cap">{{ my_lost }} lost, {{ my_found }} found</span></a>
+    <a class="figure" href="#threads"><span class="figure__meta">Threads</span><span class="num figure__n">{{ match_count }}</span><span class="figure__cap">medium or high</span></a>
+    <a class="figure" href="{% url 'claims:mine' %}"><span class="figure__meta">Open cases</span><span class="num figure__n">{{ open_claims }}</span><span class="figure__cap">claims moving</span></a>
+    <div class="figure"><span class="figure__meta">Brought home</span><span class="num figure__n">{{ my_returned }}</span><span class="figure__cap">handovers confirmed</span></div>
   </div>
-</header>
+</section>
 
-{% if awaiting_answers or incoming_claims or my_pending %}
-<section class="attention" aria-label="Needs your attention">
+{% if awaiting_answers or incoming_claims %}
+<section class="todo" aria-label="Waiting on you">
   {% for c in awaiting_answers %}
-  <a class="attention__card" href="{% url 'claims:detail' c.pk %}">
-    <span class="icon-wrap">{% icon 'question' %}</span>
-    <span><b>Answer verification questions</b><span>Your claim on “{{ c.item.title|truncatechars:34 }}”</span></span>
-    {% icon 'arrow-right' %}
-  </a>
+  <a class="todo__item" href="{% url 'claims:detail' c.pk %}">{% icon 'question' %}<span><b>Answer the verification questions</b><span>Your claim on “{{ c.item.title|truncatechars:36 }}”</span></span>{% icon 'arrow-right' %}</a>
   {% endfor %}
   {% for c in incoming_claims %}
-  <a class="attention__card" href="{% url 'claims:detail' c.pk %}">
-    <span class="icon-wrap">{% icon 'key' %}</span>
-    <span><b>{% if c.status == 'approved' %}Arrange the handover{% elif c.item.is_found %}Someone claimed your found item{% else %}Someone may have your item{% endif %}</b><span>“{{ c.item.title|truncatechars:34 }}” · {{ c.get_status_display }}</span></span>
-    {% icon 'arrow-right' %}
-  </a>
+  <a class="todo__item todo__item--soft" href="{% url 'claims:detail' c.pk %}">{% icon 'key' %}<span><b>{% if c.status == 'approved' %}Arrange the handover{% elif c.item.is_found %}Someone says this is theirs{% else %}Someone may have found it{% endif %}</b><span class="faint">“{{ c.item.title|truncatechars:36 }}” · {{ c.get_status_display }}</span></span>{% icon 'arrow-right' %}</a>
   {% endfor %}
-  {% if my_pending %}
-  <a class="attention__card" href="{% url 'items:mine' %}?status=active">
-    <span class="icon-wrap">{% icon 'clock' %}</span>
-    <span><b>{{ my_pending }} report{{ my_pending|pluralize }} awaiting review</b><span>Visible in search once a moderator approves</span></span>
-    {% icon 'arrow-right' %}
-  </a>
-  {% endif %}
 </section>
 {% endif %}
 
-<div class="stats" style="margin-bottom:var(--s-7)">
-  <a class="stat" href="{% url 'items:mine' %}"><span class="stat__label">Reports</span><span class="stat__value">{{ my_item_count }}</span><span class="stat__meta">{{ my_lost }} lost · {{ my_found }} found</span></a>
-  <div class="stat"><span class="stat__label">Potential matches</span><span class="stat__value">{{ match_count }}</span><span class="stat__meta">Medium or high confidence</span></div>
-  <a class="stat" href="{% url 'claims:mine' %}"><span class="stat__label">Active cases</span><span class="stat__value">{{ open_claims }}</span><span class="stat__meta">Claims in progress</span></a>
-  <div class="stat"><span class="stat__label">Recovered</span><span class="stat__value">{{ my_returned }}</span><span class="stat__meta">Handover confirmed</span></div>
-</div>
-
-<div class="dash-grid">
-  <div class="stack stack-lg">
-    <section aria-labelledby="matches-title">
-      <div class="section-title"><h2 id="matches-title">Potential matches</h2><span class="subtle" style="font-size:var(--text-sm)">Ranked by similarity</span></div>
-      {% for row in top_matches %}
-        {% include 'partials/match_card.html' with match=row.match mine=row.mine other=row.other action_url=row.mine.get_absolute_url action_label='Review' %}
-      {% empty %}
-        <div class="panel">{% include 'partials/empty.html' with icon='link' title='No matches yet' text='When a moderator approves a report that resembles yours, it will appear here with a full explanation of the score.' action_url='/report/' action_label='Report an item' %}</div>
-      {% endfor %}
-    </section>
-
-    <section aria-labelledby="reports-title">
-      <div class="section-title"><h2 id="reports-title">Your recent reports</h2><a class="link actions" href="{% url 'items:mine' %}">View all</a></div>
-      {% if my_items %}
-        <div class="item-grid" style="--min:200px">{% for item in my_items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
-      {% else %}
-        <div class="panel">{% include 'partials/empty.html' with icon='file' title="You haven't reported anything yet" text='Reports take about a minute. A clear photo and a specific description make matching far more reliable.' action_url='/report/' action_label='Create a report' %}</div>
-      {% endif %}
-    </section>
+<section class="section" id="threads" aria-labelledby="threads-title">
+  <div class="section__head">
+    <h2 class="title-sm" id="threads-title">Threads <em>to follow</em></h2>
+    <span class="margin-note">Ranked by similarity · from the matching engine</span>
   </div>
+  {% if top_matches %}
+    <div class="thread-rail">
+      {% for row in top_matches %}{% include 'partials/pair.html' with match=row.match mine=row.mine other=row.other href=row.mine.get_absolute_url %}{% endfor %}
+    </div>
+    {% with first=top_matches.0 %}
+    <div class="mt-6" data-observe>{% include 'partials/match_card.html' with match=first.match mine=first.mine other=first.other action_url=first.mine.get_absolute_url action_label='Open the case' %}</div>
+    {% endwith %}
+  {% else %}
+    <div class="sheet">{% include 'partials/empty.html' with icon='link' title='No threads yet' text='When a moderator approves a tag that resembles yours, a thread appears here with every reason behind the score.' action_url='/report/' action_label='File a tag' %}</div>
+  {% endif %}
+</section>
 
-  <aside class="stack stack-lg" aria-label="Cases and activity">
-    <section class="panel panel--flush" aria-labelledby="cases-title">
-      <div class="panel__head"><h2 id="cases-title">Recovery cases</h2><span class="actions"><a class="btn btn-ghost btn-sm" href="{% url 'claims:mine' %}">All claims</a></span></div>
-      {% if active_cases %}
-        <div class="list">
-        {% for c in active_cases %}
-          <a class="list-row" href="{% url 'claims:detail' c.pk %}">
-            {% include 'partials/thumb.html' with item=c.item %}
-            <span>
-              <span class="list-row__title truncate" style="display:block">{{ c.item.title }}</span>
-              <span class="list-row__meta"><span class="ref">{{ c.pk|claim_id }}</span>{{ c.get_status_display }}</span>
-              <span class="case-progress" aria-hidden="true">{% for s in c.timeline %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
-            </span>
-            <span class="list-row__aside">{% icon 'chevron-right' %}</span>
-          </a>
-        {% endfor %}
-        </div>
-      {% else %}
-        {% include 'partials/empty.html' with compact=True icon='key' title='No active cases' text='Claims you start, or return offers you make, are tracked here from submission to handover.' %}
-      {% endif %}
-    </section>
+<div class="desk-cols">
+  <section aria-labelledby="cases-title">
+    <div class="section__head"><h2 class="title-sm" id="cases-title">Cases <em>in motion</em></h2><a class="link xs" href="{% url 'claims:mine' %}">Every case</a></div>
+    {% for c in active_cases %}
+      <a class="case-row" href="{% url 'claims:detail' c.pk %}">
+        {% include 'partials/thumb.html' with item=c.item cls='thumb--lg' %}
+        <span style="min-width:0">
+          <span class="serial">{{ c.pk|claim_id }} · {% if c.item.is_found %}your claim{% else %}your return offer{% endif %}</span>
+          <span class="case-row__title" style="display:block">{{ c.item.title }}</span>
+          <span class="route--mini" aria-hidden="true">{% for s in c.timeline %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
+        </span>
+        {% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}
+      </a>
+    {% empty %}
+      {% include 'partials/empty.html' with compact=True icon='key' title='No cases moving' text='Claims you start and return offers you make are tracked here, from first message to handover.' %}
+    {% endfor %}
+  </section>
 
-    <section class="panel panel--flush" aria-labelledby="activity-title">
-      <div class="panel__head"><h2 id="activity-title">Recent activity</h2><span class="actions"><a class="btn btn-ghost btn-sm" href="{% url 'notifications:inbox' %}">Inbox</a></span></div>
-      {% if recent_notes %}
-        <div class="list">
-        {% for n in recent_notes %}
-          <a class="list-row" href="{% url 'notifications:open' n.pk %}">
-            <span class="thumb thumb--sm">{% icon n.icon_name %}</span>
-            <span><span class="list-row__title row" style="gap:6px">{% if not n.is_read %}<span class="unread-dot"></span><span class="sr-only">Unread:</span>{% endif %}<span class="truncate">{{ n.title }}</span></span><span class="list-row__meta">{{ n.created_at|naturaltime }}</span></span>
-          </a>
-        {% endfor %}
-        </div>
-      {% else %}
-        {% include 'partials/empty.html' with compact=True icon='bell' title='Nothing new' text='Match alerts and claim updates will show up here.' %}
-      {% endif %}
-    </section>
-  </aside>
+  <section aria-labelledby="ledger-title">
+    <div class="section__head"><h2 class="title-sm" id="ledger-title">The <em>ledger</em></h2><a class="link xs" href="{% url 'notifications:inbox' %}">All dispatches</a></div>
+    {% if recent_notes %}
+      <div class="timeline-ed">
+      {% for n in recent_notes %}
+        <a class="timeline-ed__item" href="{% url 'notifications:open' n.pk %}">
+          <span class="timeline-ed__when">{{ n.created_at|date:"j M" }}<br>{{ n.created_at|time:"H:i" }}</span>
+          <span><span class="timeline-ed__title">{% if not n.is_read %}<span class="dot" aria-hidden="true"></span><span class="sr-only">Unread:</span>{% endif %}{{ n.title }}</span>{% if n.body %}<span class="timeline-ed__body clamp-2" style="display:block">{{ n.body }}</span>{% endif %}</span>
+        </a>
+      {% endfor %}
+      </div>
+    {% else %}
+      {% include 'partials/empty.html' with compact=True icon='bell' title='A quiet ledger' text='Match alerts, questions and decisions will be written here.' %}
+    {% endif %}
+  </section>
 </div>
+
+<section class="section" aria-labelledby="mine-title">
+  <div class="section__head"><h2 class="title-sm" id="mine-title">Your <em>tags</em></h2><a class="link xs" href="{% url 'items:mine' %}">All {{ my_item_count }}</a></div>
+  {% if my_items %}
+    <div class="my-rail">{% for item in my_items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
+  {% else %}
+    <div class="sheet">{% include 'partials/empty.html' with icon='tag' title="You haven't filed a tag" text='It takes about a minute. A clear photo and a specific description make matching far more reliable.' action_url='/report/' action_label='File your first tag' %}</div>
+  {% endif %}
+</section>
 {% endblock %}

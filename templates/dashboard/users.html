@@ -1,70 +1,65 @@
 {% extends 'shell.html' %}
 {% load humanize ui %}
 {% block title %}People & roles{% endblock %}
-{% block page_title %}People &amp; roles{% endblock %}
 
 {% block main %}
-<header class="page-head">
-  <div class="page-head__text">
-    <span class="eyebrow">{% icon 'users' %}Administration</span>
-    <h1>People &amp; roles</h1>
+<header class="phead">
+  <div class="phead__title">
+    <span class="kicker">{% icon 'users' %}Administration</span>
+    <h1 class="title">People <em>&amp; roles</em></h1>
     <p class="lede">Roles are enforced on the server for every page and action. New sign-ups are always students; only administrators grant moderator or administrator access.</p>
   </div>
+  <div class="phead__actions figure" style="text-align:right"><span class="num" style="font-size:3.4rem;line-height:.8">{{ total }}</span><span class="figure__meta">registered</span></div>
 </header>
 
-<div class="cluster cluster-between" style="margin-bottom:var(--s-5)">
-  <nav class="segmented" aria-label="Filter by role">
-    <a href="{% query_with role=None page=None %}" {% if not sel_role %}aria-current="page"{% endif %}>Everyone <span class="count">{{ total }}</span></a>
+<div class="cluster between" style="margin-bottom:var(--s7)">
+  <nav class="seg" aria-label="Filter by role">
+    <a href="{% query_with role=None page=None %}" {% if not sel_role %}aria-current="page"{% endif %}>Everyone</a>
     {% for value, label in roles %}<a href="{% query_with role=value page=None %}" {% if sel_role == value %}aria-current="page"{% endif %}>{{ label }}s</a>{% endfor %}
   </nav>
-  <form method="get" role="search" style="flex:0 1 320px">
+  <form method="get" role="search" style="flex:0 1 340px" class="input-wrap">
     {% if sel_role %}<input type="hidden" name="role" value="{{ sel_role }}">{% endif %}
-    <label class="sr-only" for="user-q">Search people</label>
-    <div class="input-group">{% icon 'search' %}<input class="input" id="user-q" type="search" name="q" value="{{ q }}" placeholder="Name, username, email or enrolment"></div>
+    {% icon 'search' %}<label class="sr-only" for="user-q">Search people</label>
+    <input class="input" id="user-q" type="search" name="q" value="{{ q }}" placeholder="Name, username, email or enrolment" style="border-radius:var(--r-pill)">
   </form>
 </div>
 
-<div class="panel panel--flush">
-  <div class="table-wrap">
-    <table class="table table--stack">
-      <caption class="sr-only">Registered users and their roles</caption>
-      <thead><tr><th scope="col">Person</th><th scope="col">Enrolment</th><th scope="col" class="num">Reports</th><th scope="col" class="num">Claims</th><th scope="col">Joined</th><th scope="col">Role</th><th scope="col"><span class="sr-only">Account status</span></th></tr></thead>
-      <tbody>
-      {% for u in users %}
-        <tr{% if not u.is_active %} style="opacity:.6"{% endif %}>
-          <td data-label="Person"><div class="row"><span class="avatar" aria-hidden="true">{{ u.initials }}</span><div style="min-width:0"><div class="strong truncate">{{ u.display_name }}{% if u.pk == user.pk %} <span class="subtle">(you)</span>{% endif %}</div><div class="subtle truncate" style="font-size:var(--text-xs)">@{{ u.username }}{% if u.email %} · {{ u.email }}{% endif %}</div></div></div></td>
-          <td data-label="Enrolment" class="mono">{{ u.enrolment_no|default:"—" }}</td>
-          <td data-label="Reports" class="num">{{ u.report_count }}</td>
-          <td data-label="Claims" class="num">{{ u.claim_count }}</td>
-          <td data-label="Joined" class="nowrap">{{ u.date_joined|date:"j M Y" }}</td>
-          <td data-label="Role">
-            {% if u.pk == user.pk or u.is_superuser %}
-              <span class="status status--outline">{{ u.get_role_display }}</span>
-            {% else %}
-            <form method="post" class="row" style="gap:var(--s-2)" data-confirm="Change {{ u.display_name }}'s role?" data-confirm-text="Role changes take effect immediately and are recorded in the decision log. The person is notified." data-confirm-label="Change role">
-              {% csrf_token %}<input type="hidden" name="user_id" value="{{ u.pk }}">
-              <label class="sr-only" for="role-{{ u.pk }}">Role for {{ u.display_name }}</label>
-              <select name="role" id="role-{{ u.pk }}" class="input" style="min-height:var(--control-h-sm);width:auto;font-size:var(--text-sm)">
-                {% for val, label in roles %}<option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
-              </select>
-              <button class="btn btn-secondary btn-sm" type="submit">Save</button>
-            </form>
-            {% endif %}
-          </td>
-          <td data-label="Status" class="ta-right">
-            {% if u.pk != user.pk and not u.is_superuser %}
-            <form method="post" action="{% url 'dashboard:user_status' u.pk %}" data-confirm="{% if u.is_active %}Deactivate{% else %}Reactivate{% endif %} {{ u.display_name }}?" data-confirm-text="{% if u.is_active %}They will no longer be able to sign in. Their reports and claims are kept.{% else %}They will be able to sign in again.{% endif %}" data-confirm-tone="{% if u.is_active %}danger{% else %}neutral{% endif %}" data-confirm-label="{% if u.is_active %}Deactivate{% else %}Reactivate{% endif %}">
-              {% csrf_token %}<button class="btn btn-ghost btn-sm" type="submit">{% if u.is_active %}Deactivate{% else %}Reactivate{% endif %}</button>
-            </form>
-            {% elif u.is_superuser %}<span class="subtle" style="font-size:var(--text-xs)">Superuser</span>{% endif %}
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="7">{% include 'partials/empty.html' with icon='users' title='No people found' text='Try a different search or role filter.' %}</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<div class="table-wrap">
+  <table class="table table--stack">
+    <caption class="sr-only">Registered people and their roles</caption>
+    <thead><tr><th scope="col">Person</th><th scope="col">Enrolment</th><th scope="col" class="n">Tags</th><th scope="col" class="n">Claims</th><th scope="col">Joined</th><th scope="col">Role</th><th scope="col"><span class="sr-only">Account</span></th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr{% if not u.is_active %} style="opacity:.55"{% endif %}>
+        <td data-label="Person"><div class="row"><span class="avatar" aria-hidden="true">{{ u.initials }}</span><div style="min-width:0"><div class="strong truncate">{{ u.display_name }}{% if u.pk == user.pk %} <span class="faint">(you)</span>{% endif %}</div><div class="serial truncate">@{{ u.username }}{% if u.email %} · {{ u.email }}{% endif %}</div></div></div></td>
+        <td data-label="Enrolment" class="mono">{{ u.enrolment_no|default:"—" }}</td>
+        <td data-label="Tags" class="n">{{ u.report_count }}</td>
+        <td data-label="Claims" class="n">{{ u.claim_count }}</td>
+        <td data-label="Joined" class="nowrap mono">{{ u.date_joined|date:"j M Y" }}</td>
+        <td data-label="Role">
+          {% if u.pk == user.pk or u.is_superuser %}<span class="stamp stamp--accent">{{ u.get_role_display }}</span>
+          {% else %}
+          <form method="post" class="row" style="--gap:var(--s2)" data-confirm="Change {{ u.display_name }}'s role?" data-confirm-text="It takes effect immediately, is written in the decision log, and they're told." data-confirm-label="Change role" data-confirm-stamp="Role">
+            {% csrf_token %}<input type="hidden" name="user_id" value="{{ u.pk }}">
+            <label class="sr-only" for="role-{{ u.pk }}">Role for {{ u.display_name }}</label>
+            <select name="role" id="role-{{ u.pk }}" class="input" style="min-height:var(--control-sm);width:auto;font-size:var(--t-sm)">{% for val, label in roles %}<option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+            <button class="btn btn-paper btn-sm" type="submit">Save</button>
+          </form>
+          {% endif %}
+        </td>
+        <td data-label="Account" class="ta-r">
+          {% if u.pk != user.pk and not u.is_superuser %}
+          <form method="post" action="{% url 'dashboard:user_status' u.pk %}" data-confirm="{% if u.is_active %}Deactivate{% else %}Reactivate{% endif %} {{ u.display_name }}?" data-confirm-text="{% if u.is_active %}They can no longer sign in. Their tags and claims are kept.{% else %}They can sign in again.{% endif %}" data-confirm-tone="{% if u.is_active %}danger{% else %}neutral{% endif %}" data-confirm-label="{% if u.is_active %}Deactivate{% else %}Reactivate{% endif %}">
+            {% csrf_token %}<button class="btn btn-plain btn-sm" type="submit">{% if u.is_active %}Deactivate{% else %}Reactivate{% endif %}</button>
+          </form>
+          {% elif u.is_superuser %}<span class="serial">SUPERUSER</span>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">{% include 'partials/empty.html' with icon='users' title='Nobody matches' text='Try another search or role.' %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
 {% endblock %}

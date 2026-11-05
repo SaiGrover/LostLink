@@ -1,18 +1,17 @@
 {% extends 'shell.html' %}
 {% load ui %}
 {% block title %}Edit {{ obj.name }}{% endblock %}
-{% block page_title %}Categories &amp; zones{% endblock %}
 
 {% block main %}
-<nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'dashboard:taxonomy' %}">Categories &amp; zones</a>{% icon 'chevron-right' %}<span>{{ obj.name }}</span></nav>
-<header class="page-head">
-  <div class="page-head__text">
-    <span class="eyebrow">Edit {% if kind == 'category' %}category{% else %}campus zone{% endif %}</span>
-    <h1>{{ obj.name }}</h1>
-    <p class="lede">Used by {{ usage }} report{{ usage|pluralize }}. Renaming does not change existing reports' meaning; matching uses the record, not the label.</p>
+<header class="phead">
+  <div class="phead__top"><nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'dashboard:taxonomy' %}">Categories &amp; zones</a><span>/</span><span>{{ obj.name }}</span></nav></div>
+  <div class="phead__title">
+    <span class="kicker">Edit {% if kind == 'category' %}category{% else %}campus zone{% endif %}</span>
+    <h1 class="title">{{ obj.name }}</h1>
+    <p class="lede">Used by {{ usage }} tag{{ usage|pluralize }}. Matching uses the record, not its label, so renaming is safe.</p>
   </div>
 </header>
-<form method="post" novalidate class="panel panel__body stack" style="max-width:640px">
+<form method="post" novalidate class="stack" style="max-width:620px">
   {% csrf_token %}
   {% for field in form %}
     <div class="field{% if field.errors %} has-error{% endif %}">
@@ -22,9 +21,6 @@
       {{ field.errors }}
     </div>
   {% endfor %}
-  <div class="cluster" style="justify-content:flex-end">
-    <a class="btn btn-ghost" href="{% url 'dashboard:taxonomy' %}">Cancel</a>
-    <button class="btn btn-primary" type="submit">Save changes</button>
-  </div>
+  <div class="cluster end mt-4"><a class="btn btn-plain" href="{% url 'dashboard:taxonomy' %}">Cancel</a><button class="btn btn-ink" type="submit">Save changes</button></div>
 </form>
 {% endblock %}

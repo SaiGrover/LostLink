@@ -1,26 +1,21 @@
 {% extends 'shell.html' %}
 {% load ui %}
 {% block title %}{% if is_found %}Claim item{% else %}Offer to return{% endif %}{% endblock %}
-{% block page_title %}{% if is_found %}Start a claim{% else %}Offer to return{% endif %}{% endblock %}
 
 {% block main %}
-<nav class="crumbs" aria-label="Breadcrumb"><a href="{{ item.get_absolute_url }}">{{ item.pk|report_id }} · {{ item.title|truncatechars:32 }}</a>{% icon 'chevron-right' %}<span>{% if is_found %}Claim{% else %}Return offer{% endif %}</span></nav>
+<header class="phead">
+  <div class="phead__top"><nav class="crumbs" aria-label="Breadcrumb"><a href="{{ item.get_absolute_url }}">{{ item.pk|report_id }} · {{ item.title|truncatechars:32 }}</a><span>/</span><span>{% if is_found %}Claim{% else %}Return offer{% endif %}</span></nav></div>
+  <div class="phead__title">
+    <span class="kicker">{% if is_found %}{% icon 'key' %}Claiming a found item{% else %}{% icon 'swap' %}Answering a lost tag{% endif %}</span>
+    <h1 class="title">{% if is_found %}Tell us why it's <em>yours</em>{% else %}Tell them you <em>found it</em>{% endif %}</h1>
+    <p class="lede">{% if is_found %}Mention something about “{{ item.title }}” that isn't on the public tag. The finder or a moderator will follow up with private questions.{% else %}Say where and when you found “{{ item.title }}” and how it can be identified. The owner proves it's theirs before anything changes hands.{% endif %}</p>
+  </div>
+</header>
 
-<div class="split" style="--aside:360px">
-  <div>
-    <header class="page-head" style="margin-bottom:var(--s-6)">
-      <div class="page-head__text">
-        <span class="eyebrow">{% if is_found %}{% icon 'key' %}Claiming a found item{% else %}{% icon 'swap' %}Responding to a lost report{% endif %}</span>
-        <h1>{% if is_found %}Tell us why “{{ item.title }}” is yours{% else %}Let the owner know you found it{% endif %}</h1>
-        <p class="lede">{% if is_found %}Describe something about the item that isn't in the public report. The finder or a moderator will follow up with private questions.{% else %}Say where and when you found it and how it can be identified. The owner will be asked to prove it's theirs before anything changes hands.{% endif %}</p>
-      </div>
-    </header>
-
-    {% if match %}
-    <div class="callout callout--info" style="margin-bottom:var(--s-5)">{% icon 'link' %}<div>Linked to a <b>{{ match.percent }}% {{ match.get_tier_display|lower }}</b> match with your report. The score is context for the moderator, not proof.</div></div>
-    {% endif %}
-
-    <form method="post" novalidate class="panel panel__body stack" data-validate>
+<div class="cols" style="--a:1.4fr;--b:1fr;--gap:var(--s10)">
+  <div class="stack stack-6">
+    {% if match %}<div class="note note--info">{% icon 'link' %}<div>Linked to a <b>{{ match.percent }}/100 {{ match.get_tier_display|lower }}</b> thread from your own tag. The moderator sees it as context, not proof.</div></div>{% endif %}
+    <form method="post" novalidate class="stack stack-6" data-validate>
       {% csrf_token %}
       <div class="field{% if form.statement.errors %} has-error{% endif %}">
         <label class="label" for="{{ form.statement.id_for_label }}">{{ form.statement.label }} <span class="counter" id="statement-count"></span></label>
@@ -29,37 +24,28 @@
         {{ form.statement.errors }}
       </div>
       <div class="field-row">
-        <div class="field">
-          <label class="label" for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }} <span class="optional">optional</span></label>
-          {{ form.contact_phone }}{{ form.contact_phone.errors }}
-        </div>
-        <div class="field{% if form.contact_email.errors %} has-error{% endif %}">
-          <label class="label" for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }} <span class="optional">optional</span></label>
-          {{ form.contact_email }}<span class="error-text" id="{{ form.contact_email.id_for_label }}-live-error" aria-live="polite"></span>{{ form.contact_email.errors }}
-        </div>
+        <div class="field"><label class="label" for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }} <span class="opt">optional</span></label>{{ form.contact_phone }}{{ form.contact_phone.errors }}</div>
+        <div class="field{% if form.contact_email.errors %} has-error{% endif %}"><label class="label" for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }} <span class="opt">optional</span></label>{{ form.contact_email }}<span class="error-text" id="{{ form.contact_email.id_for_label }}-live-error" aria-live="polite"></span>{{ form.contact_email.errors }}</div>
       </div>
-      <div class="callout">{% icon 'lock' %}<div>Contact details stay hidden from the other person until a moderator approves this {% if is_found %}claim{% else %}offer{% endif %}.</div></div>
-      <div class="cluster" style="justify-content:flex-end">
-        <a href="{{ item.get_absolute_url }}" class="btn btn-ghost">Cancel</a>
-        <button type="submit" class="btn btn-primary">{% if is_found %}Submit claim{% else %}Send return offer{% endif %}{% icon 'arrow-right' %}</button>
+      <div class="note">{% icon 'lock' %}<div>Sealed: your contact details stay hidden from the other person until a moderator approves.</div></div>
+      <div class="cluster end">
+        <a href="{{ item.get_absolute_url }}" class="btn btn-plain">Cancel</a>
+        <button type="submit" class="btn btn-ink btn-lg">{% if is_found %}Submit claim{% else %}Send return offer{% endif %}{% icon 'arrow-right' 'icon-go' %}</button>
       </div>
     </form>
   </div>
 
-  <aside class="stack sticky" aria-label="Item and process">
-    <a class="item-card" href="{{ item.get_absolute_url }}" style="max-width:none">
-      <div class="item-card__media">{% if item.image %}<img src="{{ item.image.url }}" alt="Photo of {{ item.title }}">{% else %}<div class="placeholder-media" aria-hidden="true">{{ item.category.icon }}</div>{% endif %}{% include 'partials/type_badge.html' %}</div>
-      <div class="item-card__body"><span class="ref">{{ item.pk|report_id }}</span><h2 class="item-card__title">{{ item.title }}</h2><div class="item-card__meta"><span>{% icon 'pin' %}{{ item.location.name }}</span><span>{% icon 'calendar' %}{{ item.event_date|date:"j M Y" }}</span></div></div>
-    </a>
-    <section class="panel panel__body">
-      <h2 class="h4" style="margin-bottom:var(--s-4)">How verification works</h2>
-      <ol class="timeline">
-        <li class="timeline__step is-current"><span class="timeline__marker"></span><div><div class="timeline__title">You submit</div><div class="timeline__detail">Statement and contact details are recorded.</div></div></li>
-        <li class="timeline__step"><span class="timeline__marker">2</span><div><div class="timeline__title">Private questions</div><div class="timeline__detail">{% if is_found %}The finder or a moderator asks what only the owner would know.{% else %}You or a moderator can ask the owner to prove ownership.{% endif %}</div></div></li>
-        <li class="timeline__step"><span class="timeline__marker">3</span><div><div class="timeline__title">Moderator decision</div><div class="timeline__detail">A person approves or rejects. AI scores are only context.</div></div></li>
-        <li class="timeline__step"><span class="timeline__marker">4</span><div><div class="timeline__title">Handover</div><div class="timeline__detail">Contacts are shared, then a moderator confirms the return.</div></div></li>
+  <aside class="stack stack-8 sticky" aria-label="The item and what happens next">
+    <div style="max-width:300px">{% include 'items/partials/item_card.html' %}</div>
+    <div>
+      <span class="kicker">The route ahead</span>
+      <ol class="route mt-4" style="--n:1;grid-template-columns:minmax(0,1fr)">
+        <li class="route__stop is-current" style="display:grid;grid-template-columns:32px 1fr;column-gap:var(--s3);padding-bottom:var(--s4)"><span class="route__pin"></span><div><div class="route__title">You submit</div><div class="route__detail">Statement and sealed contact details.</div></div></li>
+        <li class="route__stop" style="display:grid;grid-template-columns:32px 1fr;column-gap:var(--s3);padding-bottom:var(--s4)"><span class="route__pin">2</span><div><div class="route__title">Private questions</div><div class="route__detail">What only the owner would know.</div></div></li>
+        <li class="route__stop" style="display:grid;grid-template-columns:32px 1fr;column-gap:var(--s3);padding-bottom:var(--s4)"><span class="route__pin">3</span><div><div class="route__title">A person decides</div><div class="route__detail">Moderators approve or reject. Scores are only context.</div></div></li>
+        <li class="route__stop" style="display:grid;grid-template-columns:32px 1fr;column-gap:var(--s3)"><span class="route__pin">4</span><div><div class="route__title">Handover</div><div class="route__detail">Contacts unseal; a moderator confirms the return.</div></div></li>
       </ol>
-    </section>
+    </div>
   </aside>
 </div>
 {% endblock %}

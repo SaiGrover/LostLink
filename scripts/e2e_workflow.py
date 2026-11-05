@@ -41,7 +41,7 @@ def login(browser, base, user, password):
 
 def report(page, base, rtype, title, description):
     page.goto(base + '/report/')
-    page.locator('label.choice-tile', has=page.locator(f'input[value={rtype}]')).click()
+    page.locator('.stamp-choice label', has=page.locator(f'input[value={rtype}]')).click()
     expect(page.locator(f'input[name=report_type][value={rtype}]')).to_be_checked()
     page.fill('input[name=title]', title)
     page.select_option('[name=category]', label='Others')
@@ -49,10 +49,10 @@ def report(page, base, rtype, title, description):
     page.fill('textarea[name=description]', description)
     page.fill('[name=color]', 'blue')
     page.set_input_files('input[type=file]', photo())
-    expect(page.locator('[data-preview-card] [data-p=title]')).to_have_text(title)
+    expect(page.locator('[data-preview] [data-p=title]')).to_have_text(title)
     page.click('button[type=submit]')
     page.wait_for_url(re.compile(r'/item/\d+/$'))
-    expect(page.locator('.callout--warning')).to_contain_text('Awaiting moderator review')
+    expect(page.locator('.note--warn')).to_contain_text('Waiting for a moderator')
     return int(re.search(r'/item/(\d+)/', page.url).group(1))
 
 
@@ -86,20 +86,20 @@ def main():
             mod.click('form[action*="/approve/"] button')
             confirm(mod, note='Clear report')
             mod.wait_for_url(f'**/item/{item_id}/')
-            expect(mod.locator('.status').first).to_contain_text('Approved')
+            expect(mod.locator('.stamp--info').first).to_contain_text('Approved')
         steps.append('moderator approved both reports through the confirmation dialog')
 
         owner.goto(f'{base}/item/{lost_id}/')
-        match = owner.locator('.match').first
+        match = owner.locator('.board').first
         expect(match).to_contain_text(f'Blue umbrella {TAG}')
-        score = match.locator('.dial__value').first.inner_text().replace('\n', '')
+        score = match.locator('.board__num').first.inner_text().replace('\n', '')
         steps.append(f'owner sees the match on their lost report: {score} with full breakdown')
         owner.goto(base + '/notifications/')
-        expect(owner.locator('.notif').first).to_contain_text('umbrella')
+        expect(owner.locator('.dispatch').first).to_contain_text('umbrella')
         steps.append('owner received an in-app match notification')
 
         owner.goto(f'{base}/item/{lost_id}/')
-        owner.click('.match__foot a.btn')
+        owner.click('.board__foot a.btn')
         owner.fill('[name=statement]', 'It has a yellow square patch sewn on by me and a chipped wooden handle.')
         owner.click('button[type=submit]')
         owner.wait_for_url(re.compile(r'/claims/\d+/$'))
@@ -123,7 +123,7 @@ def main():
         mod.click('form[action*="/decide/"][action$="/approve/"] button')
         confirm(mod, note='Initials match the finder\'s check')
         mod.wait_for_url(claim_url)
-        expect(mod.locator('.callout--success')).to_contain_text('Approved, not yet returned')
+        expect(mod.locator('.note--ok')).to_contain_text('Approved, not yet returned')
         steps.append('moderator approved the claim; item not yet marked returned')
 
         owner.goto(claim_url)
@@ -134,9 +134,9 @@ def main():
         mod.click('form[action*="/return/"] button')
         confirm(mod, note='Collected at the library desk')
         mod.wait_for_url(claim_url)
-        expect(mod.locator('.timeline__step.is-done')).to_have_count(5)
+        expect(mod.locator('.route__stop.is-done')).to_have_count(5)
         mod.goto(f'{base}/item/{found_id}/')
-        expect(mod.locator('.callout--success')).to_contain_text('Returned')
+        expect(mod.locator('.note--ok')).to_contain_text('Returned')
         steps.append('handover confirmed: claim returned, report closed, timeline complete')
 
         mod.goto(base + '/manage/moderation/history/')

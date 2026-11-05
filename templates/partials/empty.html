@@ -1,6 +1,6 @@
-{% load ui %}<div class="empty{% if compact %} empty--compact{% endif %}">
-  <div class="empty__mark">{% icon icon|default:'inbox' %}</div>
-  <h3>{{ title }}</h3>
+{% load ui %}<div class="empty{% if compact %} empty--sm{% endif %}">
+  <div class="empty__tag" aria-hidden="true">{% icon icon|default:'tag' %}</div>
+  <p class="empty__title">{{ title }}</p>
   {% if text %}<p>{{ text }}</p>{% endif %}
-  {% if action_url %}<a class="btn btn-secondary btn-sm" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+  {% if action_url %}<a class="btn btn-paper btn-sm" href="{{ action_url }}">{{ action_label }}{% icon 'arrow-right' 'icon-go' %}</a>{% endif %}
 </div>

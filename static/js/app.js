@@ -1,336 +1,228 @@
-/* LostLink interface behaviour. Progressive enhancement only: every form and
-   link works without this file; it adds feedback, motion and shortcuts. */
+/* LostLink interface behaviour — progressive enhancement only.
+   Every form and link works without this file. It adds motion, feedback,
+   shortcuts and the scroll-told story on the landing page. */
 (function () {
   'use strict';
   var doc = document, root = doc.documentElement;
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(s, c) { return (c || doc).querySelector(s); }
+  function $$(s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); }
+  function csrf() { var m = doc.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); var i = $('input[name=csrfmiddlewaretoken]'); return m ? decodeURIComponent(m[1]) : (i ? i.value : ''); }
+  window.LostLink = { $: $, $$: $$, csrf: csrf, toast: toast, animateIn: animateIn };
 
-  function $(sel, ctx) { return (ctx || doc).querySelector(sel); }
-  function $$(sel, ctx) { return Array.prototype.slice.call((ctx || doc).querySelectorAll(sel)); }
-  function csrf() {
-    var m = doc.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-    var input = $('input[name=csrfmiddlewaretoken]');
-    return m ? decodeURIComponent(m[1]) : (input ? input.value : '');
-  }
-  window.LostLink = { $: $, $$: $$, csrf: csrf, toast: toast };
-
-  /* ---- Theme ------------------------------------------------------------ */
-  function currentTheme() {
-    return root.getAttribute('data-theme') ||
-      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  }
-  $$('[data-theme-toggle]').forEach(function (btn) {
-    btn.setAttribute('aria-pressed', String(currentTheme() === 'dark'));
-    btn.addEventListener('click', function () {
-      var next = currentTheme() === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      btn.setAttribute('aria-pressed', String(next === 'dark'));
-      try { localStorage.setItem('lostlink-theme', next); } catch (e) {}
+  /* ---- Theme: paper by default, dark only when chosen --------------------- */
+  $$('[data-theme-toggle]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var dark = root.getAttribute('data-theme') !== 'dark';
+      if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+      try { localStorage.setItem('lostlink-theme', dark ? 'dark' : 'light'); } catch (e) {}
     });
   });
 
-  /* ---- Mobile navigation drawer ---------------------------------------- */
-  var shell = $('.shell'), navToggle = $('.nav-toggle'), scrim = null;
-  function setNav(open) {
-    if (!shell) return;
-    shell.classList.toggle('nav-open', open);
-    if (navToggle) navToggle.setAttribute('aria-expanded', String(open));
-    doc.body.style.overflow = open ? 'hidden' : '';
-    if (open) {
-      scrim = doc.createElement('div'); scrim.className = 'scrim';
-      scrim.addEventListener('click', function () { setNav(false); });
-      doc.body.appendChild(scrim);
-      var first = $('.sidebar a'); if (first) first.focus();
-    } else if (scrim) { scrim.remove(); scrim = null; }
-  }
-  if (navToggle) navToggle.addEventListener('click', function () { setNav(!shell.classList.contains('nav-open')); });
+  /* ---- Masthead hairline on scroll --------------------------------------- */
+  var mast = $('.mast');
+  if (mast) { var onS = function () { mast.classList.toggle('is-scrolled', window.scrollY > 6); }; window.addEventListener('scroll', onS, { passive: true }); onS(); }
 
-  /* ---- Topbar border on scroll ----------------------------------------- */
-  var topbar = $('.topbar');
-  if (topbar) {
-    var onScroll = function () { topbar.classList.toggle('is-scrolled', window.scrollY > 4); };
-    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
-  }
-
-  /* ---- Menus (details): close on outside click / Escape ----------------- */
-  doc.addEventListener('click', function (e) {
-    $$('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
-  });
+  /* ---- Menus: close on outside click / Escape; "/" focuses search -------- */
+  doc.addEventListener('click', function (e) { $$('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); }); });
   doc.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      $$('details.menu[open]').forEach(function (d) { d.removeAttribute('open'); var s = $('summary', d); if (s) s.focus(); });
-      if (shell && shell.classList.contains('nav-open')) { setNav(false); if (navToggle) navToggle.focus(); }
-    }
-    // "/" focuses search unless typing.
-    if (e.key === '/' && !/input|textarea|select/i.test((doc.activeElement || {}).tagName || '')) {
-      var s = $('[data-search-shortcut]');
-      if (s) { e.preventDefault(); s.focus(); s.select && s.select(); }
-    }
+    if (e.key === 'Escape') $$('details.menu[open]').forEach(function (d) { d.removeAttribute('open'); var s = $('summary', d); if (s) s.focus(); });
+    if (e.key === '/' && !/input|textarea|select/i.test((doc.activeElement || {}).tagName || '')) { var s = $('[data-search-shortcut]'); if (s && s.offsetParent) { e.preventDefault(); s.focus(); } }
   });
 
-  /* ---- Toasts ----------------------------------------------------------- */
-  var ICONS = { success: 'check', danger: 'alert', warning: 'alert', info: 'info', muted: 'info' };
-  function dismiss(el) {
-    if (!el || el.classList.contains('is-leaving')) return;
-    el.classList.add('is-leaving');
-    setTimeout(function () { el.remove(); }, 220);
-  }
+  /* ---- Toasts ------------------------------------------------------------- */
+  var ICON = { success: 'check', danger: 'alert', warning: 'alert' };
+  function dismiss(el) { if (el.classList.contains('is-leaving')) return; el.classList.add('is-leaving'); setTimeout(function () { el.remove(); }, 240); }
   function arm(el) {
-    var timer = setTimeout(function () { dismiss(el); }, 6000);
-    el.addEventListener('mouseenter', function () { clearTimeout(timer); });
-    el.addEventListener('mouseleave', function () { timer = setTimeout(function () { dismiss(el); }, 2500); });
-    var close = $('.toast__close', el);
-    if (close) close.addEventListener('click', function () { dismiss(el); });
+    var t = setTimeout(function () { dismiss(el); }, 6000);
+    el.addEventListener('mouseenter', function () { clearTimeout(t); });
+    el.addEventListener('mouseleave', function () { t = setTimeout(function () { dismiss(el); }, 2500); });
+    var x = $('.toast__x', el); if (x) x.addEventListener('click', function () { dismiss(el); });
   }
-  function toast(message, tone) {
-    var region = $('#toasts');
-    if (!region) return;
-    tone = tone || 'info';
-    var el = doc.createElement('div');
-    el.className = 'toast toast--' + tone;
-    el.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
-    el.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-' + (ICONS[tone] || 'info') + '"></use></svg>' +
-      '<div></div><button type="button" class="toast__close" aria-label="Dismiss"><svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></button>';
-    el.children[1].textContent = message;
-    region.appendChild(el); arm(el);
+  function toast(msg, tone) {
+    var r = $('#toasts'); if (!r) return; tone = tone || 'info';
+    var el = doc.createElement('div'); el.className = 'toast toast--' + tone; el.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
+    el.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-' + (ICON[tone] || 'info') + '"></use></svg><div></div><button type="button" class="toast__x" aria-label="Dismiss"><svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></button>';
+    el.children[1].textContent = msg; r.appendChild(el); arm(el);
   }
   $$('#toasts .toast').forEach(arm);
 
-  /* ---- Confirmation dialog for consequential forms --------------------- */
+  /* ---- Confirmation dialog: consequential actions get a stamped question -- */
   var dialog = $('#confirm-dialog'), pending = null;
-  if (dialog && typeof dialog.showModal === 'function') {
-    var titleEl = $('[data-confirm-title]', dialog), textEl = $('[data-confirm-text]', dialog),
-        okBtn = $('[data-confirm-ok]', dialog), noteWrap = $('[data-confirm-note]', dialog),
-        noteInput = $('textarea', noteWrap), iconUse = $('[data-confirm-icon] use', dialog);
+  if (dialog && dialog.showModal) {
+    var tEl = $('[data-confirm-title]', dialog), xEl = $('[data-confirm-text]', dialog), ok = $('[data-confirm-ok]', dialog),
+        noteWrap = $('[data-confirm-note]', dialog), note = $('textarea', noteWrap), stampEl = $('[data-confirm-stamp]', dialog);
     doc.addEventListener('submit', function (e) {
-      var form = e.target;
-      if (!form.matches('form[data-confirm]') || form.dataset.confirmed === '1') return;
-      e.preventDefault();
-      pending = form;
-      var tone = form.dataset.confirmTone || 'neutral';
-      dialog.className = 'dialog dialog--' + tone;
-      titleEl.textContent = form.dataset.confirm;
-      textEl.textContent = form.dataset.confirmText || '';
-      okBtn.textContent = form.dataset.confirmLabel || 'Confirm';
-      okBtn.className = 'btn ' + (tone === 'danger' ? 'btn-danger' : tone === 'success' ? 'btn-success' : 'btn-primary');
-      iconUse.setAttribute('href', '#i-' + (tone === 'danger' ? 'alert' : tone === 'success' ? 'check' : 'info'));
-      var wantsNote = form.hasAttribute('data-confirm-note');
-      noteWrap.hidden = !wantsNote;
-      if (wantsNote) {
-        noteInput.value = (form.querySelector('[name=note]') || {}).value || '';
-        noteInput.placeholder = form.dataset.confirmNote || 'Optional note';
-      }
-      dialog.showModal();
-      (wantsNote ? noteInput : okBtn).focus();
+      var f = e.target;
+      if (!f.matches('form[data-confirm]') || f.dataset.confirmed === '1') return;
+      e.preventDefault(); pending = f;
+      var tone = f.dataset.confirmTone || 'neutral';
+      tEl.textContent = f.dataset.confirm; xEl.textContent = f.dataset.confirmText || '';
+      ok.textContent = f.dataset.confirmLabel || 'Confirm';
+      ok.className = 'btn ' + (tone === 'danger' ? 'btn-bad' : tone === 'success' ? 'btn-ok' : 'btn-ink');
+      stampEl.className = 'stamp stamp--lg dialog__stamp stamp--' + (tone === 'danger' ? 'bad' : tone === 'success' ? 'ok' : 'ink') + ' is-stamped';
+      stampEl.textContent = f.dataset.confirmStamp || (tone === 'danger' ? 'Careful' : tone === 'success' ? 'Approve' : 'Confirm');
+      var wants = f.hasAttribute('data-confirm-note'); noteWrap.hidden = !wants;
+      if (wants) { note.value = (f.querySelector('[name=note]') || {}).value || ''; note.placeholder = f.dataset.confirmNote || 'Optional note'; }
+      dialog.showModal(); (wants ? note : ok).focus();
     });
-    okBtn.addEventListener('click', function () {
+    ok.addEventListener('click', function () {
       if (!pending) return;
-      if (!noteWrap.hidden) {
-        var field = pending.querySelector('[name=note]');
-        if (!field) { field = doc.createElement('input'); field.type = 'hidden'; field.name = 'note'; pending.appendChild(field); }
-        field.value = noteInput.value;
-      }
-      pending.dataset.confirmed = '1';
-      var form = pending; pending = null;
-      dialog.close();
-      var btn = form.querySelector('[type=submit], button:not([type])');
-      if (btn) btn.classList.add('is-loading');
-      form.submit();
+      if (!noteWrap.hidden) { var fld = pending.querySelector('[name=note]'); if (!fld) { fld = doc.createElement('input'); fld.type = 'hidden'; fld.name = 'note'; pending.appendChild(fld); } fld.value = note.value; }
+      pending.dataset.confirmed = '1'; var f = pending; pending = null; dialog.close();
+      var b = f.querySelector('[type=submit], button:not([type])'); if (b) b.classList.add('is-loading');
+      f.submit();
     });
     $$('[data-confirm-cancel]', dialog).forEach(function (b) { b.addEventListener('click', function () { pending = null; dialog.close(); }); });
     dialog.addEventListener('click', function (e) { if (e.target === dialog) { pending = null; dialog.close(); } });
   }
 
-  /* ---- Submit feedback (prevents double submission) -------------------- */
+  /* ---- Submit feedback (no double posts) ---------------------------------- */
   doc.addEventListener('submit', function (e) {
-    var form = e.target;
-    if (e.defaultPrevented || form.hasAttribute('data-no-loading') || form.method.toLowerCase() === 'get') return;
-    var btn = e.submitter || form.querySelector('button[type=submit], button:not([type])');
-    if (btn && btn.classList.contains('btn')) {
-      setTimeout(function () { btn.classList.add('is-loading'); btn.setAttribute('aria-busy', 'true'); }, 0);
-    }
+    var f = e.target;
+    if (e.defaultPrevented || f.hasAttribute('data-no-loading') || f.method.toLowerCase() === 'get') return;
+    var b = e.submitter || f.querySelector('button[type=submit], button:not([type])');
+    if (b && b.classList.contains('btn')) setTimeout(function () { b.classList.add('is-loading'); b.setAttribute('aria-busy', 'true'); }, 0);
   });
 
-  /* ---- Password visibility & caps lock --------------------------------- */
-  $$('[data-reveal-password]').forEach(function (btn) {
-    var input = doc.getElementById(btn.getAttribute('aria-controls'));
-    if (!input) return;
-    btn.addEventListener('click', function () {
-      var show = input.type === 'password';
-      input.type = show ? 'text' : 'password';
-      btn.setAttribute('aria-pressed', String(show));
-      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-      $('use', btn).setAttribute('href', show ? '#i-eye-off' : '#i-eye');
+  /* ---- Password reveal, caps lock, live guidance -------------------------- */
+  $$('[data-reveal-password]').forEach(function (b) {
+    var i = doc.getElementById(b.getAttribute('aria-controls')); if (!i) return;
+    b.addEventListener('click', function () {
+      var show = i.type === 'password'; i.type = show ? 'text' : 'password';
+      b.setAttribute('aria-pressed', String(show)); b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      $('use', b).setAttribute('href', show ? '#i-eye-off' : '#i-eye');
     });
   });
-  $$('input[type=password]').forEach(function (input) {
-    var warn = doc.getElementById(input.id + '-caps');
-    if (!warn) return;
-    function check(e) { if (e.getModifierState) warn.hidden = !e.getModifierState('CapsLock'); }
-    input.addEventListener('keyup', check); input.addEventListener('keydown', check);
-    input.addEventListener('blur', function () { warn.hidden = true; });
+  $$('input[type=password]').forEach(function (i) {
+    var w = doc.getElementById(i.id + '-caps'); if (!w) return;
+    function c(e) { if (e.getModifierState) w.hidden = !e.getModifierState('CapsLock'); }
+    i.addEventListener('keyup', c); i.addEventListener('keydown', c); i.addEventListener('blur', function () { w.hidden = true; });
   });
-
-  /* ---- Live password guidance (register) ------------------------------- */
-  var pw1 = $('[data-password-strength]');
-  if (pw1) {
-    var list = doc.getElementById(pw1.dataset.passwordStrength), pw2 = doc.getElementById(pw1.dataset.confirmWith);
-    function evaluate() {
-      var v = pw1.value;
-      var rules = { length: v.length >= 8, numeric: v.length > 0 && !/^\d+$/.test(v),
-                    mix: /[a-zA-Z]/.test(v) && /[^a-zA-Z]/.test(v), match: !!pw2 && v.length > 0 && v === pw2.value };
-      Object.keys(rules).forEach(function (k) { var li = $('[data-rule=' + k + ']', list); if (li) li.classList.toggle('is-met', rules[k]); });
-    }
-    pw1.addEventListener('input', evaluate); if (pw2) pw2.addEventListener('input', evaluate);
+  var pw = $('[data-password-strength]');
+  if (pw) {
+    var list = doc.getElementById(pw.dataset.passwordStrength), pw2 = doc.getElementById(pw.dataset.confirmWith);
+    var ev = function () { var v = pw.value; var r = { length: v.length >= 8, numeric: v.length > 0 && !/^\d+$/.test(v), mix: /[a-zA-Z]/.test(v) && /[^a-zA-Z]/.test(v), match: !!pw2 && v.length > 0 && v === pw2.value };
+      Object.keys(r).forEach(function (k) { var li = $('[data-rule=' + k + ']', list); if (li) li.classList.toggle('is-met', r[k]); }); };
+    pw.addEventListener('input', ev); if (pw2) pw2.addEventListener('input', ev);
   }
-
-  /* ---- Inline validation on blur --------------------------------------- */
-  $$('form[data-validate] .input[required], form[data-validate] .field-input[required], form[data-validate] input[type=email]').forEach(function (input) {
-    input.addEventListener('blur', function () {
-      if (!input.value && !input.required) return;
-      var valid = input.checkValidity();
-      input.setAttribute('aria-invalid', String(!valid));
-      var msg = doc.getElementById(input.id + '-live-error');
-      if (msg) msg.textContent = valid ? '' : input.validationMessage;
-    });
-    input.addEventListener('input', function () { if (input.getAttribute('aria-invalid') === 'true' && input.checkValidity()) { input.setAttribute('aria-invalid', 'false'); var msg = doc.getElementById(input.id + '-live-error'); if (msg) msg.textContent = ''; } });
+  $$('form[data-validate] .input[required], form[data-validate] input[type=email]').forEach(function (i) {
+    i.addEventListener('blur', function () { if (!i.value && !i.required) return; var v = i.checkValidity(); i.setAttribute('aria-invalid', String(!v)); var m = doc.getElementById(i.id + '-live-error'); if (m) m.textContent = v ? '' : i.validationMessage; });
   });
+  $$('[data-counter]').forEach(function (i) { var o = doc.getElementById(i.dataset.counter), max = i.getAttribute('maxlength'); var u = function () { o.textContent = i.value.length + (max ? ' / ' + max : ''); }; i.addEventListener('input', u); u(); });
 
-  /* ---- Character counters ---------------------------------------------- */
-  $$('[data-counter]').forEach(function (input) {
-    var out = doc.getElementById(input.dataset.counter), max = input.getAttribute('maxlength');
-    function update() { out.textContent = input.value.length + (max ? ' / ' + max : ''); }
-    input.addEventListener('input', update); update();
-  });
-
-  /* ---- Photo upload with preview --------------------------------------- */
-  $$('[data-dropzone]').forEach(function (zone) {
-    var input = $('input[type=file]', zone), preview = $('.dropzone__preview', zone), img = preview && $('img', preview),
-        name = $('[data-file-name]', zone), err = $('[data-file-error]', zone), maxMb = Number(zone.dataset.maxMb || 5);
-    var clear = $('[data-file-clear]', zone);
+  /* ---- Photo dropzone + live tag preview ---------------------------------- */
+  $$('[data-dropzone]').forEach(function (z) {
+    var input = $('input[type=file]', z), pv = $('.dropzone__preview', z), img = pv && $('img', pv), name = $('[data-file-name]', z), err = $('[data-file-error]'), max = Number(z.dataset.maxMb || 5);
     function show(file) {
       if (err) err.textContent = '';
-      if (!file) { zone.classList.remove('has-file'); if (preview) preview.hidden = true; return; }
+      if (!file) { z.classList.remove('has-file'); if (pv) pv.hidden = true; return; }
       if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) { if (err) err.textContent = 'Choose a JPG, PNG, WEBP or GIF image.'; input.value = ''; return; }
-      if (file.size > maxMb * 1024 * 1024) { if (err) err.textContent = 'That photo is larger than ' + maxMb + ' MB.'; input.value = ''; return; }
-      zone.classList.add('has-file');
-      if (preview && img) { img.src = URL.createObjectURL(file); preview.hidden = false; }
-      if (name) name.textContent = file.name + ' · ' + (file.size / 1024 / 1024).toFixed(1) + ' MB';
-      zone.dispatchEvent(new CustomEvent('photo:change', { bubbles: true, detail: { url: img && img.src } }));
+      if (file.size > max * 1048576) { if (err) err.textContent = 'That photo is larger than ' + max + ' MB.'; input.value = ''; return; }
+      z.classList.add('has-file'); if (pv && img) { img.src = URL.createObjectURL(file); pv.hidden = false; }
+      if (name) name.textContent = file.name + ' · ' + (file.size / 1048576).toFixed(1) + ' MB';
+      z.dispatchEvent(new CustomEvent('photo:change', { bubbles: true, detail: { url: img && img.src } }));
     }
     input.addEventListener('change', function () { show(input.files[0]); });
-    ['dragenter', 'dragover'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.add('is-dragover'); }); });
-    ['dragleave', 'drop'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.remove('is-dragover'); }); });
-    if (clear) clear.addEventListener('click', function (e) { e.preventDefault(); input.value = ''; show(null); zone.dispatchEvent(new CustomEvent('photo:change', { bubbles: true, detail: {} })); });
+    ['dragenter', 'dragover'].forEach(function (t) { z.addEventListener(t, function () { z.classList.add('is-over'); }); });
+    ['dragleave', 'drop'].forEach(function (t) { z.addEventListener(t, function () { z.classList.remove('is-over'); }); });
   });
-
-  /* ---- Live report preview card ---------------------------------------- */
-  var previewCard = $('[data-preview-card]');
-  if (previewCard) {
-    var form = previewCard.closest('form') || doc.querySelector('form[data-report-form]');
-    function sync() {
-      var get = function (n) { var el = form.elements[n]; return el ? el : null; };
+  var pc = $('[data-preview]');
+  if (pc) {
+    var form = doc.querySelector('form[data-report-form]');
+    var sync = function () {
+      var g = function (n) { return form.elements[n]; };
       var type = (form.querySelector('input[name=report_type]:checked') || {}).value || 'lost';
-      var title = get('title').value.trim() || 'Untitled item';
-      var cat = get('category'), loc = get('location'), date = get('event_date');
-      $('[data-p=title]', previewCard).textContent = title;
-      var badge = $('[data-p=type]', previewCard);
-      badge.className = 'type type--' + type;
-      $('use', badge).setAttribute('href', '#i-' + type);
-      $('[data-p=type-label]', previewCard).textContent = type === 'found' ? 'Found' : 'Lost';
-      $('[data-p=category]', previewCard).textContent = cat && cat.value ? cat.options[cat.selectedIndex].text : 'Category';
-      $('[data-p=location]', previewCard).textContent = loc && loc.value ? loc.options[loc.selectedIndex].text : 'Campus zone';
-      $('[data-p=date]', previewCard).textContent = date && date.value ? new Date(date.value + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : 'Date';
-    }
+      var tag = $('.tag', pc); tag.className = 'tag tag--' + type;
+      var st = $('[data-p=type]', pc); st.className = 'stamp stamp--' + type; st.lastChild.textContent = type === 'found' ? 'Found' : 'Lost'; $('use', st).setAttribute('href', '#i-' + type);
+      $('[data-p=title]', pc).textContent = g('title').value.trim() || 'Name your item';
+      var cat = g('category'), loc = g('location'), dt = g('event_date');
+      $('[data-p=location]', pc).textContent = loc && loc.value ? loc.options[loc.selectedIndex].text : 'Campus zone';
+      $('[data-p=date]', pc).textContent = dt && dt.value ? new Date(dt.value + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : 'Date';
+      $('[data-p=category]', pc).textContent = cat && cat.value ? cat.options[cat.selectedIndex].text : 'Category';
+    };
     form.addEventListener('input', sync); form.addEventListener('change', sync); sync();
-    form.addEventListener('photo:change', function (e) {
-      var media = $('[data-p=media]', previewCard);
-      if (e.detail && e.detail.url) media.innerHTML = '<img alt="" src="' + e.detail.url + '">';
-      else media.innerHTML = '<div class="placeholder-media" aria-hidden="true">·</div>';
-    });
+    form.addEventListener('photo:change', function (e) { var m = $('[data-p=media]', pc); m.innerHTML = e.detail && e.detail.url ? '<img alt="" src="' + e.detail.url + '">' : '<div class="tag__placeholder" aria-hidden="true">·</div>'; });
   }
 
-  /* ---- Tabs (progressive: all panels visible without JS) --------------- */
-  $$('[data-tabs]').forEach(function (group) {
-    var tabs = $$('[role=tab]', group);
-    function select(tab, focus, remember) {
-      tabs.forEach(function (t) {
-        var on = t === tab, panel = doc.getElementById(t.getAttribute('aria-controls'));
-        t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
-        if (panel) { if (on) panel.removeAttribute('data-inactive'); else panel.setAttribute('data-inactive', ''); }
-      });
-      if (focus) tab.focus();
-      // Only user choices update the URL: writing a fragment during page load
-      // makes the browser jump to it when loading finishes.
-      if (remember && history.replaceState) history.replaceState(null, '', '#' + tab.getAttribute('aria-controls'));
+  /* ---- Tabs (all panels visible without JS) -------------------------------- */
+  $$('[data-tabs]').forEach(function (g) {
+    var tabs = $$('[role=tab]', g);
+    function sel(t, focus, remember) {
+      tabs.forEach(function (x) { var on = x === t, p = doc.getElementById(x.getAttribute('aria-controls')); x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; if (p) { if (on) p.removeAttribute('data-inactive'); else p.setAttribute('data-inactive', ''); } });
+      if (focus) t.focus();
+      if (remember && history.replaceState) history.replaceState(null, '', '#' + t.getAttribute('aria-controls'));
     }
-    tabs.forEach(function (tab, i) {
-      tab.addEventListener('click', function (e) { e.preventDefault(); select(tab, false, true); });
-      tab.addEventListener('keydown', function (e) {
-        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-        if (d) { e.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length], true, true); }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function (e) { e.preventDefault(); sel(t, false, true); });
+      t.addEventListener('keydown', function (e) { var d = /Right|Down/.test(e.key) ? 1 : /Left|Up/.test(e.key) ? -1 : 0; if (d) { e.preventDefault(); sel(tabs[(i + d + tabs.length) % tabs.length], true, true); } });
+    });
+    sel(tabs.filter(function (t) { return '#' + t.getAttribute('aria-controls') === location.hash; })[0] || tabs[0]);
+  });
+
+  /* ---- In-view choreography: reveals, boards, counters, weights ---------- */
+  function countUp(el) {
+    var target = Number(el.dataset.count); if (!isFinite(target) || reduce) return;
+    var t0 = null, dur = 900;
+    function step(ts) { if (!t0) t0 = ts; var p = Math.min((ts - t0) / dur, 1); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }
+    el.textContent = '0'; requestAnimationFrame(step);
+  }
+  function animateIn(scope) {
+    var els = $$('[data-reveal], [data-board], [data-observe]', scope || doc);
+    if (!('IntersectionObserver' in window) || reduce) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('is-in');
+        $$('[data-count]', en.target).forEach(countUp);
+        io.unobserve(en.target);
       });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 });
+    els.forEach(function (e) { io.observe(e); });
+  }
+  animateIn();
+
+  /* ---- Landing story: chapters drive the sticky scene --------------------- */
+  var scene = $('[data-scene]'), chapters = $$('[data-chapter]');
+  if (scene && chapters.length) {
+    var setStep = function (n) { scene.setAttribute('data-step', n); chapters.forEach(function (c) { c.classList.toggle('is-active', c.dataset.chapter === String(n)); }); };
+    if ('IntersectionObserver' in window) {
+      var cio = new IntersectionObserver(function (es) { es.forEach(function (en) { if (en.isIntersecting) setStep(en.target.dataset.chapter); }); }, { rootMargin: '-45% 0px -45% 0px' });
+      chapters.forEach(function (c) { cio.observe(c); });
+    } else setStep(5);
+  }
+
+  /* ---- Hero tags follow the pointer a little (desktop, motion allowed) ---- */
+  var stage = $('[data-parallax]');
+  if (stage && !reduce && window.matchMedia('(pointer: fine)').matches) {
+    stage.addEventListener('pointermove', function (e) {
+      var r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+      $$('[data-depth]', stage).forEach(function (el) { var d = Number(el.dataset.depth); el.style.translate = (x * d * 18) + 'px ' + (y * d * 12) + 'px'; });
     });
-    var initial = tabs.filter(function (t) { return '#' + t.getAttribute('aria-controls') === location.hash; })[0] || tabs[0];
-    if (initial) select(initial);
-  });
-
-  /* ---- Scroll reveal ---------------------------------------------------- */
-  var revealables = $$('[data-reveal]');
-  if (revealables.length && 'IntersectionObserver' in window && !reduceMotion) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); } });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-    revealables.forEach(function (el) { io.observe(el); });
-  } else {
-    revealables.forEach(function (el) { el.classList.add('is-visible'); });
+    stage.addEventListener('pointerleave', function () { $$('[data-depth]', stage).forEach(function (el) { el.style.translate = '0 0'; }); });
   }
 
-  /* ---- Notifications: mark read without reload, live badge ------------- */
-  function setBadge(n) {
-    $$('[data-unread-badge]').forEach(function (b) { b.textContent = n; b.hidden = !n; });
-    $$('[data-unread-label]').forEach(function (b) { b.textContent = n ? n + ' unread' : 'All caught up'; });
-  }
+  /* ---- Notifications: mark read/unread in place, live badge -------------- */
+  function setBadge(n) { $$('[data-unread-badge]').forEach(function (b) { b.textContent = n; b.hidden = !n; }); $$('[data-unread-label]').forEach(function (b) { b.textContent = n ? n + ' unread' : 'All read'; }); }
   doc.addEventListener('submit', function (e) {
-    var form = e.target;
-    if (!form.matches('form[data-ajax-read]')) return;
-    e.preventDefault();
-    fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrf() }, credentials: 'same-origin' })
-      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
-      .then(function (data) {
-        if ('id' in data) {
-          var row = form.closest('[data-notification]');
-          if (row) {
-            row.classList.toggle('is-unread', !data.is_read);
-            var btn = $('button', form), unreadField = $('input[name=unread]', form);
-            if (unreadField) unreadField.value = data.is_read ? '1' : '';
-            if (btn) { btn.textContent = data.is_read ? 'Mark unread' : 'Mark read'; btn.classList.remove('is-loading'); }
-          }
+    var f = e.target; if (!f.matches('form[data-ajax-read]')) return; e.preventDefault();
+    fetch(f.action, { method: 'POST', body: new FormData(f), headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrf() }, credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (d) {
+        if ('id' in d) {
+          var row = f.closest('[data-notification]');
+          if (row) { row.classList.toggle('is-unread', !d.is_read); var b = $('button', f), u = $('input[name=unread]', f); if (u) u.value = d.is_read ? '1' : ''; if (b) { b.textContent = d.is_read ? 'Mark unread' : 'Mark read'; b.classList.remove('is-loading'); } }
         } else {
-          $$('[data-notification]').forEach(function (row) { row.classList.remove('is-unread'); });
-          $$('form[data-ajax-read] button').forEach(function (b) { b.classList.remove('is-loading'); });
-          $$('[data-notification] form[data-ajax-read]:not([data-read-all]) button').forEach(function (b) { b.textContent = 'Mark unread'; });
-          $$('[data-notification] form[data-ajax-read] input[name=unread]').forEach(function (f) { f.value = '1'; });
-          toast('All notifications marked as read.', 'success');
+          $$('[data-notification]').forEach(function (r) { r.classList.remove('is-unread'); });
+          $$('[data-notification] form[data-ajax-read] button').forEach(function (b) { b.textContent = 'Mark unread'; b.classList.remove('is-loading'); });
+          $$('[data-notification] form[data-ajax-read] input[name=unread]').forEach(function (i) { i.value = '1'; });
+          $$('form[data-read-all] button').forEach(function (b) { b.classList.remove('is-loading'); });
+          toast('Every dispatch is marked as read.', 'success');
         }
-        setBadge(data.unread);
+        setBadge(d.unread);
       })
-      .catch(function () { $$('.is-loading', form).forEach(function (b) { b.classList.remove('is-loading'); }); toast('Could not update the notification. Try again.', 'danger'); });
+      .catch(function () { $$('.is-loading', f).forEach(function (b) { b.classList.remove('is-loading'); }); toast('Could not update that. Try again.', 'danger'); });
   });
-  var badgeEl = $('[data-unread-badge]');
-  if (badgeEl && badgeEl.dataset.poll) {
-    setInterval(function () {
-      if (doc.hidden) return;
-      fetch(badgeEl.dataset.poll, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) { if (d) setBadge(d.unread); }).catch(function () {});
-    }, 60000);
-  }
-
-  /* ---- Copy-to-clipboard ------------------------------------------------ */
-  $$('[data-copy]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      if (navigator.clipboard) navigator.clipboard.writeText(btn.dataset.copy).then(function () { toast('Copied to clipboard.', 'success'); });
-    });
-  });
+  var poll = $('[data-poll]');
+  if (poll) setInterval(function () { if (doc.hidden) return; fetch(poll.dataset.poll, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d) setBadge(d.unread); }).catch(function () {}); }, 60000);
 })();
