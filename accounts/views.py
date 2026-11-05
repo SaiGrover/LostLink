@@ -29,6 +29,12 @@ class LostLinkLoginView(LoginView):
     authentication_form = LoginForm
     redirect_authenticated_user = True
 
+    def get_context_data(self, **kwargs):
+        from django.conf import settings
+        context = super().get_context_data(**kwargs)
+        context['show_demo'] = settings.DEBUG
+        return context
+
     def form_valid(self, form):
         messages.success(self.request, f'Signed in as {form.get_user().display_name()}.')
         return super().form_valid(form)

@@ -1,0 +1,45 @@
+{% extends 'shell.html' %}
+{% load humanize ui %}
+{% block title %}Decision log{% endblock %}
+{% block page_title %}Decision log{% endblock %}
+
+{% block main %}
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">{% icon 'history' %}Audit trail</span>
+    <h1>Decision log</h1>
+    <p class="lede">Every report decision, claim decision, handover, dispute, flag resolution and role change, with who made it and why.</p>
+  </div>
+  <form method="get" class="page-head__actions">
+    <label class="sr-only" for="action-filter">Filter by action</label>
+    <select name="action" id="action-filter" class="input" onchange="this.form.submit()">
+      <option value="">All actions</option>
+      {% for value, label in actions %}<option value="{{ value }}" {% if sel_action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <noscript><button class="btn btn-secondary" type="submit">Filter</button></noscript>
+  </form>
+</header>
+
+<div class="panel panel--flush">
+  <div class="table-wrap">
+    <table class="table table--stack">
+      <caption class="sr-only">Moderation decisions, newest first</caption>
+      <thead><tr><th scope="col">When</th><th scope="col">Action</th><th scope="col">By</th><th scope="col">Subject</th><th scope="col">Note</th></tr></thead>
+      <tbody>
+      {% for d in decisions %}
+        <tr>
+          <td data-label="When" class="nowrap"><time datetime="{{ d.created_at|date:'c' }}" title="{{ d.created_at|date:'j M Y, H:i' }}">{{ d.created_at|naturaltime }}</time></td>
+          <td data-label="Action"><span class="status status--{{ d.tone }}">{{ d.get_action_display }}</span></td>
+          <td data-label="By">{{ d.actor.display_name|default:"—" }}</td>
+          <td data-label="Subject">{% if d.claim %}<a class="link" href="{{ d.claim.get_absolute_url }}">{{ d.claim_id|claim_id }}</a> · {% endif %}{% if d.item %}<a class="link" href="{{ d.item.get_absolute_url }}">{{ d.item.title }}</a>{% elif d.subject_user %}{{ d.subject_user.display_name }}{% endif %}</td>
+          <td data-label="Note" class="muted">{{ d.note|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">{% include 'partials/empty.html' with icon='history' title='No decisions recorded' text='Decisions appear here as moderators and administrators act.' %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
+{% endblock %}

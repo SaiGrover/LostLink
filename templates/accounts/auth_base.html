@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load ui %}
+{% block body %}
+<div class="auth">
+  <div class="auth__form-side">
+    <div class="cluster cluster-between">
+      {% include 'partials/brand.html' with href='/' %}
+      <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
+    </div>
+    <main class="auth__form-wrap enter" id="main-content" tabindex="-1">
+      {% block form %}{% endblock %}
+    </main>
+    <p class="subtle" style="font-size:var(--text-xs)">Campus lost &amp; found · AI ranks, people verify.</p>
+  </div>
+  <aside class="auth__aside" aria-label="About LostLink">
+    <svg class="auth__aside-art" viewBox="0 0 400 400" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="20" y="120" width="230" height="160" rx="80"/><rect x="150" y="120" width="230" height="160" rx="80"/>
+      <rect x="60" y="150" width="150" height="100" rx="50" stroke-dasharray="4 6"/><rect x="190" y="150" width="150" height="100" rx="50" stroke-dasharray="4 6"/>
+    </svg>
+    <span class="eyebrow">{% block aside_eyebrow %}LostLink{% endblock %}</span>
+    <h2>{% block aside_title %}Good things find their way back.{% endblock %}</h2>
+    <div class="trust-points">
+      <div>{% icon 'link' %}<div><b>Matched, not guessed</b><span>Text, photo, place, date and attributes combine into one explainable score.</span></div></div>
+      <div>{% icon 'shield' %}<div><b>Verified by people</b><span>Private questions and a moderator decision come before any handover.</span></div></div>
+      <div>{% icon 'lock' %}<div><b>Private by default</b><span>Contact details stay hidden until a claim is approved.</span></div></div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

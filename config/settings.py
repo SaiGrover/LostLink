@@ -108,7 +108,7 @@ if os.environ.get('DATABASE_URL'):
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-     'OPTIONS': {'min_length': 6}},
+     'OPTIONS': {'min_length': 8}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -125,12 +125,20 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# The hashed-manifest storage needs `collectstatic` to have run. It is only
+# switched on for explicit production runs (DJANGO_DEBUG=false in the
+# environment); development servers and the test runner (which forces
+# DEBUG=False internally) use plain compressed storage so templates render
+# without a manifest.
+_PRODUCTION_STATIC = os.environ.get('DJANGO_DEBUG', 'true').lower() == 'false'
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        'BACKEND': ('whitenoise.storage.CompressedManifestStaticFilesStorage'
+                    if _PRODUCTION_STATIC else
+                    'whitenoise.storage.CompressedStaticFilesStorage'),
     },
 }
 
@@ -208,8 +216,33 @@ MATCHING = {
     'MIN_SCORE': 0.40,
     # Date-decay: similarity halves roughly every N days between reports.
     'DATE_HALF_LIFE_DAYS': 10,
+    # A found report dated more than this many days *before* the lost report
+    # is physically impossible and is never stored as a match. One day of
+    # tolerance absorbs approximate dates around midnight.
+    'TEMPORAL_TOLERANCE_DAYS': 1,
     # Model/weight version tag for reproducibility (Section 4.17).
     'VERSION': 'v1.0.0',
+}
+
+# Traceable application logs (synopsis Section 4.17 operational monitoring).
+# Inference failures are logged under ``lostlink.matching`` and never abort
+# a request; ``LOSTLINK_LOG_LEVEL`` raises or lowers verbosity.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {'format': '%(asctime)s %(levelname)s %(name)s: %(message)s'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'},
+    },
+    'loggers': {
+        'lostlink': {'handlers': ['console'],
+                     'level': os.environ.get('LOSTLINK_LOG_LEVEL', 'INFO'), 'propagate': False},
+        # 4xx responses (including deliberate 403s from role checks) are not
+        # errors; only 5xx server errors are logged.
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    },
 }
 
 import json

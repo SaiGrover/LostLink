@@ -1,21 +1,32 @@
 """LostLink hybrid matching engine (synopsis Section 4).
 
-The engine combines four kinds of signal into one weighted confidence score:
+The engine combines text, image and structured-metadata signals into one
+weighted confidence score::
 
-    Final = sum(configured_weight * component_similarity)
+    Final = sum(weight_c * similarity_c)  over the components with evidence
 
 Design notes
 ------------
-* Pretrained models are used *only as fixed feature extractors* — nothing is
-  trained here (Section 1.1, Section 4.6).
-* Text similarity uses TF-IDF + cosine (scikit-learn) as the deployed default,
-  which the synopsis lists as the lightweight candidate; a pure-Python cosine is
-  provided as a dependency-free fallback so the engine always runs.
-* Image similarity uses a pinned pretrained ResNet or CLIP feature extractor
-  in the ML profile. A Pillow descriptor supports a lightweight demo mode.
-* When neither report in a pair carries a photograph, the image weight is
-  removed and the remaining weights are renormalised, so a strong text+metadata
-  match is not artificially capped below the high-confidence tier.
+* Pretrained models are used *only as fixed feature extractors*; nothing is
+  trained here (synopsis Sections 1.1 and 4.6).
+* Text similarity uses TF-IDF + cosine (scikit-learn) or pinned
+  Sentence-BERT embeddings, selected by ``matching/profile.json``. A
+  dependency-free cosine keeps the engine running if scikit-learn is absent.
+* Image similarity uses a pinned pretrained ResNet-50 or CLIP extractor. A
+  Pillow histogram descriptor exists only as an explicitly selected
+  lightweight baseline; it is never substituted silently.
+* Missing-data policy (synopsis Section 4.9, "absent evidence is not negative
+  evidence"): a component with no evidence on one or both sides (no
+  photograph on either report, or no brand/colour on either report) is
+  *dropped* from the weighted sum and the remaining weights are renormalised
+  to sum to one. The dropped components are recorded on the stored match so
+  the explanation can say "not compared" instead of showing a false zero.
+* Temporal plausibility: an item cannot be found before it was lost. A found
+  report dated more than ``TEMPORAL_TOLERANCE_DAYS`` before the lost report
+  is treated as impossible and receives a date score of zero; the
+  orchestration layer also refuses to store such pairs.
+* Confidence tiers follow the synopsis table exactly: ``> 85%`` high,
+  ``70%–85%`` (inclusive) medium, ``< 70%`` low.
 """
 from __future__ import annotations
 
@@ -40,7 +51,7 @@ except Exception:  # pragma: no cover
     _HAS_PIL = False
 
 
-WEIGHTS = settings.MATCHING['WEIGHTS']
+COMPONENTS = ('text', 'image', 'location', 'category', 'date', 'attribute')
 
 _STOPWORDS = {
     'a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'with', 'for',
@@ -54,6 +65,11 @@ _IRREGULAR_LEMMAS = {
     'children': 'child', 'feet': 'foot', 'men': 'man', 'mice': 'mouse',
     'people': 'person', 'teeth': 'tooth', 'women': 'woman',
 }
+
+
+def weights() -> dict:
+    """The active, versioned component weights (synopsis Section 4.9)."""
+    return dict(settings.MATCHING['WEIGHTS'])
 
 
 def lemmatize_token(token: str) -> str:
@@ -103,18 +119,23 @@ def _python_cosine(query: str, candidates: list[str]) -> list[float]:
 
 
 def text_similarity(query_text: str, candidate_texts: list[str]) -> list[float]:
-    """Cosine similarity of ``query_text`` against each candidate.
+    """Cosine similarity of ``query_text`` against each candidate, in [0, 1].
 
-    Uses a TF-IDF vector space fitted over the query + candidate pool so that
-    terms common across the pool are down-weighted (classical IR, Section 4.5).
+    For TF-IDF the vector space is fitted over the query *and the whole
+    candidate pool* in one call, so terms common across the pool are
+    down-weighted (classical IR, synopsis Section 4.5). Callers scoring one
+    report against many candidates should therefore pass all candidates at
+    once rather than looping pairwise.
     """
     from .embeddings import configuration, text_vectors
-    if configuration()['text'] == 'sbert' and candidate_texts:
+    if not candidate_texts:
+        return []
+    if configuration()['text'] == 'sbert':
         vectors = text_vectors([query_text] + candidate_texts)
-        return [image_similarity(vectors[0], vector) for vector in vectors[1:]]
+        return [vector_similarity(vectors[0], vector) for vector in vectors[1:]]
     q = clean_text(query_text)
     cands = [clean_text(c) for c in candidate_texts]
-    if not q or not cands:
+    if not q or not any(cands):
         return [0.0] * len(cands)
 
     if _HAS_SKLEARN:
@@ -130,7 +151,7 @@ def text_similarity(query_text: str, candidate_texts: list[str]) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Image  (compact content-based descriptor; swap-in seam for ResNet/CLIP)
+# Image  (pretrained extractor via embeddings.py; histogram baseline here)
 # ---------------------------------------------------------------------------
 _HIST_BINS = 8          # per RGB channel -> 24 dims
 _THUMB = 8              # 8x8 luma thumbnail -> 64 dims
@@ -139,9 +160,10 @@ _THUMB = 8              # 8x8 luma thumbnail -> 64 dims
 def extract_image_vector(image_file) -> list[float] | None:
     """Return a normalised visual descriptor for an uploaded photograph.
 
-    This is the *only* place image features are produced. Replace the body with
-    a call to a pretrained embedding model (Section 4.6) and the rest of the
-    engine keeps working unchanged.
+    Returns ``None`` for a missing or unreadable image. Model-loading or
+    inference errors from the pretrained extractors propagate to the caller
+    (``matching.features.prepare``), which logs them and records the report
+    as having no usable image evidence rather than guessing.
     """
     if not _HAS_PIL or image_file is None:
         return None
@@ -150,29 +172,27 @@ def extract_image_vector(image_file) -> list[float] | None:
     except Exception:
         return None
 
-    # 1) Colour histogram (24 dims).
     from .embeddings import configuration, image_vector
     kind = configuration()['image']
     if kind in ('resnet', 'clip'):
         return image_vector(img, kind)
+
+    # Lightweight baseline: colour histogram (24 dims) + luma thumbnail (64).
     small = img.resize((64, 64))
     hist = [0.0] * (_HIST_BINS * 3)
-    px = list(small.getdata())
-    for r, g, b in px:
+    for r, g, b in small.getdata():
         hist[r * _HIST_BINS // 256] += 1
         hist[_HIST_BINS + (g * _HIST_BINS // 256)] += 1
         hist[2 * _HIST_BINS + (b * _HIST_BINS // 256)] += 1
-
-    # 2) Luma thumbnail (64 dims) — captures coarse shape/layout.
     thumb = img.convert('L').resize((_THUMB, _THUMB))
     luma = [v / 255.0 for v in thumb.getdata()]
-
     vec = hist + luma
     norm = math.sqrt(sum(v * v for v in vec)) or 1.0
     return [round(v / norm, 6) for v in vec]
 
 
-def image_similarity(vec_a, vec_b) -> float:
+def vector_similarity(vec_a, vec_b) -> float:
+    """Cosine similarity between two equal-length vectors, clamped to [0, 1]."""
     if not vec_a or not vec_b or len(vec_a) != len(vec_b):
         return 0.0
     dot = sum(a * b for a, b in zip(vec_a, vec_b))
@@ -181,11 +201,15 @@ def image_similarity(vec_a, vec_b) -> float:
     return float(max(0.0, min(1.0, dot / (na * nb))))
 
 
+# Backwards-compatible alias used by older callers and the evaluation CLI.
+image_similarity = vector_similarity
+
+
 # ---------------------------------------------------------------------------
 # Metadata
 # ---------------------------------------------------------------------------
 def location_score(loc_a, loc_b, adjacent_ids: set[int] | None = None) -> float:
-    """1.0 exact zone, 0.5 adjacent zone, else 0.0 (Section 4.7)."""
+    """1.0 same zone, 0.5 adjacent zone, else 0.0 (synopsis Section 4.7)."""
     if loc_a is None or loc_b is None:
         return 0.0
     if loc_a == loc_b:
@@ -195,25 +219,62 @@ def location_score(loc_a, loc_b, adjacent_ids: set[int] | None = None) -> float:
     return 0.0
 
 
-def category_score(cat_a, cat_b) -> float:
+def category_score(cat_a, cat_b, related_ids: set[int] | None = None) -> float:
+    """1.0 identical, 0.5 compatible (related) category, 0.0 incompatible."""
     if cat_a is None or cat_b is None:
         return 0.0
-    return 1.0 if cat_a == cat_b else 0.0
+    if cat_a == cat_b:
+        return 1.0
+    if related_ids and cat_b in related_ids:
+        return 0.5
+    return 0.0
 
 
-def date_score(date_a: date, date_b: date) -> float:
-    """Decaying score on the day-gap between reports (Section 4.7)."""
-    if not date_a or not date_b:
+def _as_date(value):
+    if isinstance(value, datetime):
+        return value.date()
+    return value
+
+
+def temporal_gap_days(lost_date, found_date) -> int | None:
+    """Signed day gap ``found - lost``; negative means found before lost."""
+    lost_date, found_date = _as_date(lost_date), _as_date(found_date)
+    if not lost_date or not found_date:
+        return None
+    return (found_date - lost_date).days
+
+
+def is_temporally_plausible(lost_date, found_date) -> bool:
+    """False when the item was reported found well before it was lost."""
+    gap = temporal_gap_days(lost_date, found_date)
+    if gap is None:
+        return True
+    tolerance = settings.MATCHING.get('TEMPORAL_TOLERANCE_DAYS', 1)
+    return gap >= -tolerance
+
+
+def date_score(lost_date, found_date) -> float:
+    """Decaying score on the day gap between the lost and found event dates.
+
+    The gap is directional: a found report dated before the lost report
+    (beyond the approximation tolerance) is impossible and scores 0.0.
+    Otherwise the score halves every ``DATE_HALF_LIFE_DAYS``.
+    """
+    gap = temporal_gap_days(lost_date, found_date)
+    if gap is None:
         return 0.0
-    if isinstance(date_a, datetime): date_a = date_a.date()
-    if isinstance(date_b, datetime): date_b = date_b.date()
-    gap = abs((date_a - date_b).days)
+    if not is_temporally_plausible(lost_date, found_date):
+        return 0.0
     half_life = settings.MATCHING['DATE_HALF_LIFE_DAYS']
-    return float(0.5 ** (gap / half_life))
+    return float(0.5 ** (abs(gap) / half_life))
 
 
-def attribute_score(brand_a, color_a, brand_b, color_b) -> float:
-    """Fraction of provided brand/colour attributes that match."""
+def attribute_score(brand_a, color_a, brand_b, color_b) -> float | None:
+    """Fraction of comparable brand/colour attributes that agree.
+
+    Returns ``None`` when neither attribute is present on both sides, so the
+    caller can treat the component as *missing* rather than as a mismatch.
+    """
     checks, hits = 0, 0
     if brand_a and brand_b:
         checks += 1
@@ -222,32 +283,47 @@ def attribute_score(brand_a, color_a, brand_b, color_b) -> float:
         checks += 1
         hits += 1 if color_a.strip().lower() == color_b.strip().lower() else 0
     if checks == 0:
-        return 0.0
+        return None
     return hits / checks
 
 
 # ---------------------------------------------------------------------------
 # Combine
 # ---------------------------------------------------------------------------
-def combine(components: dict, has_image_pair: bool) -> float:
-    """Weighted sum of component scores -> final confidence in [0, 1]."""
-    weights = dict(settings.MATCHING['WEIGHTS'])
-    if not has_image_pair:
-        # Drop image weight and renormalise the rest (see module docstring).
-        img_w = weights.pop('image')
-        remaining = sum(weights.values())
-        if remaining > 0:
-            factor = 1.0 / remaining
-            weights = {k: v * factor for k, v in weights.items()}
-        components = {k: v for k, v in components.items() if k != 'image'}
+def effective_weights(missing=(), base: dict | None = None) -> dict:
+    """Weights after dropping ``missing`` components and renormalising."""
+    active = {k: v for k, v in (base or weights()).items() if k not in set(missing)}
+    total = sum(active.values())
+    if total <= 0:
+        return {}
+    return {k: v / total for k, v in active.items()}
 
-    total = sum(weights.get(k, 0.0) * components.get(k, 0.0) for k in weights)
+
+def combine(components: dict, has_image_pair: bool = True, missing=None) -> float:
+    """Weighted sum of component scores -> final confidence in [0, 1].
+
+    ``missing`` lists components with no evidence (see the module docstring).
+    ``has_image_pair=False`` is a shorthand for ``missing=['image']`` kept for
+    older callers. A component whose value is ``None`` is also treated as
+    missing.
+    """
+    missing = set(missing or ())
+    if not has_image_pair:
+        missing.add('image')
+    missing.update(k for k, v in components.items() if v is None)
+    active = effective_weights(missing)
+    total = sum(active[k] * float(components.get(k) or 0.0) for k in active)
     return float(max(0.0, min(1.0, total)))
 
 
 def confidence_tier(score: float) -> str:
-    if score >= settings.MATCHING['TIER_HIGH']:
+    """Map a score to the synopsis tiers: > high, [medium, high] medium, else low."""
+    high = settings.MATCHING['TIER_HIGH']
+    medium = settings.MATCHING['TIER_MEDIUM']
+    # Round to avoid float noise such as 0.8500000001 being 'above' 0.85.
+    score = round(float(score), 6)
+    if score > high:
         return 'high'
-    if score >= settings.MATCHING['TIER_MEDIUM']:
+    if score >= medium:
         return 'medium'
     return 'low'

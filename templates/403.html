@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}Access denied{% endblock %}
 {% block body %}
-<div style="min-height:100vh; display:grid; place-items:center; text-align:center; padding:40px">
+<main class="error-page" id="main-content">
   <div>
-    <div style="font-size:4rem">🔒</div>
-    <h1>Access denied</h1>
-    <p class="muted">You don’t have permission to view this page.</p>
-    <a href="/" class="btn btn-primary">Back to dashboard</a>
+    <span class="code">403 · Not permitted</span>
+    <h1>This isn't open to your account.</h1>
+    <p>{% if exception %}{{ exception }}{% else %}You don't have permission to view this page or take this action.{% endif %}</p>
+    <div class="cluster" style="justify-content:center">
+      <a href="/dashboard/" class="btn btn-primary">Back to overview</a>
+      <a href="/search/" class="btn btn-secondary">Browse reports</a>
+    </div>
   </div>
-</div>
+</main>
 {% endblock %}

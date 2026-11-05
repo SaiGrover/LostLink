@@ -1,46 +1,29 @@
 {% extends 'shell.html' %}
-{% load static %}
+{% load static ui %}
 {% block title %}{% if is_lost %}Lost items{% else %}Found items{% endif %}{% endblock %}
 {% block page_title %}{% if is_lost %}Lost items{% else %}Found items{% endif %}{% endblock %}
 
 {% block main %}
-<div class="section-head">
-  <div>
-    <h1>{% if is_lost %}🔎 Lost items{% else %}🎁 Found items{% endif %}</h1>
-    <div class="sub">
-      {% if is_lost %}Things people are looking for — if you found one, you can offer to return it.
-      {% else %}Things people handed in — if one is yours, you can claim it.{% endif %}
-    </div>
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">{% if is_lost %}{% icon 'lost' %}Lost reports{% else %}{% icon 'found' %}Found reports{% endif %}</span>
+    <h1>{% if is_lost %}Things people are looking for{% else %}Things people have handed in{% endif %}</h1>
+    <p class="lede">{% if is_lost %}Recognise one of these? Open it and offer to return it. The owner answers private questions before a moderator approves the handover.{% else %}If one of these is yours, open it and start a claim. You'll answer private questions so the finder and a moderator can verify it.{% endif %}</p>
   </div>
-  <div class="row" style="gap:8px">
-    <a href="{% url 'items:lost' %}" class="btn {% if is_lost %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Lost</a>
-    <a href="{% url 'items:found' %}" class="btn {% if not is_lost %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">Found</a>
-  </div>
+  <nav class="segmented" aria-label="Report type">
+    <a href="{% url 'items:lost' %}" {% if is_lost %}aria-current="page"{% endif %}>{% icon 'lost' %}Lost</a>
+    <a href="{% url 'items:found' %}" {% if not is_lost %}aria-current="page"{% endif %}>{% icon 'found' %}Found</a>
+  </nav>
+</header>
+
+{% include 'items/partials/filterbar.html' %}
+
+<div class="results-head">
+  <span><b id="result-count">{{ total }}</b> {{ page_kind }} report{{ total|pluralize }}</span>
+  <span id="search-feedback" class="sr-only" role="status" aria-live="polite"></span>
+  <a class="link" href="{% url 'items:report' %}?type={% if is_lost %}found{% else %}lost{% endif %}">{% if is_lost %}Found something? Report it{% else %}Lost something? Report it{% endif %}</a>
 </div>
-
-<form id="search-form" method="get" data-endpoint="{% url 'items:search_api' %}" class="card pad" style="margin-bottom:20px">
-  {% if manual_mode %}<input type="hidden" name="study" value="manual">{% endif %}
-  <input type="hidden" name="type" value="{{ locked_type }}">
-  <div class="row wrap" style="gap:12px">
-    <div style="flex:1; min-width:220px; position:relative">
-      <label for="query">Search {{ page_kind }} reports</label><input id="query" type="search" name="q" value="{{ q }}" class="field-input" placeholder="Title, description, brand or colour" autocomplete="off">
-      <span id="search-spinner" style="visibility:hidden; position:absolute; right:14px; top:12px">⏳</span>
-    </div>
-    <select name="category" aria-label="Category" class="field-input" style="max-width:200px">
-      <option value="">All categories</option>
-      {% for c in categories %}<option value="{{ c.slug }}" {% if sel_category == c.slug %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>{% endfor %}
-    </select>
-    <select name="location" aria-label="Campus location" class="field-input" style="max-width:200px">
-      <option value="">All locations</option>
-      {% for l in locations %}<option value="{{ l.slug }}" {% if sel_location == l.slug %}selected{% endif %}>📍 {{ l.name }}</option>{% endfor %}
-    </select>
-  </div>
-{% include 'items/partials/date_filters.html' %}
-</form>
-
-<div class="section-head"><div class="sub"><b id="result-count">{{ total }}</b> {{ page_kind }} item(s)</div></div>
-
 <div id="results">{% include 'items/partials/result_grid.html' %}</div>
 {% endblock %}
 
-{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}"></script>{% endif %}{% endblock %}
+{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}" defer></script>{% endif %}{% endblock %}

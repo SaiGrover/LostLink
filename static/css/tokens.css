@@ -1,0 +1,277 @@
+/* ==========================================================================
+   LostLink design tokens
+   --------------------------------------------------------------------------
+   The final palette has NOT been chosen. Everything below "Palette slots"
+   is derived from a handful of hue / chroma / lightness numbers, and every
+   component reads only the semantic tokens further down.
+
+   To apply a palette later, change the slots (and nothing else):
+     --neutral-h / --neutral-c   tint of greys, surfaces and text
+     --accent-h / --accent-c / --accent-l   primary action colour
+     --success-h, --warning-h, --danger-h, --info-h   functional status hues
+     --lost-h, --found-h          report-type hues
+     --status-c                   chroma (saturation) of functional colours
+   Dark mode re-derives the same semantics from the same slots.
+   ========================================================================== */
+
+:root {
+  /* ---- Palette slots (provisional, deliberately near-monochrome) ------- */
+  --neutral-h: 255;
+  --neutral-c: 0.006;
+  --accent-h: 255;
+  --accent-c: 0.014;
+  --accent-l: 0.22;
+  --success-h: 155;
+  --warning-h: 72;
+  --danger-h: 27;
+  --info-h: 245;
+  --lost-h: 40;
+  --found-h: 200;
+  --status-c: 0.085;
+
+  /* ---- Typography -------------------------------------------------------- */
+  --font-display: 'Bricolage Grotesque', 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, monospace;
+
+  --text-2xs: 0.6875rem;  /* 11 */
+  --text-xs: 0.75rem;     /* 12 */
+  --text-sm: 0.8125rem;   /* 13 */
+  --text-base: 0.9375rem; /* 15 */
+  --text-md: 1.0625rem;   /* 17 */
+  --text-lg: 1.25rem;     /* 20 */
+  --text-xl: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  --text-3xl: clamp(2.25rem, 1.4rem + 3.2vw, 4rem);
+  --text-4xl: clamp(2.75rem, 1.2rem + 5.6vw, 6.25rem);
+
+  --leading-tight: 1.08;
+  --leading-snug: 1.3;
+  --leading-body: 1.6;
+  --tracking-display: -0.035em;
+  --tracking-tight: -0.015em;
+  --tracking-label: 0.08em;
+
+  /* ---- Spacing (4px base) ------------------------------------------------ */
+  --s-1: 0.25rem; --s-2: 0.5rem; --s-3: 0.75rem; --s-4: 1rem; --s-5: 1.25rem;
+  --s-6: 1.5rem; --s-7: 2rem; --s-8: 2.5rem; --s-9: 3rem; --s-10: 4rem;
+  --s-11: 5rem; --s-12: 7rem;
+
+  /* ---- Shape ------------------------------------------------------------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+  --hairline: 1px;
+
+  /* ---- Layout ------------------------------------------------------------ */
+  --sidebar-w: 248px;
+  --topbar-h: 60px;
+  --content-max: 1280px;
+  --reading-max: 68ch;
+  --control-h: 40px;
+  --control-h-sm: 32px;
+  --control-h-lg: 48px;
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 600ms;
+
+  /* ---- Elevation layers -------------------------------------------------- */
+  --z-sticky: 20; --z-drawer: 60; --z-menu: 70; --z-dialog: 80; --z-toast: 90;
+
+  /* ======================================================================
+     Semantic colour tokens — LIGHT
+     ====================================================================== */
+  color-scheme: light;
+  --bg:              oklch(0.983 var(--neutral-c) var(--neutral-h));
+  --bg-subtle:       oklch(0.966 var(--neutral-c) var(--neutral-h));
+  --surface:         oklch(0.998 calc(var(--neutral-c) * 0.4) var(--neutral-h));
+  --surface-raised:  oklch(1 0 0);
+  --surface-sunken:  oklch(0.952 var(--neutral-c) var(--neutral-h));
+  --surface-hover:   oklch(0.945 var(--neutral-c) var(--neutral-h));
+  --surface-inverse: oklch(0.2 var(--neutral-c) var(--neutral-h));
+  --overlay:         oklch(0.18 var(--neutral-c) var(--neutral-h) / 0.42);
+
+  --text:            oklch(0.19 calc(var(--neutral-c) * 2) var(--neutral-h));
+  --text-secondary:  oklch(0.42 calc(var(--neutral-c) * 2) var(--neutral-h));
+  --text-tertiary:   oklch(0.55 calc(var(--neutral-c) * 2) var(--neutral-h));
+  --text-inverse:    oklch(0.98 var(--neutral-c) var(--neutral-h));
+
+  --border:          oklch(0.905 var(--neutral-c) var(--neutral-h));
+  --border-strong:   oklch(0.83 var(--neutral-c) var(--neutral-h));
+  --border-focus:    oklch(0.55 0.14 var(--info-h));
+
+  --accent:          oklch(var(--accent-l) var(--accent-c) var(--accent-h));
+  --accent-hover:    oklch(calc(var(--accent-l) + 0.09) var(--accent-c) var(--accent-h));
+  --accent-contrast: oklch(0.99 0 0);
+  --accent-subtle:   oklch(0.95 calc(var(--accent-c) * 0.6) var(--accent-h));
+  --accent-text:     oklch(calc(var(--accent-l) + 0.04) var(--accent-c) var(--accent-h));
+
+  --success:         oklch(0.56 var(--status-c) var(--success-h));
+  --success-subtle:  oklch(0.955 calc(var(--status-c) * 0.32) var(--success-h));
+  --success-text:    oklch(0.4 var(--status-c) var(--success-h));
+  --warning:         oklch(0.7 calc(var(--status-c) * 1.4) var(--warning-h));
+  --warning-subtle:  oklch(0.96 calc(var(--status-c) * 0.4) var(--warning-h));
+  --warning-text:    oklch(0.45 calc(var(--status-c) * 1.1) var(--warning-h));
+  --danger:          oklch(0.57 calc(var(--status-c) * 1.6) var(--danger-h));
+  --danger-subtle:   oklch(0.955 calc(var(--status-c) * 0.35) var(--danger-h));
+  --danger-text:     oklch(0.45 calc(var(--status-c) * 1.5) var(--danger-h));
+  --info:            oklch(0.56 var(--status-c) var(--info-h));
+  --info-subtle:     oklch(0.955 calc(var(--status-c) * 0.3) var(--info-h));
+  --info-text:       oklch(0.42 var(--status-c) var(--info-h));
+
+  --type-lost:        oklch(0.55 calc(var(--status-c) * 0.9) var(--lost-h));
+  --type-lost-subtle: oklch(0.955 calc(var(--status-c) * 0.28) var(--lost-h));
+  --type-lost-text:   oklch(0.42 calc(var(--status-c) * 0.9) var(--lost-h));
+  --type-found:        oklch(0.55 calc(var(--status-c) * 0.9) var(--found-h));
+  --type-found-subtle: oklch(0.955 calc(var(--status-c) * 0.28) var(--found-h));
+  --type-found-text:   oklch(0.42 calc(var(--status-c) * 0.9) var(--found-h));
+
+  /* Match confidence (similarity evidence, never ownership) */
+  --tier-high:          var(--success);
+  --tier-high-subtle:   var(--success-subtle);
+  --tier-high-text:     var(--success-text);
+  --tier-medium:        var(--warning);
+  --tier-medium-subtle: var(--warning-subtle);
+  --tier-medium-text:   var(--warning-text);
+  --tier-low:           var(--text-tertiary);
+  --tier-low-subtle:    var(--surface-sunken);
+  --tier-low-text:      var(--text-secondary);
+
+  /* Score components & chart series: a lightness ramp that stays legible
+     in any palette; labels and order carry the meaning, not hue alone. */
+  --comp-text:      oklch(0.24 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-image:     oklch(0.4 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-location:  oklch(0.54 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-category:  oklch(0.65 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-date:      oklch(0.75 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-attribute: oklch(0.84 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --chart-1: var(--comp-text);
+  --chart-2: var(--comp-location);
+  --chart-3: var(--comp-attribute);
+  --chart-grid: var(--border);
+
+  --shadow-1: 0 1px 2px oklch(0.2 0.01 var(--neutral-h) / 0.06);
+  --shadow-2: 0 1px 2px oklch(0.2 0.01 var(--neutral-h) / 0.05), 0 8px 24px -12px oklch(0.2 0.02 var(--neutral-h) / 0.16);
+  --shadow-3: 0 2px 6px oklch(0.2 0.01 var(--neutral-h) / 0.06), 0 24px 64px -24px oklch(0.2 0.02 var(--neutral-h) / 0.32);
+  --hatch: repeating-linear-gradient(135deg, var(--border) 0 2px, transparent 2px 6px);
+}
+
+/* ==========================================================================
+   Semantic colour tokens — DARK (explicit choice, or OS preference when the
+   viewer has not chosen). Both blocks must stay identical.
+   ========================================================================== */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:              oklch(0.165 var(--neutral-c) var(--neutral-h));
+  --bg-subtle:       oklch(0.19 var(--neutral-c) var(--neutral-h));
+  --surface:         oklch(0.2 var(--neutral-c) var(--neutral-h));
+  --surface-raised:  oklch(0.235 var(--neutral-c) var(--neutral-h));
+  --surface-sunken:  oklch(0.145 var(--neutral-c) var(--neutral-h));
+  --surface-hover:   oklch(0.255 var(--neutral-c) var(--neutral-h));
+  --surface-inverse: oklch(0.95 var(--neutral-c) var(--neutral-h));
+  --overlay:         oklch(0.05 0 0 / 0.6);
+  --text:            oklch(0.955 var(--neutral-c) var(--neutral-h));
+  --text-secondary:  oklch(0.76 var(--neutral-c) var(--neutral-h));
+  --text-tertiary:   oklch(0.6 var(--neutral-c) var(--neutral-h));
+  --text-inverse:    oklch(0.17 var(--neutral-c) var(--neutral-h));
+  --border:          oklch(0.29 var(--neutral-c) var(--neutral-h));
+  --border-strong:   oklch(0.38 var(--neutral-c) var(--neutral-h));
+  --border-focus:    oklch(0.72 0.13 var(--info-h));
+  --accent:          oklch(0.93 var(--accent-c) var(--accent-h));
+  --accent-hover:    oklch(0.84 var(--accent-c) var(--accent-h));
+  --accent-contrast: oklch(0.17 var(--neutral-c) var(--neutral-h));
+  --accent-subtle:   oklch(0.27 var(--accent-c) var(--accent-h));
+  --accent-text:     oklch(0.93 var(--accent-c) var(--accent-h));
+  --success:         oklch(0.72 var(--status-c) var(--success-h));
+  --success-subtle:  oklch(0.27 calc(var(--status-c) * 0.45) var(--success-h));
+  --success-text:    oklch(0.84 var(--status-c) var(--success-h));
+  --warning:         oklch(0.78 calc(var(--status-c) * 1.4) var(--warning-h));
+  --warning-subtle:  oklch(0.28 calc(var(--status-c) * 0.5) var(--warning-h));
+  --warning-text:    oklch(0.86 calc(var(--status-c) * 1.1) var(--warning-h));
+  --danger:          oklch(0.7 calc(var(--status-c) * 1.5) var(--danger-h));
+  --danger-subtle:   oklch(0.28 calc(var(--status-c) * 0.55) var(--danger-h));
+  --danger-text:     oklch(0.83 calc(var(--status-c) * 1.2) var(--danger-h));
+  --info:            oklch(0.72 var(--status-c) var(--info-h));
+  --info-subtle:     oklch(0.27 calc(var(--status-c) * 0.45) var(--info-h));
+  --info-text:       oklch(0.84 var(--status-c) var(--info-h));
+  --type-lost:        oklch(0.74 calc(var(--status-c) * 0.9) var(--lost-h));
+  --type-lost-subtle: oklch(0.27 calc(var(--status-c) * 0.4) var(--lost-h));
+  --type-lost-text:   oklch(0.85 calc(var(--status-c) * 0.9) var(--lost-h));
+  --type-found:        oklch(0.74 calc(var(--status-c) * 0.9) var(--found-h));
+  --type-found-subtle: oklch(0.27 calc(var(--status-c) * 0.4) var(--found-h));
+  --type-found-text:   oklch(0.85 calc(var(--status-c) * 0.9) var(--found-h));
+  --comp-text:      oklch(0.95 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-image:     oklch(0.82 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-location:  oklch(0.68 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-category:  oklch(0.56 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-date:      oklch(0.46 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --comp-attribute: oklch(0.38 calc(var(--accent-c) * 1.2) var(--accent-h));
+  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 28px -14px oklch(0 0 0 / 0.7);
+  --shadow-3: 0 2px 8px oklch(0 0 0 / 0.5), 0 28px 70px -24px oklch(0 0 0 / 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:              oklch(0.165 var(--neutral-c) var(--neutral-h));
+    --bg-subtle:       oklch(0.19 var(--neutral-c) var(--neutral-h));
+    --surface:         oklch(0.2 var(--neutral-c) var(--neutral-h));
+    --surface-raised:  oklch(0.235 var(--neutral-c) var(--neutral-h));
+    --surface-sunken:  oklch(0.145 var(--neutral-c) var(--neutral-h));
+    --surface-hover:   oklch(0.255 var(--neutral-c) var(--neutral-h));
+    --surface-inverse: oklch(0.95 var(--neutral-c) var(--neutral-h));
+    --overlay:         oklch(0.05 0 0 / 0.6);
+    --text:            oklch(0.955 var(--neutral-c) var(--neutral-h));
+    --text-secondary:  oklch(0.76 var(--neutral-c) var(--neutral-h));
+    --text-tertiary:   oklch(0.6 var(--neutral-c) var(--neutral-h));
+    --text-inverse:    oklch(0.17 var(--neutral-c) var(--neutral-h));
+    --border:          oklch(0.29 var(--neutral-c) var(--neutral-h));
+    --border-strong:   oklch(0.38 var(--neutral-c) var(--neutral-h));
+    --border-focus:    oklch(0.72 0.13 var(--info-h));
+    --accent:          oklch(0.93 var(--accent-c) var(--accent-h));
+    --accent-hover:    oklch(0.84 var(--accent-c) var(--accent-h));
+    --accent-contrast: oklch(0.17 var(--neutral-c) var(--neutral-h));
+    --accent-subtle:   oklch(0.27 var(--accent-c) var(--accent-h));
+    --accent-text:     oklch(0.93 var(--accent-c) var(--accent-h));
+    --success:         oklch(0.72 var(--status-c) var(--success-h));
+    --success-subtle:  oklch(0.27 calc(var(--status-c) * 0.45) var(--success-h));
+    --success-text:    oklch(0.84 var(--status-c) var(--success-h));
+    --warning:         oklch(0.78 calc(var(--status-c) * 1.4) var(--warning-h));
+    --warning-subtle:  oklch(0.28 calc(var(--status-c) * 0.5) var(--warning-h));
+    --warning-text:    oklch(0.86 calc(var(--status-c) * 1.1) var(--warning-h));
+    --danger:          oklch(0.7 calc(var(--status-c) * 1.5) var(--danger-h));
+    --danger-subtle:   oklch(0.28 calc(var(--status-c) * 0.55) var(--danger-h));
+    --danger-text:     oklch(0.83 calc(var(--status-c) * 1.2) var(--danger-h));
+    --info:            oklch(0.72 var(--status-c) var(--info-h));
+    --info-subtle:     oklch(0.27 calc(var(--status-c) * 0.45) var(--info-h));
+    --info-text:       oklch(0.84 var(--status-c) var(--info-h));
+    --type-lost:        oklch(0.74 calc(var(--status-c) * 0.9) var(--lost-h));
+    --type-lost-subtle: oklch(0.27 calc(var(--status-c) * 0.4) var(--lost-h));
+    --type-lost-text:   oklch(0.85 calc(var(--status-c) * 0.9) var(--lost-h));
+    --type-found:        oklch(0.74 calc(var(--status-c) * 0.9) var(--found-h));
+    --type-found-subtle: oklch(0.27 calc(var(--status-c) * 0.4) var(--found-h));
+    --type-found-text:   oklch(0.85 calc(var(--status-c) * 0.9) var(--found-h));
+    --comp-text:      oklch(0.95 calc(var(--accent-c) * 1.2) var(--accent-h));
+    --comp-image:     oklch(0.82 calc(var(--accent-c) * 1.2) var(--accent-h));
+    --comp-location:  oklch(0.68 calc(var(--accent-c) * 1.2) var(--accent-h));
+    --comp-category:  oklch(0.56 calc(var(--accent-c) * 1.2) var(--accent-h));
+    --comp-date:      oklch(0.46 calc(var(--accent-c) * 1.2) var(--accent-h));
+    --comp-attribute: oklch(0.38 calc(var(--accent-c) * 1.2) var(--accent-h));
+    --shadow-1: 0 1px 2px oklch(0 0 0 / 0.4);
+    --shadow-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 10px 28px -14px oklch(0 0 0 / 0.7);
+    --shadow-3: 0 2px 8px oklch(0 0 0 / 0.5), 0 28px 70px -24px oklch(0 0 0 / 0.8);
+  }
+}
+
+/* Animatable custom properties (score dials, meters). */
+@property --p { syntax: '<number>'; inherits: true; initial-value: 0; }

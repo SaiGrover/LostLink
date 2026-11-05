@@ -1,116 +1,175 @@
 {% extends 'shell.html' %}
+{% load humanize ui %}
 {% block title %}Analytics{% endblock %}
-{% block page_title %}Administration · Analytics{% endblock %}
+{% block page_title %}Analytics{% endblock %}
 
 {% block main %}
-<form method="get" action="{% url 'dashboard:export_pdf' %}" class="row wrap" style="margin-bottom:24px"><label for="report-month">Monthly summary</label><input class="field-input" id="report-month" type="month" name="month" style="max-width:220px" required><button class="btn btn-ghost">Download monthly PDF</button></form>
-<div class="section-head">
-  <div><h1>Analytics 📊</h1><div class="sub">System health and campus-wide loss patterns.</div></div>
-  <div class="row" style="gap:10px">
-    <a href="{% url 'dashboard:export_csv' %}" class="btn btn-ghost btn-sm">⬇️ Export CSV</a>
-    <a href="{% url 'dashboard:export_pdf' %}" class="btn btn-ink btn-sm">📄 PDF report</a>
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">{% icon 'chart' %}Administration</span>
+    <h1>Campus recovery analytics</h1>
+    <p class="lede">Live figures from the database{% if period.active %} for reports created {% if period.from %}from {{ period.from }}{% endif %}{% if period.to %} until {{ period.to }}{% endif %}{% endif %}. Match figures describe similarity scores, not verified ownership.</p>
   </div>
-</div>
-
-<section class="card eda-panel" aria-labelledby="eda-title">
-  <div class="card-h">
-    <div><h2 id="eda-title">Operational data quality</h2><p class="muted" style="margin:4px 0 0">Live descriptive analysis of reviewed reports and current-version candidate matches.</p></div>
-    <span class="badge muted">{{ eda.sample_size }} match pair{{ eda.sample_size|pluralize }}</span>
-  </div>
-  <div class="card-b">
-    <div class="grid g-4 eda-kpis">
-      <div class="eda-stat"><span class="k-lab">Reports with photos</span><strong>{{ eda.photo_rate }}%</strong><small>{{ eda.reports_with_photos }} of {{ kpis.reports }}</small></div>
-      <div class="eda-stat"><span class="k-lab">Median report gap</span><strong>{% if eda.median_day_gap != None %}{{ eda.median_day_gap }}d{% else %}–{% endif %}</strong><small>{% if eda.mean_day_gap != None %}Mean {{ eda.mean_day_gap }} days{% else %}Awaiting match data{% endif %}</small></div>
-      <div class="eda-stat"><span class="k-lab">Description similarity</span><strong>{% if eda.mean_text_similarity != None %}{{ eda.mean_text_similarity }}%{% else %}–{% endif %}</strong><small>Mean text component</small></div>
-      <div class="eda-stat"><span class="k-lab">Wording variation</span><strong>{% if eda.wording_variation != None %}{{ eda.wording_variation }}%{% else %}–{% endif %}</strong><small>Inverse of text similarity</small></div>
-    </div>
-    <div class="divider"></div>
-    <h3 style="margin-bottom:12px">Time gap between candidate reports</h3>
-    <div class="eda-bars" role="img" aria-label="Distribution of day gaps between current lost and found match candidates">
-      {% for bucket in date_gap_distribution %}
-      <div class="bar-row eda-bar">
-        <span class="lab">{{ bucket.label }}</span>
-        <div class="meter"><i style="width:{{ bucket.pct }}%"></i></div>
-        <span class="val">{{ bucket.n }}</span>
+  <div class="page-head__actions">
+    <details class="menu">
+      <summary class="btn btn-primary">{% icon 'download' %}Export{% icon 'chevron-down' %}</summary>
+      <div class="menu__panel" style="min-width:300px">
+        <div class="menu__label">{% if period.active %}Selected period{% else %}All time{% endif %}</div>
+        <a class="menu__item" href="{% url 'dashboard:export_csv' %}{% query_with %}">{% icon 'file' %}Reports dataset (CSV)</a>
+        <a class="menu__item" href="{% url 'dashboard:export_pdf' %}{% query_with %}">{% icon 'file' %}Summary report (PDF)</a>
+        <div class="menu__sep"></div>
+        <div class="menu__label">Monthly report</div>
+        <form method="get" action="{% url 'dashboard:export_pdf' %}" class="row" style="padding:var(--s-1) var(--s-3) var(--s-3)">
+          <label class="sr-only" for="report-month">Month</label>
+          <input class="input" id="report-month" type="month" name="month" required style="min-height:var(--control-h-sm)">
+          <button class="btn btn-secondary btn-sm" type="submit">PDF</button>
+        </form>
+        <p class="hint" style="padding:0 var(--s-3) var(--s-2)">Exports exclude contact details and private verification answers.</p>
       </div>
-      {% endfor %}
-    </div>
-    <p class="help" style="margin:14px 0 0">These measures describe submitted data and candidate scores. They do not measure real-world recovery accuracy.</p>
+    </details>
   </div>
-</section>
+</header>
 
-<div class="grid g-4" style="margin-bottom:22px">
-  <div class="kpi"><div class="k-ico tone-violet">👥</div><div class="k-val">{{ kpis.users }}</div><div class="k-lab">Registered users</div></div>
-  <div class="kpi"><div class="k-ico tone-primary">📋</div><div class="k-val">{{ kpis.reports }}</div><div class="k-lab">Total reports</div></div>
-  <div class="kpi"><div class="k-ico tone-gold">🎯</div><div class="k-val">{{ kpis.matches }}</div><div class="k-lab">Potential matches</div></div>
-  <div class="kpi"><div class="k-ico tone-green">🎉</div><div class="k-val">{{ kpis.returned }}</div><div class="k-lab">Items returned</div></div>
+<form method="get" class="cluster" style="margin-bottom:var(--s-6)" aria-label="Reporting period">
+  <div class="row" style="gap:var(--s-2)"><label class="label" for="p-from">From</label><input class="input" id="p-from" type="date" name="from" value="{{ period.from }}" style="width:auto"></div>
+  <div class="row" style="gap:var(--s-2)"><label class="label" for="p-to">To</label><input class="input" id="p-to" type="date" name="to" value="{{ period.to }}" style="width:auto"></div>
+  <button class="btn btn-secondary" type="submit">Apply period</button>
+  {% if period.active %}<a class="btn btn-ghost" href="{% url 'dashboard:analytics' %}">All time</a>{% endif %}
+</form>
+
+<div class="stats" style="margin-bottom:var(--s-6)">
+  <div class="stat"><span class="stat__label">{% icon 'users' %}Registered users</span><span class="stat__value">{{ kpis.users|intcomma }}</span><span class="stat__meta">All time</span></div>
+  <div class="stat"><span class="stat__label">{% icon 'file' %}Reports</span><span class="stat__value">{{ kpis.reports|intcomma }}</span><span class="stat__meta">{{ kpis.lost }} lost · {{ kpis.found }} found</span></div>
+  <a class="stat" href="{% url 'dashboard:moderation' %}"><span class="stat__label">{% icon 'clock' %}Pending moderation</span><span class="stat__value">{{ kpis.pending }}</span><span class="stat__meta">{{ kpis.flags_open }} open flag{{ kpis.flags_open|pluralize }}</span></a>
+  <div class="stat"><span class="stat__label">{% icon 'link' %}Potential matches</span><span class="stat__value">{{ kpis.matches }}</span><span class="stat__meta">{{ kpis.high }} high · {{ kpis.medium }} medium · {{ kpis.low }} low</span></div>
+  <div class="stat"><span class="stat__label">{% icon 'key' %}Claims</span><span class="stat__value">{{ kpis.claims }}</span><span class="stat__meta">{{ kpis.claims_pending }} pending · {{ kpis.claims_approved }} approved · {{ kpis.claims_rejected }} rejected</span></div>
+  <div class="stat"><span class="stat__label">{% icon 'check' %}Returned</span><span class="stat__value">{{ kpis.returned }}</span><span class="stat__meta">{{ kpis.recovery_rate }}% of active and returned reports</span></div>
 </div>
 
-<div class="grid g-2" style="margin-bottom:22px">
-  <div class="card">
-    <div class="card-h"><h2>📦 Most commonly reported categories</h2></div>
-    <div class="card-b">
-      {% for c in by_category %}
-        <div class="bar-row" style="grid-template-columns:170px 1fr 40px">
-          <span class="lab">{{ c.category__icon }} {{ c.category__name }}</span>
-          <div class="meter"><i style="width:{{ c.pct }}%"></i></div>
-          <span class="val">{{ c.n }}</span>
-        </div>
-      {% empty %}<p class="muted">No data yet.</p>{% endfor %}
+<div class="analytics-grid">
+  <section class="panel span-8" aria-labelledby="trend-title">
+    <div class="panel__head"><h2 id="trend-title">New reports per week</h2><span class="actions subtle" style="font-size:var(--text-xs)">Last 12 weeks · all time</span></div>
+    <div class="panel__body chart">
+      <div class="chart-cols" role="img" aria-label="Weekly new reports for the last 12 weeks. Full figures are in the table below the chart.">
+        {% for w in trends %}
+          <div class="chart-col" title="Week of {{ w.label }}: {{ w.lost }} lost, {{ w.found }} found, {{ w.returned }} returned">
+            <i class="seg-found" style="--h:{{ w.found_pct }}%"></i><i class="seg-lost" style="--h:{{ w.lost_pct }}%"></i>
+            <span class="chart-col__label">{% if forloop.counter|divisibleby:2 or forloop.last %}{{ w.label }}{% endif %}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="chart-legend"><span><i class="swatch seg-lost"></i>Lost</span><span><i class="swatch seg-found"></i>Found</span></div>
+      <details class="disclosure"><summary>{% icon 'list' %}View as table{% icon 'chevron-down' %}</summary>
+        <div class="table-wrap"><table class="table"><thead><tr><th scope="col">Week of</th><th scope="col" class="num">Lost</th><th scope="col" class="num">Found</th><th scope="col" class="num">Returned</th></tr></thead>
+        <tbody>{% for w in trends %}<tr><td>{{ w.week|date:"j M Y" }}</td><td class="num">{{ w.lost }}</td><td class="num">{{ w.found }}</td><td class="num">{{ w.returned }}</td></tr>{% endfor %}</tbody></table></div>
+      </details>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="card-h"><h2>📍 Most problematic locations</h2></div>
-    <div class="card-b">
-      {% for l in by_location %}
-        <div class="bar-row" style="grid-template-columns:170px 1fr 40px">
-          <span class="lab">{{ l.location__name }}</span>
-          <div class="meter tone-warning"><i style="width:{{ l.pct }}%"></i></div>
-          <span class="val">{{ l.n }}</span>
-        </div>
-      {% empty %}<p class="muted">No data yet.</p>{% endfor %}
+  <section class="panel span-4" aria-labelledby="split-title">
+    <div class="panel__head"><h2 id="split-title">Lost versus found</h2></div>
+    <div class="panel__body stack">
+      {% with total=kpis.reports %}
+      <div class="split-bar" role="img" aria-label="{{ lost_total }} lost and {{ found_total }} found reports">
+        {% if total %}<i class="seg-lost" style="--w:{{ lost_total|percent_of:total }}%"></i><i class="seg-found" style="--w:{{ found_total|percent_of:total }}%"></i>{% endif %}
+      </div>
+      <dl class="facts">
+        <dt><i class="swatch seg-lost"></i>Lost</dt><dd class="num">{{ lost_total }} <span class="subtle">· {{ lost_total|percent_of:total }}%</span></dd>
+        <dt><i class="swatch seg-found"></i>Found</dt><dd class="num">{{ found_total }} <span class="subtle">· {{ found_total|percent_of:total }}%</span></dd>
+      </dl>
+      {% endwith %}
+      <div class="rule" style="margin:0"></div>
+      <span class="eyebrow">Report status</span>
+      <div class="hbars">
+        {% for s in by_status %}<div class="hbar"><span class="hbar__label">{{ s.label }}</span><div class="meter"><i style="--w:{{ s.n|percent_of:kpis.reports }}%"></i></div><span class="hbar__value">{{ s.n }}</span></div>
+        {% empty %}<p class="subtle">No reports in this period.</p>{% endfor %}
+      </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="grid g-3">
-  <div class="card pad">
-    <h3>Lost vs Found</h3>
-    <div class="row" style="gap:24px; margin-top:14px">
-      <div><div class="k-val" style="color:var(--danger)">{{ lost_total }}</div><div class="k-lab">🔎 Lost</div></div>
-      <div><div class="k-val" style="color:var(--green)">{{ found_total }}</div><div class="k-lab">🎁 Found</div></div>
+  <section class="panel" aria-labelledby="claims-title">
+    <div class="panel__head"><h2 id="claims-title">Claim outcomes</h2><span class="actions subtle" style="font-size:var(--text-xs)">{{ kpis.claims }} claim{{ kpis.claims|pluralize }}</span></div>
+    <div class="panel__body hbars">
+      {% for s in claim_status %}<div class="hbar"><span class="hbar__label">{{ s.label }}</span><div class="meter"><i style="--w:{{ s.pct }}%"></i></div><span class="hbar__value">{{ s.n }}</span></div>
+      {% empty %}{% include 'partials/empty.html' with compact=True icon='key' title='No claims in this period' %}{% endfor %}
     </div>
-  </div>
-  <div class="card pad">
-    <h3>Match confidence tiers</h3>
-    <div class="stack" style="gap:8px; margin-top:12px">
-      {% for t in tier_dist %}
-        <div class="row" style="justify-content:space-between">
-          <span class="badge {% if t.tier == 'high' %}success{% elif t.tier == 'medium' %}warning{% else %}muted{% endif %}">{{ t.tier|capfirst }}</span>
-          <b>{{ t.n }}</b>
+  </section>
+
+  <section class="panel" aria-labelledby="tiers-title">
+    <div class="panel__head"><h2 id="tiers-title">Match score distribution</h2><span class="actions subtle" style="font-size:var(--text-xs)">Engine {{ manifest.version }}</span></div>
+    <div class="panel__body chart">
+      {% if kpis.matches %}
+      <div class="chart-cols" style="height:150px" role="img" aria-label="Histogram of current match scores in 10-point bands">
+        {% for b in histogram %}<div class="chart-col" title="{{ b.label }}: {{ b.n }}"><i class="seg-{{ b.tier }}" style="--h:{{ b.pct }}%"></i><span class="chart-col__label">{% if forloop.counter0|divisibleby:2 %}{% widthratio forloop.counter0 1 10 %}%{% endif %}</span></div>{% endfor %}
+      </div>
+      {% endif %}
+      <div class="cluster">
+        {% for t in tier_dist %}<span class="cluster cluster-sm">{% include 'partials/tier_badge.html' with tier=t.tier %}<b class="num">{{ t.n }}</b><span class="subtle">({{ t.pct }}%)</span></span>{% endfor %}
+      </div>
+      <p class="hint">Tiers: above {{ thresholds.high|times100 }}% high, {{ thresholds.medium|times100 }}–{{ thresholds.high|times100 }}% medium, below {{ thresholds.medium|times100 }}% low. Average score {{ avg_match|times100 }}%.</p>
+    </div>
+  </section>
+
+  <section class="panel span-4" aria-labelledby="lostcat-title">
+    <div class="panel__head"><h2 id="lostcat-title">Most frequently lost</h2></div>
+    <div class="panel__body hbars">
+      {% for c in lost_by_category %}<div class="hbar"><span class="hbar__label">{{ c.category__icon }} {{ c.category__name }}</span><div class="meter"><i class="seg-lost" style="--w:{{ c.pct }}%; --meter-color: var(--type-lost)"></i></div><span class="hbar__value">{{ c.n }}</span></div>
+      {% empty %}<p class="subtle">No lost reports in this period.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="panel span-4" aria-labelledby="cat-title">
+    <div class="panel__head"><h2 id="cat-title">All reports by category</h2></div>
+    <div class="panel__body hbars">
+      {% for c in by_category %}<div class="hbar"><span class="hbar__label">{{ c.category__icon }} {{ c.category__name }}</span><div class="meter"><i style="--w:{{ c.pct }}%"></i></div><span class="hbar__value">{{ c.n }}</span></div>
+      {% empty %}<p class="subtle">No reports in this period.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="panel span-4" aria-labelledby="loc-title">
+    <div class="panel__head"><h2 id="loc-title">Busiest campus zones</h2></div>
+    <div class="panel__body hbars">
+      {% for l in by_location %}<div class="hbar"><span class="hbar__label">{{ l.location__name }}</span><div class="meter"><i style="--w:{{ l.pct }}%; --meter-color: var(--comp-location)"></i></div><span class="hbar__value">{{ l.n }}</span></div>
+      {% empty %}<p class="subtle">No reports in this period.</p>{% endfor %}
+    </div>
+  </section>
+
+  <section class="panel span-12" aria-labelledby="eda-title">
+    <div class="panel__head"><h2 id="eda-title">Operational data quality</h2><span class="actions"><span class="badge">{{ eda.sample_size }} match pair{{ eda.sample_size|pluralize }}</span></span></div>
+    <div class="panel__body stack">
+      <div class="stats">
+        <div class="stat"><span class="stat__label">Reports with photos</span><span class="stat__value">{{ eda.photo_rate }}%</span><span class="stat__meta">{{ eda.reports_with_photos }} of {{ kpis.reports }}</span></div>
+        <div class="stat"><span class="stat__label">Median lost→found gap</span><span class="stat__value">{% if eda.median_day_gap != None %}{{ eda.median_day_gap }}d{% else %}—{% endif %}</span><span class="stat__meta">{% if eda.mean_day_gap != None %}Mean {{ eda.mean_day_gap }} days{% else %}Awaiting match data{% endif %}</span></div>
+        <div class="stat"><span class="stat__label">Description similarity</span><span class="stat__value">{% if eda.mean_text_similarity != None %}{{ eda.mean_text_similarity }}%{% else %}—{% endif %}</span><span class="stat__meta">Mean text component</span></div>
+        <div class="stat"><span class="stat__label">Wording variation</span><span class="stat__value">{% if eda.wording_variation != None %}{{ eda.wording_variation }}%{% else %}—{% endif %}</span><span class="stat__meta">How differently pairs are described</span></div>
+      </div>
+      <div class="split" style="--aside:320px">
+        <div class="stack stack-sm">
+          <span class="eyebrow">Day gap between candidate lost and found reports</span>
+          <div class="hbars">{% for b in date_gap_distribution %}<div class="hbar"><span class="hbar__label">{{ b.label }}</span><div class="meter"><i style="--w:{{ b.pct }}%"></i></div><span class="hbar__value">{{ b.n }}</span></div>{% endfor %}</div>
         </div>
-      {% empty %}<p class="muted" style="margin:0">No matches computed yet.</p>{% endfor %}
+        <p class="hint">These measures describe submitted reports and candidate scores. They do not measure real-world recovery accuracy; see the evaluation documentation for the limits of the pilot dataset.</p>
+      </div>
     </div>
-  </div>
-  <div class="card pad">
-    <h3>Average match score</h3>
-    <div class="score-ring" data-p="{{ avg_match|stringformat:'.4f' }}" style="margin:14px auto 0">
-      <div class="inner">–</div>
+  </section>
+
+  <section class="panel span-12 panel--flush" aria-labelledby="mon-title">
+    <div class="panel__head"><h2 id="mon-title">Matching configuration &amp; monitoring</h2></div>
+    <div class="panel__body">
+      <dl class="facts" style="max-width:720px">
+        <dt>Engine version</dt><dd class="mono">{{ manifest.version }}</dd>
+        <dt>Models</dt><dd>{{ manifest.text|upper }} text · {{ manifest.image|upper }} image <span class="subtle">(pretrained, fixed feature extractors)</span></dd>
+        <dt>Weights</dt><dd class="mono">{% for k, v in manifest.weights.items %}{{ k }} {{ v }}{% if not forloop.last %} · {% endif %}{% endfor %}</dd>
+      </dl>
     </div>
-  </div>
+    <div class="table-wrap">
+      <table class="table">
+        <caption>Score-distribution snapshots recorded by <span class="mono">monitor_matching</span>. They track drift in scores, not accuracy.</caption>
+        <thead><tr><th scope="col">Recorded</th><th scope="col">Version</th><th scope="col" class="num">Matches</th><th scope="col" class="num">Mean score</th><th scope="col">High / medium / low</th></tr></thead>
+        <tbody>
+        {% for s in snapshots %}<tr><td>{{ s.created_at|date:'j M Y H:i' }}</td><td class="mono">{{ s.configuration.version }}</td><td class="num">{{ s.match_count }}</td><td class="num">{{ s.mean_score|floatformat:3 }}</td><td class="num">{{ s.tiers.high }} / {{ s.tiers.medium }} / {{ s.tiers.low }}</td></tr>
+        {% empty %}<tr><td colspan="5" class="subtle">No snapshots yet. Run <span class="mono">python manage.py monitor_matching</span>.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>
-<section class="card pad" style="margin-top:24px"><h2>Matching history</h2><p class="muted">Recorded score distributions. These describe similarity scores, not measured accuracy.</p><div style="overflow-x:auto"><table class="table"><caption class="sr-only">Matching score monitoring snapshots</caption><thead><tr><th>Recorded</th><th>Version</th><th>Matches</th><th>Mean</th><th>High / medium / low</th></tr></thead><tbody>{% for s in snapshots %}<tr><td>{{ s.created_at|date:'d M Y H:i' }}</td><td>{{ s.configuration.version }}</td><td>{{ s.match_count }}</td><td>{{ s.mean_score|floatformat:3 }}</td><td>{{ s.tiers.high }} / {{ s.tiers.medium }} / {{ s.tiers.low }}</td></tr>{% empty %}<tr><td colspan="5">No monitoring snapshots yet.</td></tr>{% endfor %}</tbody></table></div></section>
-{% endblock %}
-{% block scripts %}
-<script>
-  // avg_match is 0..1; convert to percent for the ring
-  var ring = document.querySelectorAll('.score-ring[data-p]');
-  ring.forEach(function(el){
-    var v = parseFloat(el.dataset.p);
-    if (v <= 1) { v = Math.round(v*100); }
-    el.style.setProperty('--p', v);
-    el.querySelector('.inner').textContent = v + '%';
-  });
-</script>
 {% endblock %}

@@ -1,34 +1,62 @@
 {% extends 'shell.html' %}
-{% load humanize %}
+{% load humanize ui %}
 {% block title %}Notifications{% endblock %}
 {% block page_title %}Notifications{% endblock %}
 
 {% block main %}
-<div class="section-head">
-  <div><h1>Notifications 🔔</h1><div class="sub">Match alerts, claim updates and report decisions.</div></div>
-  {% if notes %}<form method="post" action="{% url 'notifications:read_all' %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">Mark all read</button></form>{% endif %}
-</div>
+<header class="page-head">
+  <div class="page-head__text">
+    <span class="eyebrow">Inbox</span>
+    <h1>Notifications</h1>
+    <p class="lede" data-unread-label>{% if unread_total %}{{ unread_total }} unread{% else %}All caught up{% endif %}</p>
+  </div>
+  {% if unread_total %}
+  <div class="page-head__actions">
+    <form method="post" action="{% url 'notifications:read_all' %}" data-ajax-read data-read-all>{% csrf_token %}<button class="btn btn-secondary" type="submit">{% icon 'check' %}Mark all read</button></form>
+  </div>
+  {% endif %}
+</header>
 
-<div class="card">
+<nav class="tabs" aria-label="Filter notifications" style="margin-bottom:var(--s-5)">
+  <a class="tab" href="{% url 'notifications:inbox' %}" {% if not sel_kind and not unread_only %}aria-current="page"{% endif %}>All</a>
+  <a class="tab" href="?unread=1" {% if unread_only %}aria-current="page"{% endif %}>Unread{% if unread_total %} <span class="count">{{ unread_total }}</span>{% endif %}</a>
+  <a class="tab" href="?kind=match" {% if sel_kind == 'match' %}aria-current="page"{% endif %}>{% icon 'link' %}Matches</a>
+  <a class="tab" href="?kind=claim" {% if sel_kind == 'claim' %}aria-current="page"{% endif %}>{% icon 'key' %}Claims</a>
+  <a class="tab" href="?kind=report" {% if sel_kind == 'report' %}aria-current="page"{% endif %}>{% icon 'file' %}Reports</a>
+</nav>
+
+<div class="panel panel--flush">
   {% if notes %}
-    <div class="stack" style="gap:0">
-    {% for n in notes %}
-      <a href="{% url 'notifications:open' n.pk %}" class="notification-row{% if not n.is_read %} is-unread{% endif %}">
-        <span class="notification-visual" aria-hidden="true">
-          {% if n.item and n.item.image %}<img src="{{ n.item.image.url }}" alt="" loading="lazy" width="56" height="56">
-          {% elif n.item %}<span>{{ n.item.category.icon }}</span>
-          {% else %}<span>{{ n.icon }}</span>{% endif %}
-        </span>
-        <div class="notification-copy">
-          <b>{{ n.title }}</b>{% if not n.is_read %} <span class="badge primary" style="background:var(--primary);color:#fff">new</span>{% endif %}
-          <div class="muted" style="font-size:.88rem">{{ n.body }}</div>
-        </div>
-        <small class="muted notification-time">{{ n.created_at|naturaltime }}</small>
-      </a>
+    {% regroup notes by day as days %}
+    {% for group in days %}
+      <h2 class="day-label">{{ group.grouper|naturalday:"l, j F"|capfirst }}</h2>
+      <ul role="list" style="margin:0">
+      {% for n in group.list %}
+        <li class="notif{% if not n.is_read %} is-unread{% endif %}" data-notification>
+          <span class="notif__icon notification-visual">
+            {% if n.item %}{% include 'partials/thumb.html' with item=n.item %}{% else %}<span class="thumb">{% icon n.icon_name %}</span>{% endif %}
+            <span class="kind" aria-hidden="true">{% icon n.icon_name %}</span>
+          </span>
+          <div style="min-width:0">
+            <a class="notif__title" href="{% url 'notifications:open' n.pk %}">{% if not n.is_read %}<span class="unread-dot" aria-hidden="true"></span><span class="sr-only">Unread: </span>{% endif %}{{ n.title }}</a>
+            {% if n.body %}<p class="notif__body">{{ n.body }}</p>{% endif %}
+            <span class="notif__time"><span class="badge" style="height:18px">{{ n.get_kind_display }}</span> · <time datetime="{{ n.created_at|date:'c' }}">{{ n.created_at|naturaltime }}</time></span>
+          </div>
+          <div class="notif__actions">
+            <form method="post" action="{% url 'notifications:read' n.pk %}" data-ajax-read>
+              {% csrf_token %}<input type="hidden" name="unread" value="{% if n.is_read %}1{% endif %}">
+              <button class="btn btn-ghost btn-sm" type="submit">{% if n.is_read %}Mark unread{% else %}Mark read{% endif %}</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+      </ul>
     {% endfor %}
-    </div>
+  {% elif unread_only or sel_kind %}
+    {% include 'partials/empty.html' with icon='check' title='Nothing here' text='No notifications match this filter.' action_url='/notifications/' action_label='Show all' %}
   {% else %}
-    <div class="empty"><span class="em">🔕</span>No notifications yet.</div>
+    {% include 'partials/empty.html' with icon='bell' title='No notifications yet' text="You'll hear about potential matches, claim updates and report decisions here." %}
   {% endif %}
 </div>
+{% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
 {% endblock %}

@@ -50,6 +50,16 @@ class Claim(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            # Database-level guarantee that a physical item is only ever
+            # assigned to one verified claimant, even under concurrency.
+            models.UniqueConstraint(
+                fields=['item'],
+                condition=models.Q(status__in=['approved', 'returned']),
+                name='one_verified_claim_per_item'),
+        ]
+
+    OPEN_STATUSES = ('submitted', 'questions', 'answered', 'disputed')
 
     def __str__(self):
         return f'Claim #{self.pk} on {self.item.title} by {self.claimant}'
@@ -65,11 +75,62 @@ class Claim(models.Model):
             self.Status.ANSWERED: 'accent',
             self.Status.APPROVED: 'success',
             self.Status.REJECTED: 'danger',
+            self.Status.RETURNED: 'success',
+            self.Status.DISPUTED: 'danger',
         }.get(self.status, 'muted')
 
     @property
     def is_open(self):
-        return self.status not in (self.Status.APPROVED, self.Status.REJECTED, self.Status.RETURNED)
+        return self.status in self.OPEN_STATUSES
+
+    @property
+    def is_finalised(self):
+        return self.status in (self.Status.REJECTED, self.Status.RETURNED)
+
+    @property
+    def role_label(self):
+        """What the claimant is, relative to the report type."""
+        return 'Owner' if self.item.is_found else 'Finder'
+
+    def timeline(self):
+        """Ordered recovery lifecycle steps with their state for the UI.
+
+        States: ``done``, ``current``, ``pending``, ``blocked`` (rejected /
+        disputed branches).
+        """
+        s = self.status
+        reached = {'submitted': 0, 'questions': 1, 'answered': 2, 'approved': 3,
+                   'returned': 4, 'rejected': 2, 'disputed': 2}[s]
+        branch = s in (self.Status.REJECTED, self.Status.DISPUTED)
+        has_questions = self.questions.exists()
+        labels = [
+            ('submitted', 'Claim submitted', 'Statement and contact details recorded.'),
+            ('questions', 'Verification questions',
+             'Private questions asked by the finder or a moderator.' if has_questions
+             else 'Waiting for the finder or a moderator to ask questions.'),
+            ('answered', 'Moderator review', 'Answers compared against the report and match evidence.'),
+            ('approved', 'Approved · handover', 'Contact details shared; arrange a safe handover.'),
+            ('returned', 'Returned', 'Physical handover confirmed by a moderator.'),
+        ]
+        steps = []
+        for index, (key, title, detail) in enumerate(labels):
+            if branch and index == 2:
+                if s == self.Status.REJECTED:
+                    steps.append({'key': 'rejected', 'title': 'Claim rejected', 'state': 'blocked',
+                                  'detail': self.decision_note or 'The claim could not be verified.'})
+                else:
+                    steps.append({'key': 'disputed', 'title': 'Disputed · moderator review',
+                                  'state': 'blocked',
+                                  'detail': self.decision_note or 'A concern was raised about this claim.'})
+                continue
+            if s == self.Status.RETURNED or index < reached:
+                state = 'done'
+            elif index == reached:
+                state = 'current'
+            else:
+                state = 'pending'
+            steps.append({'key': key, 'title': title, 'state': state, 'detail': detail})
+        return steps
 
     @property
     def all_answered(self):

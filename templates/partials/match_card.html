@@ -1,0 +1,71 @@
+{% load ui %}{# Explainable match. Expects: match, other; optional: mine, action_url, action_label, open #}
+<article class="match tier-{{ match.tier }}" aria-labelledby="match-{{ match.pk }}-other">
+  <div class="match__head">
+    <div class="match__pair{% if not mine %} match__pair--single{% endif %}">
+      {% if mine %}
+      <a class="pair-tag" href="{{ mine.get_absolute_url }}">
+        {% include 'partials/thumb.html' with item=mine %}
+        <span class="pair-tag__kind">Your {{ mine.get_report_type_display|lower }} · {{ mine.pk|report_id }}</span>
+        <span class="pair-tag__title">{{ mine.title }}</span>
+      </a>
+      <span class="match__link" aria-hidden="true">{% icon 'link' %}</span>
+      {% endif %}
+      <a class="pair-tag" href="{{ other.get_absolute_url }}" id="match-{{ match.pk }}-other">
+        {% include 'partials/thumb.html' with item=other %}
+        <span class="pair-tag__kind">{{ other.get_report_type_display }} · {{ other.location.name }} · {{ other.event_date|date:"j M" }}</span>
+        <span class="pair-tag__title">{{ other.title }}</span>
+      </a>
+    </div>
+    <div class="match__score">
+      <div class="dial-wrap tier-{{ match.tier }}" role="img" aria-label="{{ match.percent }} percent similarity, {{ match.get_tier_display|lower }}">
+        <span class="dial" style="--p:{{ match.percent }}"></span>
+        <span class="dial__value">{{ match.percent }}<small>%</small></span>
+      </div>
+      <div class="match__score-text">
+        {% include 'partials/tier_badge.html' with tier=match.tier %}
+        <small>similarity score</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="match__bar">
+    <div class="contrib" role="img" aria-label="How the {{ match.percent }}% score is composed: {% for c in match.breakdown %}{% if not c.missing %}{{ c.label }} {{ c.contribution_percent }} points{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}">
+      {% for c in match.breakdown %}{% if not c.missing and c.contribution_percent > 0 %}<span class="contrib__seg comp-{{ c.key }}" style="--w:{{ c.contribution_width }}%" title="{{ c.label }}: {{ c.contribution_percent }} of {{ match.percent }} points"></span>{% endif %}{% endfor %}
+    </div>
+    <div class="match__bar-legend" aria-hidden="true">
+      {% for c in match.breakdown %}<span><i class="swatch comp-{{ c.key }}{% if c.missing %} swatch--missing{% endif %}"></i>{{ c.label }}</span>{% endfor %}
+    </div>
+  </div>
+
+  <details class="disclosure match__why"{% if open %} open{% endif %}>
+    <summary>{% icon 'scale' %}Why these reports were linked <span class="subtle hide-mobile" style="font-weight:400">· {{ match.model_label }}</span>{% icon 'chevron-down' %}</summary>
+    <table class="breakdown">
+      <caption class="sr-only">Score breakdown for {{ other.title }}</caption>
+      <thead><tr><th scope="col">Signal</th><th scope="col">Similarity</th><th scope="col" class="num hide-sm">Weight</th><th scope="col" class="num">Points</th></tr></thead>
+      <tbody>
+      {% for c in match.breakdown %}
+        <tr{% if c.missing %} class="is-missing"{% endif %}>
+          <td><span class="signal"><i class="swatch comp-{{ c.key }}{% if c.missing %} swatch--missing{% endif %}" aria-hidden="true"></i>{{ c.label }}</span></td>
+          {% if c.missing %}
+            <td colspan="1" class="meter-cell"><span class="subtle" style="font-size:var(--text-xs)">Not compared · {{ c.missing_reason }}</span></td>
+            <td class="num hide-sm">—</td><td class="num">—</td>
+          {% else %}
+            <td class="meter-cell"><div class="row" style="gap:var(--s-2)"><div class="meter grow"><i style="--w:{{ c.percent }}%; --meter-color: var(--comp-{{ c.key }})"></i></div><span class="num" style="width:3ch;text-align:right">{{ c.percent }}</span></div></td>
+            <td class="num hide-sm">{{ c.effective_percent }}%</td>
+            <td class="num">{{ c.contribution_percent }}</td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td>Total</td><td class="subtle" style="font-weight:400;font-size:var(--text-xs)">{% if match.missing_components %}Weights re-balanced across compared signals{% else %}All six signals compared{% endif %}</td><td class="hide-sm"></td><td class="num">{{ match.percent }}</td></tr></tfoot>
+    </table>
+    <p class="match__note">{% icon 'info' %}<span>Similarity helps people find each other's reports. It is not proof of ownership: every claim is checked with private questions and approved by a moderator. Engine {{ match.engine_version }}.</span></p>
+  </details>
+
+  {% if action_url %}
+  <div class="match__foot">
+    <span class="subtle" style="font-size:var(--text-xs)">Updated {{ match.updated_at|default:match.created_at|timesince }} ago</span>
+    <a href="{{ action_url }}" class="btn btn-primary btn-sm">{{ action_label }}{% icon 'arrow-right' %}</a>
+  </div>
+  {% endif %}
+</article>
