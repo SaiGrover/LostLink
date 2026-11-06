@@ -1,0 +1,6 @@
+{# Cycles Light → Dark → System. The visible icon is the current choice. #}
+<button type="button" class="icon-btn theme-toggle{% if cls %} {{ cls }}{% endif %}" data-theme-toggle aria-label="Colour theme: light. Switch to dark">
+  <svg class="icon theme-toggle__light" aria-hidden="true"><use href="#i-sun"></use></svg>
+  <svg class="icon theme-toggle__dark" aria-hidden="true"><use href="#i-moon"></use></svg>
+  <svg class="icon theme-toggle__system" aria-hidden="true"><use href="#i-monitor"></use></svg>
+</button>

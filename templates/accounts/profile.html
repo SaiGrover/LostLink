@@ -30,7 +30,8 @@
       <dt>Reports</dt><dd><a class="link" href="{% url 'items:mine' %}">{{ user.items.count }}</a></dd>
       <dt>Claims</dt><dd><a class="link" href="{% url 'claims:mine' %}">{{ user.claims.count }}</a></dd>
     </dl>
-    <div class="cluster"><button class="btn btn-sm" type="button" data-theme-toggle>{% icon 'moon' %}Switch day or night colours</button><a class="btn btn-plain btn-sm" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a></div>
+    <div class="stack" style="--gap:var(--s2)"><span class="label">Colour theme</span>{% include 'partials/theme_choice.html' %}<span class="hint">System follows your device setting.</span></div>
+    <div class="cluster"><a class="btn btn-plain btn-sm" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a></div>
   </aside>
 </div>
 {% endblock %}

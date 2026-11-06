@@ -5,7 +5,7 @@
   <div class="auth__main">
     <div class="cluster between">
       {% include 'partials/brand.html' with href='/' %}
-      <button type="button" class="icon-btn" data-theme-toggle aria-label="Switch day or night colours">{% icon 'moon' %}</button>
+      {% include 'partials/theme_toggle.html' %}
     </div>
     <main class="auth__form" id="main-content" tabindex="-1">
       {% block form %}{% endblock %}

@@ -9,14 +9,38 @@
   function csrf() { var m = doc.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); var i = $('input[name=csrfmiddlewaretoken]'); return m ? decodeURIComponent(m[1]) : (i ? i.value : ''); }
   window.LostLink = { $: $, $$: $$, csrf: csrf, toast: toast, animateIn: animateIn };
 
-  /* ---- Theme: day by default, night only when chosen ---------------------- */
-  $$('[data-theme-toggle]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var dark = root.getAttribute('data-theme') !== 'dark';
-      if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
-      try { localStorage.setItem('lostlink-theme', dark ? 'dark' : 'light'); } catch (e) {}
-    });
-  });
+  /* ---- Theme: light, dark or system ----------------------------------------
+     base.html resolves the theme before first paint; this keeps controls in
+     sync, saves the choice and follows the device while "system" is chosen. */
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+  var NAMES = { light: 'light', dark: 'dark', system: 'system (follows your device)' };
+  var NEXT = { light: 'dark', dark: 'system', system: 'light' };
+  function themePref() { return root.getAttribute('data-theme-pref') || 'light'; }
+  function syncThemeControls() {
+    var pref = themePref();
+    $$('[data-theme-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeSet === pref)); });
+    $$('[data-theme-toggle]').forEach(function (b) { b.setAttribute('aria-label', 'Colour theme: ' + NAMES[pref] + '. Switch to ' + NEXT[pref]); b.title = 'Colour theme: ' + NAMES[pref]; });
+  }
+  function applyTheme(pref, animate) {
+    var dark = pref === 'dark' || (pref === 'system' && mq && mq.matches);
+    if (animate) { root.classList.add('theme-anim'); setTimeout(function () { root.classList.remove('theme-anim'); }, 260); }
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    root.setAttribute('data-theme-pref', pref);
+    syncThemeControls();
+  }
+  function chooseTheme(pref) {
+    try { localStorage.setItem('lostlink-theme', pref); } catch (e) {}
+    applyTheme(pref, true);
+  }
+  $$('[data-theme-set]').forEach(function (b) { b.addEventListener('click', function () { chooseTheme(b.dataset.themeSet); }); });
+  $$('[data-theme-toggle]').forEach(function (b) { b.addEventListener('click', function () { chooseTheme(NEXT[themePref()]); }); });
+  if (mq) {
+    var onSystem = function () { if (themePref() === 'system') applyTheme('system', true); };
+    if (mq.addEventListener) mq.addEventListener('change', onSystem); else if (mq.addListener) mq.addListener(onSystem);
+  }
+  // another tab changed the theme
+  window.addEventListener('storage', function (e) { if (e.key === 'lostlink-theme' && e.newValue) applyTheme(e.newValue, true); });
+  syncThemeControls();
 
   /* ---- Masthead gains a hairline once the page scrolls -------------------- */
   var mast = $('.mast');

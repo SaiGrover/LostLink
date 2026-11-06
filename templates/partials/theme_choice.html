@@ -1,0 +1,6 @@
+{% load ui %}{# Light / Dark / System as a three-way choice (account menu, profile). #}
+<div class="theme-choice" role="group" aria-label="Colour theme">
+  <button type="button" data-theme-set="light" aria-pressed="false">{% icon 'sun' %}Light</button>
+  <button type="button" data-theme-set="dark" aria-pressed="false">{% icon 'moon' %}Dark</button>
+  <button type="button" data-theme-set="system" aria-pressed="false">{% icon 'monitor' %}System</button>
+</div>

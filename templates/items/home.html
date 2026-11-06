@@ -31,7 +31,7 @@
         <a class="lp-link lp-hide-sm" href="{% url 'accounts:login' %}">Log in</a>
         <a class="lp-btn lp-btn--ring lp-btn--nav lp-hide-sm" href="{% url 'accounts:register' %}"><span class="lp-btn__fill" aria-hidden="true"></span><span class="lp-btn__label">Get started</span></a>
         {% endif %}
-        <button type="button" class="lp-icon-btn" data-theme-toggle aria-label="Switch day or night colours">{% icon 'moon' %}</button>
+        {% include 'partials/theme_toggle.html' with cls='lp-icon-btn' %}
         <button type="button" class="lp-icon-btn lp-menu-btn" aria-expanded="false" aria-controls="lp-menu" aria-label="Open menu" data-lp-menu-btn><span class="lp-burger" aria-hidden="true"><i></i><i></i></span></button>
       </div>
     </div>

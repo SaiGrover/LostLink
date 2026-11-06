@@ -48,6 +48,7 @@ def main():
         for scheme in ('light', 'dark'):
             for width in WIDTHS:
                 ctx = browser.new_context(viewport={'width': width, 'height': 900}, color_scheme=scheme, reduced_motion='reduce')
+                ctx.add_init_script("try { localStorage.setItem('lostlink-theme', 'system') } catch (e) {}")  # follow the emulated scheme
                 page = ctx.new_page()
                 errors = []
                 page.on('pageerror', lambda e: errors.append(str(e)))
@@ -60,6 +61,7 @@ def main():
         for role, user, password in ROLES:
             for scheme in ('light', 'dark'):
                 ctx = browser.new_context(viewport={'width': 1440, 'height': 900}, color_scheme=scheme, reduced_motion='reduce')
+                ctx.add_init_script("try { localStorage.setItem('lostlink-theme', 'system') } catch (e) {}")  # follow the emulated scheme
                 page = ctx.new_page()
                 errors = []
                 page.on('pageerror', lambda e: errors.append(str(e)))

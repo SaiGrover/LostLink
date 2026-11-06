@@ -2,11 +2,11 @@
    LostLink landing page
    --------------------------------------------------------------------------
    A full-viewport hero: belongings orbit LostLink at the centre. Lost items
-   carry an orange mark, found items a cyan one. When the real strongest
+   carry a vermilion mark, found items a warm slate one. When the real strongest
    match on campus is available, its two photos ride the orbits and a live
    connection draws between them with the actual score.
    Type here is Urbanist (display) and Inter (text); colours come from the
-   shared tokens, so the night scheme works unchanged.
+   shared Black + Vermilion tokens, so both themes work unchanged.
    ========================================================================== */
 
 @property --border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
@@ -36,9 +36,7 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .landing-page::before {
   content: ''; position: absolute; inset: 0 0 auto; height: max(100vh, 920px); z-index: -1; pointer-events: none;
   background:
-    radial-gradient(42% 46% at 76% 46%, rgb(25 181 214 / 0.16), transparent 70%),
-    radial-gradient(30% 34% at 64% 72%, rgb(255 122 26 / 0.13), transparent 72%),
-    radial-gradient(36% 40% at 12% 18%, rgb(25 86 21 / 0.06), transparent 70%),
+    radial-gradient(44% 48% at 74% 46%, rgb(214 83 59 / 0.07), transparent 70%),
     linear-gradient(180deg, var(--page) 70%, var(--page));
 }
 .landing-page::after {
@@ -62,8 +60,8 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; border-radius: 2px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
 .lp-link:hover, .lp-link[aria-current="page"] { color: var(--text); text-decoration: none; }
 .lp-link:hover::after, .lp-link:focus-visible::after { transform: scaleX(1); }
-.lp-link[aria-current="page"]::after { transform: scaleX(1); background: linear-gradient(90deg, var(--ink-lost), var(--ink-found)); }
-.lp-link:focus-visible { box-shadow: none; outline: 2px solid var(--match); outline-offset: 4px; border-radius: 4px; }
+.lp-link[aria-current="page"]::after { transform: scaleX(1); background: var(--accent); }
+.lp-link:focus-visible { box-shadow: none; outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 
 .lp-icon-btn { display: inline-grid; place-items: center; width: 42px; height: 42px; border: 0; border-radius: 50%; background: transparent; color: var(--text); transition: background 0.3s ease; }
 .lp-icon-btn:hover { background: var(--mist); }
@@ -75,7 +73,7 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-menu-btn[aria-expanded="true"] .lp-burger i:first-child { top: 4px; transform: rotate(45deg); }
 .lp-menu-btn[aria-expanded="true"] .lp-burger i:last-child { top: 4px; transform: rotate(-45deg); }
 
-.lp-menu { position: absolute; left: 16px; right: 16px; top: calc(100% - 8px); display: grid; gap: 2px; padding: 12px; border-radius: 24px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px) saturate(1.5); -webkit-backdrop-filter: blur(16px) saturate(1.5); border: 1px solid var(--rule); box-shadow: var(--shadow-2); }
+.lp-menu { position: absolute; left: 16px; right: 16px; top: calc(100% - 8px); display: grid; gap: 2px; padding: 12px; border-radius: 24px; background: var(--elevated); border: 1px solid var(--rule); box-shadow: var(--shadow-2); }
 .lp-menu:not([hidden]) { animation: lp-pop 0.35s var(--lp-ease) both; }
 .lp-menu > a { padding: 14px 16px; border-radius: 14px; color: var(--text); font-weight: 600; text-decoration: none; }
 .lp-menu > a:hover, .lp-menu > a[aria-current="page"] { background: var(--mist); }
@@ -86,7 +84,7 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
    Pill buttons. The fill slides in from the left on hover; the ring variant
    carries a rotating conic-gradient border drawn through a mask. */
 .lp-btn {
-  --fg: var(--text); --bg: var(--surface); --fill: var(--ink-c); --fg-hover: #fff;
+  --fg: var(--text); --bg: var(--surface); --fill: var(--text); --fg-hover: var(--page);
   position: relative; isolation: isolate; overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   min-height: 46px; padding: 0 24px; border: 0; border-radius: 999px;
@@ -105,20 +103,17 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-btn--ring { box-shadow: none; }
 .lp-btn--ring::before {
   content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1.5px; pointer-events: none;
-  background: conic-gradient(from var(--border-angle), var(--ink-lost), var(--ink-found), var(--ink-match), var(--ink-lost));
+  background: conic-gradient(from var(--border-angle), var(--v-800), var(--v-300), var(--v-700), var(--v-200), var(--v-800));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   animation: lp-border 4s linear infinite;
 }
 .lp-btn--nav { min-height: 42px; padding: 0 20px; }
-.lp-btn--primary { --bg: var(--ink-c); --fg: #fff; --fill: var(--ink-match); --fg-hover: #fff; box-shadow: none; }
+.lp-btn--primary { --bg: var(--btn-accent); --fg: var(--btn-accent-text); --fill: var(--btn-accent-hover); --fg-hover: var(--btn-accent-text); box-shadow: none; }
 .lp-btn--primary.lp-btn--ring::before { padding: 2px; }
-.lp-btn--ghost { --bg: color-mix(in srgb, var(--surface) 70%, transparent); --fill: var(--mist-2); --fg-hover: var(--text); backdrop-filter: blur(8px); }
+.lp-btn--ghost { --bg: var(--btn-2); --fill: var(--btn-2-hover); --fg-hover: var(--text); box-shadow: none; }
 .lp-btn--ghost:hover { box-shadow: inset 0 0 0 1.5px var(--text); }
-:root[data-theme="dark"] .lp-btn--primary { --bg: #EEF5F0; --fg: #0C1310; --fill: #7FD38A; --fg-hover: #0C1310; }
-:root[data-theme="dark"] .lp-btn { --fill: #EEF5F0; --fg-hover: #0C1310; }
-:root[data-theme="dark"] .lp-btn--ghost { --fill: var(--mist-2); --fg-hover: var(--text); }
 .lp-btn:focus-visible { box-shadow: var(--focus-ring); border-radius: 999px; }
 
 /* ---- Hero -------------------------------------------------------------------- */
@@ -132,13 +127,12 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-title > span { display: block; }
 .lp-title__a { color: var(--text-3); font-weight: 600; }
 .lp-title__b { color: var(--text); }
-.lp-title__c { color: var(--ink-match); }
-:root[data-theme="dark"] .lp-title__c { color: #7FD38A; }
+.lp-title__c { color: var(--accent-ink); }
 /* Typewriter: every character keeps its space from the start, so nothing shifts */
 .tw-c { opacity: 0; transition: opacity 0.12s linear; }
 .tw-c.is-on { opacity: 1; }
 .tw-cursor { display: inline-block; position: relative; width: 0; height: 1em; vertical-align: -0.12em; }
-.tw-cursor::after { content: ''; position: absolute; left: 2px; top: 0.06em; width: 3px; height: 0.92em; border-radius: 2px; background: linear-gradient(var(--ink-lost), var(--ink-found)); animation: lp-blink 1s steps(1) infinite; }
+.tw-cursor::after { content: ''; position: absolute; left: 2px; top: 0.06em; width: 3px; height: 0.92em; border-radius: 2px; background: var(--accent); animation: lp-blink 1s steps(1) infinite; }
 .lp-title.is-typed .tw-cursor { animation: lp-fade-out 0.6s ease 1.4s both; }
 
 .lp-lede { font-size: 1.125rem; line-height: 1.65; color: var(--text-2); max-width: 46ch; }
@@ -153,8 +147,8 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 
 /* The floating pointer: someone in the community, near the actions */
 .lp-cursor { position: absolute; left: calc(100% + 2px); top: 14px; display: flex; align-items: flex-start; gap: 2px; pointer-events: none; opacity: 0; transform: scale(0.6) translate(-10px, -10px); }
-.lp-cursor__arrow { width: 24px; height: 24px; fill: var(--ink-found); stroke: var(--surface); stroke-width: 1.4; filter: drop-shadow(0 4px 8px rgb(16 36 27 / 0.2)); }
-.lp-cursor__label { margin-top: 16px; padding: 6px 12px; border-radius: 999px 999px 999px 4px; background: var(--ink-found); color: #0C1310; font-size: 0.8rem; font-weight: 600; white-space: nowrap; box-shadow: 0 8px 20px -6px rgb(25 181 214 / 0.55); }
+.lp-cursor__arrow { width: 24px; height: 24px; fill: var(--text); stroke: var(--surface); stroke-width: 1.4; filter: drop-shadow(0 4px 8px rgb(33 31 30 / 0.2)); }
+.lp-cursor__label { margin-top: 16px; padding: 6px 12px; border-radius: 999px 999px 999px 4px; background: var(--text); color: var(--page); font-size: 0.8rem; font-weight: 600; white-space: nowrap; box-shadow: 0 8px 20px -8px rgb(33 31 30 / 0.35); }
 .lp-hero.is-cursor .lp-cursor { opacity: 1; transform: none; transition: opacity 0.8s var(--lp-ease), transform 0.8s var(--lp-ease); animation: lp-hover-drift 6s ease-in-out 0.8s infinite; }
 
 /* ---- The orbit visualization ------------------------------------------------------
@@ -167,11 +161,11 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-orbit { z-index: 1; --t: 40s; --dir: normal; --dir-inv: reverse; position: absolute; left: 50%; top: 50%; width: var(--d); height: var(--d); margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2); border-radius: 50%; animation: lp-spin var(--t) linear infinite var(--dir); }
 .lp-orbit::before {
   content: ''; position: absolute; inset: 0; border-radius: 50%; padding: 1px; pointer-events: none;
-  background: conic-gradient(from var(--o-from, 0deg), color-mix(in srgb, var(--ink-lost) 70%, transparent), transparent 22%, color-mix(in srgb, var(--text) 18%, transparent) 40%, color-mix(in srgb, var(--ink-found) 70%, transparent) 62%, transparent 84%, color-mix(in srgb, var(--ink-lost) 70%, transparent));
+  background: conic-gradient(from var(--o-from, 0deg), color-mix(in srgb, var(--accent) 60%, transparent), transparent 22%, color-mix(in srgb, var(--text) 16%, transparent) 40%, color-mix(in srgb, var(--rule-2) 90%, transparent) 62%, transparent 84%, color-mix(in srgb, var(--accent) 60%, transparent));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
-.lp-orbit::after { content: ''; position: absolute; inset: -14px; border-radius: 50%; pointer-events: none; box-shadow: inset 0 0 40px -18px color-mix(in srgb, var(--ink-found) 40%, transparent); opacity: 0.5; }
+.lp-orbit::after { content: ''; position: absolute; inset: -14px; border-radius: 50%; pointer-events: none; box-shadow: none; }
 .lp-orbit--1 { --d: 353px; --t: 30s; --dir: reverse; --dir-inv: normal; --o-from: 40deg; }
 .lp-orbit--2 { --d: 501px; --t: 40s; --o-from: 160deg; }
 .lp-orbit--3 { --d: 649px; --t: 50s; --o-from: 260deg; }
@@ -182,14 +176,14 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-item__up { animation: lp-spin var(--t) linear infinite var(--dir-inv); }
 .lp-item__fly {
   display: flex; align-items: center; justify-content: center; gap: 8px; position: relative;
-  color: var(--text); background: var(--surface); box-shadow: 0 1px 2px rgb(16 36 27 / 0.06), 0 14px 30px -12px rgb(16 36 27 / 0.28);
+  color: var(--text); background: var(--surface); border: 1px solid var(--rule); box-shadow: var(--shadow-2);
   animation: lp-fly-in 1s var(--lp-ease) var(--delay, 0.6s) both;
   transition: box-shadow 0.5s var(--lp-ease), transform 0.5s var(--lp-ease);
 }
 .lp-ico { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .lp-dot { position: absolute; right: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 3px var(--surface); }
-.lp-item--lost .lp-dot { background: var(--ink-lost); }
-.lp-item--found .lp-dot { background: var(--ink-found); }
+.lp-item--lost .lp-dot { background: var(--lost-dot); }
+.lp-item--found .lp-dot { background: var(--found-dot); }
 .lp-item--chip .lp-item__fly { width: 64px; height: 64px; border-radius: 50%; }
 .lp-item--square .lp-item__fly { width: 74px; height: 74px; border-radius: 22px; }
 .lp-item--square .lp-ico { width: 30px; height: 30px; }
@@ -203,24 +197,24 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-photo img { width: 100%; height: 100%; object-fit: cover; }
 .lp-chip { position: absolute; left: 50%; bottom: -14px; translate: -50% 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-1); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
 .lp-chip i { width: 8px; height: 8px; border-radius: 50%; }
-.lp-item--lost .lp-chip { color: var(--lost-text); } .lp-item--lost .lp-chip i { background: var(--ink-lost); }
-.lp-item--found .lp-chip { color: var(--found-text); } .lp-item--found .lp-chip i { background: var(--ink-found); }
-.lp-item.is-linked .lp-item__fly { transform: scale(1.08); box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--ring, var(--ink-match)), 0 22px 40px -14px rgb(16 36 27 / 0.35); }
-.lp-item--lost.is-linked { --ring: var(--ink-lost); }
-.lp-item--found.is-linked { --ring: var(--ink-found); }
+.lp-item--lost .lp-chip { color: var(--lost-text); } .lp-item--lost .lp-chip i { background: var(--lost-dot); }
+.lp-item--found .lp-chip { color: var(--found-text); } .lp-item--found .lp-chip i { background: var(--found-dot); }
+.lp-item.is-linked .lp-item__fly { transform: scale(1.08); box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--ring, var(--accent)), var(--shadow-2); }
+.lp-item--lost.is-linked { --ring: var(--lost-dot); }
+.lp-item--found.is-linked { --ring: var(--found-dot); }
 
 /* The hub: two discs overprinting, the name and what it is for */
 .lp-hub {
   position: absolute; z-index: 2; left: 50%; top: 50%; width: 236px; height: 236px; margin: -118px 0 0 -118px; border-radius: 50%;
   display: grid; place-content: center; justify-items: center; gap: 6px; text-align: center; padding: 26px;
-  background: radial-gradient(circle at 50% 35%, var(--surface), color-mix(in srgb, var(--surface) 82%, transparent));
-  box-shadow: 0 0 0 1px var(--rule), 0 30px 60px -24px rgb(16 36 27 / 0.3);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--rule), var(--shadow-2);
 }
-.lp-hub::before { content: ''; position: absolute; inset: -18px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink-match) 35%, transparent); animation: lp-ripple 4.5s var(--lp-ease) infinite; }
+.lp-hub::before { content: ''; position: absolute; inset: -18px; border-radius: 50%; border: 1px solid var(--accent-border); animation: lp-ripple 4.5s var(--lp-ease) infinite; }
 .lp-hub__mark { position: relative; width: 64px; height: 42px; isolation: isolate; margin-bottom: 6px; }
 .lp-hub__mark i { position: absolute; top: 0; width: 42px; height: 42px; border-radius: 50%; mix-blend-mode: multiply; }
-.lp-hub__mark i:first-child { left: 0; background: var(--ink-lost); animation: lp-meet-a 6s var(--lp-ease) infinite; }
-.lp-hub__mark i:last-child { left: 22px; background: var(--ink-found); animation: lp-meet-b 6s var(--lp-ease) infinite; }
+.lp-hub__mark i:first-child { left: 0; background: var(--lost-dot); animation: lp-meet-a 6s var(--lp-ease) infinite; }
+.lp-hub__mark i:last-child { left: 22px; background: var(--text); animation: lp-meet-b 6s var(--lp-ease) infinite; }
 .lp-hub__name { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; letter-spacing: -0.03em; line-height: 1; }
 .lp-hub__line { font-size: 0.82rem; line-height: 1.35; color: var(--text-2); max-width: 15ch; }
 
@@ -229,19 +223,18 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-link-path.is-on { opacity: 1; }
 .lp-link-path__track { fill: none; stroke: color-mix(in srgb, var(--text) 30%, transparent); stroke-width: 2; stroke-dasharray: 1 9; stroke-linecap: round; }
 .lp-link-path__line { fill: none; stroke-width: 3; stroke-linecap: round; }
-.lp-link-path__spark { fill: var(--surface); stroke: var(--ink-match); stroke-width: 3; }
+.lp-link-path__spark { fill: var(--surface); stroke: var(--accent); stroke-width: 3; }
 .lp-match {
   position: absolute; z-index: 3; left: 0; top: 0; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px;
-  background: var(--ink-c); color: #fff; font-size: 0.9rem; white-space: nowrap; box-shadow: 0 14px 30px -10px rgb(16 36 27 / 0.45);
+  background: var(--text); color: var(--page); font-size: 0.9rem; white-space: nowrap; box-shadow: var(--shadow-2);
   opacity: 0; transform: translate(-50%, -50%) scale(0.7); transition: opacity 0.5s var(--lp-ease), transform 0.5s var(--lp-ease); pointer-events: none;
 }
-:root[data-theme="dark"] .lp-match { background: #EEF5F0; color: #0C1310; }
 .lp-match.is-on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 .lp-match b { font-weight: 700; }
 .lp-match__mark { position: relative; width: 26px; height: 16px; isolation: isolate; }
 .lp-match__mark i { position: absolute; top: 0; width: 16px; height: 16px; border-radius: 50%; mix-blend-mode: multiply; }
-.lp-match__mark i:first-child { left: 0; background: var(--ink-lost); }
-.lp-match__mark i:last-child { left: 10px; background: var(--ink-found); }
+.lp-match__mark i:first-child { left: 0; background: var(--lost-dot); }
+.lp-match__mark i:last-child { left: 10px; background: var(--page); }
 :root[data-theme="dark"] .lp-match__mark i { mix-blend-mode: normal; }
 
 .lp-viz.is-paused .lp-orbit, .lp-viz.is-paused .lp-item__up { animation-play-state: paused; }
@@ -258,8 +251,8 @@ body.lp .finale h2 { letter-spacing: -0.035em; }
 .lp-ticker__set { display: flex; align-items: center; gap: 40px; padding-right: 40px; }
 .lp-ticker span { font-family: var(--font-display); font-weight: 600; font-size: 1.35rem; letter-spacing: -0.02em; color: var(--text-2); white-space: nowrap; }
 .lp-ticker svg { width: 22px; height: 22px; fill: none; stroke: var(--text-3); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-.lp-ticker__set svg:nth-of-type(odd) { stroke: var(--ink-lost); }
-.lp-ticker__set svg:nth-of-type(even) { stroke: var(--ink-found); }
+.lp-ticker__set svg:nth-of-type(odd) { stroke: var(--accent); }
+.lp-ticker__set svg:nth-of-type(even) { stroke: var(--text-3); }
 .lp-ticker:hover .lp-ticker__track { animation-play-state: paused; }
 
 /* The kept sections below the hero */

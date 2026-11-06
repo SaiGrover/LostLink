@@ -1,56 +1,64 @@
-# Frontend design system: "Overprint"
+# Frontend design system
 
 LostLink's interface is Django templates, four stylesheets and two scripts.
 There is no build step and no CSS or JavaScript framework. Every page works
 without JavaScript; the scripts add live search, previews, in-place updates
 and motion.
 
-## Concept
+## Colour: Black + Vermilion
 
-The product's one job is to put a lost report next to a found report and say
-how alike they are. The identity is built from that act:
+Vermilion is the signature colour, set against warm off-white in light mode and
+layered charcoal in dark mode. It is kept for what matters most: the primary
+action in a view, lost reports, active navigation, focus and match scores.
+Everything else sits on warm neutrals. All colours live in
+`static/css/tokens.css` as semantic variables; components never use raw hex.
 
-- Every report is a disc of ink: **signal orange** for lost (something is
-  missing) and **clear cyan** for found (it's safe).
-- A match prints one disc over the other. Where they overlap, orange over cyan
-  mixes into **deep green**, the colour of "this is it". The width of the
-  overlap is the real similarity score: at 87 the lens is 87% of a disc's width.
-- The discs use real multiply blending, in both the day and night schemes, so
-  the green is the actual mix of the two inks.
-
-The same rule is used everywhere, so a person learns it once:
-
-| Where | What the overlap shows |
-| --- | --- |
-| Landing hero | The strongest real match on campus, large, with both photos |
-| Home | The person's own strongest match, then every likely match as a row |
-| Match card (item page, landing) | The pair with both reports either side |
-| Why this score | Six small overlaps, one per signal, each overlapping by that signal's similarity, with its weight and points |
-| Signals that couldn't be compared | Two dashed discs that don't touch |
-| Empty states, errors | Two discs that haven't met |
-| Brand, favicon, sign-in panel, closing banner | Two overlapping discs |
-
-## Palette
-
-| Name | Hex | Role |
+| Token | Light | Dark |
 | --- | --- | --- |
-| Paper | `#FFFFFF` | Page |
-| Mist | `#F2F5F3` | Quiet surfaces: panels, fields, match cards |
-| Ink | `#10241B` | Text, primary actions |
-| Lost orange | `#FF7A1A` | Lost reports, "I lost something" (ink text) |
-| Found cyan | `#19B5D6` | Found reports, "I found something" (ink text) |
-| Match green | `#195615` | Orange × cyan: matches, the main action in a view, focus rings |
+| Page | `#F5F3F0` | `#101010` |
+| Cards (`--surface`) | `#FFFFFF` | `#1B1918` |
+| Secondary surface (`--mist`) | `#EEEAE5` | `#211F1E` |
+| Tertiary surface (`--mist-2`) | `#E4DED8` | `#302D2B` |
+| Dropdowns, modals (`--elevated`) | `#FFFEFC` | `#262321` |
+| Navigation | `#FFFFFF` | `#151413` |
+| Text / secondary / muted | `#211F1E` / `#625D59` / `#716A64` | `#FAF8F5` / `#C9C2BC` / `#A69E97` |
+| Borders / dividers / strong | `#E4DED8` / `#EEEAE5` / `#C9C2BC` | `#302D2B` / `#302D2B` / `#625D59` |
+| Brand accent (marks, dots, focus) | `#D6533B` | `#F0785E` |
+| Accent text | `#B83E2B` | `#FFA18A` |
+| Accent soft / border | `#FFF1ED` / `#FFC0AE` | `#49251F` / `#71372D` |
+| Primary button / hover / pressed | `#C94B34` / `#B83E2B` / `#913021` | `#F0785E` / `#F78369` / `#E65E43` |
+| Secondary button | `#EEEAE5` | `#302D2B` |
 
-Orange and cyan are too light for white text, so buttons in those inks use ink
-text (above 6:1). Smaller coloured text uses darker variants (`--lost-text`
-`#B54A00`, `--found-text` `#00728A`) to stay above 4.5:1. The score inside the
-green lens is white (8.8:1). Report type is never shown by colour alone: a disc
-is always paired with the word Lost or Found, tiers carry a shape (triangle,
-diamond, ring) and statuses carry words.
+Statuses always pair a small dot with a word:
 
-The night scheme (deep green-black page, brighter inks, light green for actions)
-applies only when chosen from the account menu. The inks still multiply there,
-so the lens stays a readable green (`#3C6C37`, 6.2:1 with white).
+| Status | Light (text / background / dot) | Dark |
+| --- | --- | --- |
+| Lost | `#B83E2B` / `#FFF1ED` / `#D6533B` | `#FFA18A` / `#49251F` / `#F0785E` |
+| Found | `#625D59` / `#EEEAE5` / `#827B75` | `#D5CEC7` / `#302D2B` / `#A69E97` |
+| Matched, returned, high tier | `#8A542A` / `#F6E8D9` / `#B97845` | `#E8B98B` / `#403023` / `#D49A65` |
+| Pending, medium tier | `#77623D` / `#F5EEDC` / `#B58A42` | `#E3C88E` / `#393020` / `#D8B56C` |
+| Rejected, low tier | `#625D59` / `#EEEAE5` / `#827B75` | `#C9C2BC` / `#302D2B` / `#A69E97` |
+
+**Contrast adjustments.** Three values in the brief fall below WCAG AA (4.5:1)
+for normal-size text, so the nearest passing shade is used for text only:
+primary buttons use `#C94B34` (white text 4.6:1; `#D6533B` gives 4.1:1 and stays
+the brand colour for marks, dots, rings and focus), muted text uses `#716A64`
+(4.8:1 on the page; `#827B75` is kept for placeholders), and accent-coloured
+text uses `#B83E2B` (5.0:1).
+
+**Match scores.** Each match is drawn as two discs, the lost report in
+vermilion and the found report in warm slate, overlapping by the real score;
+the overlap mixes to a deep vermilion-brown with the score in white.
+
+## Theme switching
+
+People choose **Light** (the default), **Dark** or **System** from the account
+menu or the profile page; public pages have a toggle that cycles through the
+three and announces the current choice. The choice is stored in
+`localStorage` (`lostlink-theme`). An inline script in `base.html` resolves it
+to `data-theme="light"` or `"dark"` before the first paint, so the wrong theme
+never flashes; in System mode the theme follows the device and updates live
+when it changes. Switching fades colours for 200ms. Other tabs follow along.
 
 ## Type
 
@@ -64,13 +72,14 @@ words in headlines; size and the two faces carry the hierarchy.
 
 ## Layout
 
-- A light, translucent masthead (blurred) with the current page marked by a
-  pill and a green dot. Phones get a floating tab bar with the report action
+- A solid masthead (white, or charcoal at night) with the current page marked
+  by a soft vermilion pill and dot. Phones get a floating tab bar with the report action
   in the middle.
 - Radius follows hierarchy: 28px for panels, 18px for cards and photos, 14px
   for controls, 8px for small labels, round for buttons, chips and discs.
-- Content is grouped by tone, not borders: match cards, fact lists, filters
-  and form sections sit on mist panels; lists are rows separated by hairlines.
+- Match cards, fact lists, filters and form sections are white cards with a
+  subtle border on the off-white page (charcoal layers at night); lists are rows
+  separated by hairlines.
 
 ## Motion
 
@@ -93,13 +102,13 @@ Motion explains something or answers a person:
 
 | File | Purpose |
 | --- | --- |
-| `static/css/tokens.css` | Inks, semantic colours (day default, opt-in night), type, spacing, geometry, motion. |
+| `static/css/tokens.css` | Vermilion scale, semantic colours for light and dark, status colours, type, spacing, geometry, motion. |
 | `static/css/base.css` | Reset, type roles, layout primitives, utilities, keyframes, view transitions, reduced motion. |
 | `static/css/components.css` | The overlap and signals, buttons, fields, choice cards, segmented controls, markers, badges, photos, item cards, match cards and rows, routes, rows, facts, notices, menus, dialog, toasts, empty states, pager, tables, chips, tabs, dropzone, Q&A, charts. |
 | `static/css/layout.css` | Brand, masthead, tab bar, page heads, and each page's composition. |
 | `templates/partials/overlap.html` | The overlap diagram: two items, a score, a size, optional photos and reveal. |
 | `templates/partials/match_card.html`, `pair.html` | Full and compact matches built on the overlap. |
-| `static/js/app.js` | Theme, menus, toasts, confirmation dialog, submit states, password tools, dropzone and live report preview, tabs, the overlap reveal and count-up, mark-read and unread polling. |
+| `static/js/app.js` | Theme (light, dark, system), menus, toasts, confirmation dialog, submit states, password tools, dropzone and live report preview, tabs, the overlap reveal and count-up, mark-read and unread polling. |
 | `static/js/search.js` | Debounced AJAX search, skeletons, filter chips, URL state, staggered results. |
 
 ## Landing page
@@ -107,7 +116,7 @@ Motion explains something or answers a person:
 The landing page (`templates/items/home.html`, `static/css/landing.css`,
 `static/js/landing.js`) uses its own type pairing, **Urbanist** for display and
 **Inter** for text, loaded only on that page through the `fonts` block. Colours
-come from the shared tokens, so the night scheme works there too.
+come from the shared tokens, so both themes work there too.
 
 - **Hero:** a typed headline (vanilla `TypewriterHeading`: 35ms per character
   after 400ms; characters hold their space from the start, so nothing shifts),
