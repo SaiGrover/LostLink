@@ -1,15 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Not found{% endblock %}
+{% block title %}404{% endblock %}
 {% block body %}
-<main class="error-page" id="main-content">
+<main class="error" id="main-content">
   <div>
-    <span class="code">404 · Not found</span>
-    <h1>Even we couldn't find this one.</h1>
-    <p>The page or report may have been removed, or the link is mistyped.</p>
-    <div class="cluster" style="justify-content:center">
-      <a href="/search/" class="btn btn-primary">Search reports</a>
-      <a href="/" class="btn btn-secondary">Home</a>
-    </div>
+    <span class="num" aria-hidden="true">404</span>
+    <h1>This tag <em>went missing</em>.</h1>
+    <p>The page or tag may have been removed, or the link is mistyped.</p>
+    <div class="cluster" style="justify-content:center"><a href="/search/" class="btn btn-ink">Search the wall</a><a href="/" class="btn">Home</a></div>
   </div>
 </main>
 {% endblock %}

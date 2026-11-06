@@ -26,10 +26,9 @@
   }
 
   function skeleton() {
-    var card = '<div class="skeleton-card" aria-hidden="true"><div class="skeleton"></div><div class="skeleton-card__body">' +
-      '<div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:80%"></div>' +
-      '<div class="skeleton skeleton-line" style="width:55%"></div></div></div>';
-    return '<div class="item-grid">' + new Array(9).join(card) + '</div>';
+    var card = '<div class="skeleton-tag" aria-hidden="true"><div class="skeleton"></div>' +
+      '<div class="skeleton skeleton-line" style="width:70%;height:18px"></div><div class="skeleton skeleton-line" style="width:45%"></div></div>';
+    return '<div class="wall">' + new Array(9).join(card) + '</div>';
   }
 
   function labelFor(name, value) {
@@ -52,7 +51,7 @@
       html += '<button type="button" class="chip" data-clear="' + k + '" aria-label="Remove filter ' + labelFor(k, v).replace(/"/g, '') + '">' +
         labelFor(k, v).replace(/[<>&]/g, '') + '<svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></button>';
     });
-    if (n > 1) html += '<button type="button" class="btn btn-ghost btn-sm" data-clear="all">Clear all</button>';
+    if (n > 1) html += '<button type="button" class="btn btn-plain btn-sm" data-clear="all">Clear all</button>';
     chipsEl.innerHTML = html;
     if (filterCount) { filterCount.textContent = n; filterCount.hidden = !n; }
   }
@@ -77,7 +76,11 @@
         if (seq !== latest) return;
         clearTimeout(skeletonTimer);
         results.innerHTML = data.html;
+        var wall = results.querySelector('.wall');
+        if (wall) { wall.classList.add('is-entering'); }
+        if (window.LostLink && LostLink.animateIn) LostLink.animateIn(results);
         if (countEl) countEl.textContent = data.total;
+        document.querySelectorAll('[data-total]').forEach(function (n) { n.textContent = data.total; });
         if (feedback) feedback.textContent = data.total === 1 ? '1 report found.' : data.total + ' reports found.';
         var url = window.location.pathname + (shareable ? '?' + shareable : '');
         if (opts.push) history.pushState({ page: page }, '', url); else history.replaceState({ page: page }, '', url);
@@ -86,9 +89,9 @@
       .catch(function (e) {
         if (e.name === 'AbortError' || seq !== latest) return;
         clearTimeout(skeletonTimer);
-        results.innerHTML = '<div class="empty"><div class="empty__mark"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></div>' +
-          '<h3>Search could not load</h3><p>Check your connection and try again. Your filters are kept.</p>' +
-          '<button type="button" class="btn btn-secondary" data-retry>Try again</button></div>';
+        results.innerHTML = '<div class="empty"><div class="empty__tag" aria-hidden="true"><svg class="icon"><use href="#i-alert"></use></svg></div>' +
+          '<p class="empty__title">The wall could not load</p><p>Check your connection and try again. Your filters are kept.</p>' +
+          '<button type="button" class="btn btn-paper btn-sm" data-retry>Try again</button></div>';
         if (feedback) feedback.textContent = 'Search could not load.';
       })
       .finally(function () {

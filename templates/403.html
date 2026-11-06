@@ -1,15 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Access denied{% endblock %}
+{% block title %}403{% endblock %}
 {% block body %}
-<main class="error-page" id="main-content">
+<main class="error" id="main-content">
   <div>
-    <span class="code">403 · Not permitted</span>
-    <h1>This isn't open to your account.</h1>
-    <p>{% if exception %}{{ exception }}{% else %}You don't have permission to view this page or take this action.{% endif %}</p>
-    <div class="cluster" style="justify-content:center">
-      <a href="/dashboard/" class="btn btn-primary">Back to overview</a>
-      <a href="/search/" class="btn btn-secondary">Browse reports</a>
-    </div>
+    <span class="num" aria-hidden="true">403</span>
+    <h1>This isn’t <em>open</em> to you.</h1>
+    <p>{% if exception %}{{ exception }}{% else %}Your account doesn’t have permission for this page or action.{% endif %}</p>
+    <div class="cluster" style="justify-content:center"><a href="/dashboard/" class="btn btn-ink">Back to your desk</a><a href="/search/" class="btn">Walk the wall</a></div>
   </div>
 </main>
 {% endblock %}

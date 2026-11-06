@@ -1,16 +1,25 @@
-{% load ui %}<a href="{% url 'items:detail' item.pk %}" class="item-card">
-  <div class="item-card__media">
-    {% if item.image %}<img src="{{ item.image.url }}" alt="Photo of {{ item.title }}" loading="lazy" decoding="async">
-    {% else %}<div class="placeholder-media" aria-hidden="true">{{ item.category.icon }}</div>{% endif %}
-    {% include 'partials/type_badge.html' %}
-    {% if item.status != 'approved' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}{% endif %}
-  </div>
-  <div class="item-card__body">
-    <div class="item-card__top"><span class="ref">{{ item.pk|report_id }}</span>{% if item.is_demo_photo %}<span class="demo-note">Representative photo</span>{% endif %}</div>
-    <h3 class="item-card__title clamp-2">{{ item.title }}</h3>
-    <div class="item-card__meta">
-      <span>{% icon 'pin' %}<span class="truncate">{{ item.location.name }}</span></span>
-      <span>{% icon 'calendar' %}{{ item.event_date|date:"j M Y" }}{% if item.event_time %}, {{ item.event_time|time:"H:i" }}{% endif %}</span>
+{% load ui %}<div class="tag-wrap" style="--i:{{ forloop.counter0|default:0 }}">
+  <a href="{% url 'items:detail' item.pk %}" class="tag tag--{{ item.report_type }}{% if item.status == 'returned' %} tag--returned{% endif %}" aria-label="{{ item.get_report_type_display }}: {{ item.title }}">
+    <div class="tag__paper">
+      <div class="tag__head">
+        {% include 'partials/type_badge.html' %}
+        <span class="serial">{{ item.pk|report_id }}</span>
+      </div>
+      <div class="tag__media">
+        {% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy" decoding="async">
+        {% else %}<div class="tag__placeholder" aria-hidden="true">{{ item.category.icon }}</div>{% endif %}
+        {% if item.status == 'returned' %}<div class="tag__returned"><span class="stamp stamp--ok stamp--lg">Returned</span></div>{% endif %}
+      </div>
+      <div class="tag__perf" aria-hidden="true"></div>
+      <div class="tag__body">
+        <h3 class="tag__title clamp-2">{{ item.title }}</h3>
+        {% if item.status == 'claimed' or item.status == 'pending' or item.status == 'rejected' %}<span>{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}</span>{% endif %}
+        <div class="tag__meta">
+          <span>{% icon 'pin' %}{{ item.location.name }}</span>
+          <span>{% icon 'calendar' %}{{ item.event_date|date:"j M" }}{% if item.event_time %} · {{ item.event_time|time:"H:i" }}{% endif %}</span>
+          {% if item.is_demo_photo %}<span title="Representative demo photo, not the reported item">Representative photo</span>{% endif %}
+        </div>
+      </div>
     </div>
-  </div>
-</a>
+  </a>
+</div>

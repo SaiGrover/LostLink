@@ -1,35 +1,36 @@
 {% extends 'shell.html' %}
 {% load static ui %}
-{% block title %}Discover reports{% endblock %}
-{% block page_title %}Discover{% endblock %}
+{% block title %}The wall{% endblock %}
 
 {% block main %}
-<header class="page-head">
-  <div class="page-head__text">
-    <span class="eyebrow">Discover · all reviewed reports</span>
-    <h1>Find what's been lost or found</h1>
-    <p class="lede">{% if manual_mode %}Usability-study mode: results reload only when you apply filters.{% else %}Results update as you type. Only moderator-approved reports appear here.{% endif %}</p>
+<header class="wall-head">
+  <div class="stack" style="--gap:var(--s4)">
+    <span class="kicker">Every reviewed tag on campus</span>
+    <h1 class="display">The <em>wall</em></h1>
+    <p class="lede">{% if manual_mode %}Usability-study mode: results reload only when you apply filters.{% else %}Lost and found tags, pinned side by side. Results rearrange as you type.{% endif %}</p>
   </div>
-  <div class="page-head__actions">
-    <a class="btn btn-secondary" href="{% url 'items:lost' %}">{% icon 'lost' %}Lost only</a>
-    <a class="btn btn-secondary" href="{% url 'items:found' %}">{% icon 'found' %}Found only</a>
+  <div class="wall-head__count">
+    <span class="num" id="result-count">{{ total }}</span>
+    <span class="kicker kicker--plain">tag{{ total|pluralize }} pinned</span>
+    <div class="seg mt-4" role="navigation" aria-label="Lost or found only">
+      <a href="{% url 'items:lost' %}">{% icon 'lost' %}Lost only</a>
+      <a href="{% url 'items:found' %}">{% icon 'found' %}Found only</a>
+    </div>
   </div>
 </header>
 
-<nav class="chip-scroll" aria-label="Browse by category" style="margin-bottom:var(--s-2)">
+<nav class="chip-rail" aria-label="Browse by category" style="margin-bottom:var(--s3)">
   {% for c in categories %}<button type="button" class="chip" data-category-chip="{{ c.slug }}" aria-pressed="{% if sel_category == c.slug %}true{% else %}false{% endif %}"><span aria-hidden="true">{{ c.icon }}</span>{{ c.name }}</button>{% endfor %}
 </nav>
 
 {% include 'items/partials/filterbar.html' %}
 
-<div class="results-head">
-  <span><b id="result-count">{{ total }}</b> report{{ total|pluralize }}</span>
+<div class="results-meta">
+  <span><b data-total>{{ total }}</b> result{{ total|pluralize }}</span>
   <span id="search-feedback" class="sr-only" role="status" aria-live="polite"></span>
-  <span class="subtle hide-mobile">Press <span class="kbd">/</span> to search from anywhere</span>
+  <span class="hide-sm">Press <span class="kbd">/</span> anywhere to search</span>
 </div>
-<div id="results">
-  {% include 'items/partials/result_grid.html' %}
-</div>
+<div id="results">{% include 'items/partials/result_grid.html' %}</div>
 {% endblock %}
 
 {% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}" defer></script>{% endif %}{% endblock %}

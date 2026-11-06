@@ -28,7 +28,7 @@ Built with Django for the JIIT Full Stack Development Lab (project-based learnin
 | Notifications | Persistent in-app notifications for matches, claims, questions, answers, decisions, disputes and handovers; de-duplicated across matching runs; mark read/unread without reload; live unread badge. |
 | Analytics | Users, lost/found counts, pending moderation, match tiers and score histogram, claim outcomes, returns and recovery rate, categories, zones, weekly trends, photo coverage, lost-to-found day gaps, wording variation, monitoring snapshots. Optional date range. |
 | Exports | CSV of reports (no usernames, contacts or answers; formula-injection safe) and PDF summaries for a month or a date range. |
-| Interface | Token-based design system with light and dark themes and no committed palette, responsive layouts from phone to desktop, keyboard and screen-reader support, reduced-motion support. See [docs/FRONTEND.md](docs/FRONTEND.md). |
+| Interface | "Tag & Thread" design system: reports are die-cut luggage tags, matches are threads whose thickness is each signal's real points, decisions are stamps. Editorial serif type, a masthead and phone tab bar, light paper by default with opt-in dark, recolourable through tokens (no palette chosen yet), reduced-motion support. See [docs/FRONTEND.md](docs/FRONTEND.md). |
 
 ## Quick start
 
@@ -198,4 +198,4 @@ docs/           evaluation, frontend, PostgreSQL, deployment, study protocol, im
 - Matching runs synchronously when a moderator approves a report. With
   pretrained models on CPU this adds noticeable latency per approval at scale.
 - Email and SMS notifications, GPS, payments and native apps are out of scope (synopsis Section 3.3).
-- The interface uses a provisional near-monochrome palette until the final palette is chosen.
+- The interface uses provisional near-neutral colours until the final palette is chosen; only the palette slots in `static/css/tokens.css` need to change.

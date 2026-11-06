@@ -1,21 +1,21 @@
 {% extends 'shell.html' %}
 {% load ui %}
 {% block title %}Profile{% endblock %}
-{% block page_title %}Profile{% endblock %}
 
 {% block main %}
-<header class="page-head">
-  <div class="page-head__text">
-    <span class="eyebrow">Account</span>
-    <h1>Profile &amp; contact</h1>
-    <p class="lede">Your email and phone pre-fill new claims. They're shared with the other person only after a moderator approves a claim.</p>
+<header class="phead">
+  <div class="phead__title">
+    <span class="kicker">Account</span>
+    <h1 class="title">{{ user.display_name }}<em>.</em></h1>
+    <p class="lede">Your email and phone pre-fill new claims. They stay sealed until a moderator approves a claim.</p>
   </div>
+  <div class="phead__actions"><span class="avatar avatar--lg" aria-hidden="true">{{ user.initials }}</span></div>
 </header>
 
-<div class="split" style="--aside:320px">
-  <form method="post" novalidate class="panel panel__body stack" data-validate>
+<div class="cols" style="--a:1.5fr;--b:1fr;--gap:var(--s10)">
+  <form method="post" novalidate class="stack" data-validate>
     {% csrf_token %}
-    {% if form.errors %}<div class="callout callout--danger" role="alert">{% icon 'alert' %}<div>Please check the highlighted fields.</div></div>{% endif %}
+    {% if form.errors %}<div class="note note--bad" role="alert">{% icon 'alert' %}<div>Please check the marked fields.</div></div>{% endif %}
     <div class="field-row">
       <div class="field{% if form.first_name.errors %} has-error{% endif %}"><label class="label" for="{{ form.first_name.id_for_label }}">First name</label>{{ form.first_name }}{{ form.first_name.errors }}</div>
       <div class="field"><label class="label" for="{{ form.last_name.id_for_label }}">Last name</label>{{ form.last_name }}{{ form.last_name.errors }}</div>
@@ -23,20 +23,20 @@
     <div class="field{% if form.email.errors %} has-error{% endif %}"><label class="label" for="{{ form.email.id_for_label }}">Email</label>{{ form.email }}{{ form.email.errors }}</div>
     <div class="field-row">
       <div class="field"><label class="label" for="{{ form.enrolment_no.id_for_label }}">Enrolment number</label>{{ form.enrolment_no }}{{ form.enrolment_no.errors }}</div>
-      <div class="field"><label class="label" for="{{ form.phone.id_for_label }}">Phone <span class="optional">optional</span></label>{{ form.phone }}{{ form.phone.errors }}</div>
+      <div class="field"><label class="label" for="{{ form.phone.id_for_label }}">Phone <span class="opt">optional</span></label>{{ form.phone }}{{ form.phone.errors }}</div>
     </div>
-    <div class="cluster" style="justify-content:flex-end"><button class="btn btn-primary" type="submit">Save changes</button></div>
+    <div class="cluster end mt-4"><button class="btn btn-ink" type="submit">Save changes</button></div>
   </form>
 
-  <aside class="panel panel__body stack" aria-label="Account summary">
-    <div class="row"><span class="avatar avatar--lg" aria-hidden="true">{{ user.initials }}</span><div><div class="h3">{{ user.display_name }}</div><div class="subtle mono" style="font-size:var(--text-xs)">@{{ user.username }}</div></div></div>
-    <dl class="facts">
-      <dt>Role</dt><dd>{{ user.get_role_display }}</dd>
-      <dt>Member since</dt><dd>{{ user.date_joined|date:"j F Y" }}</dd>
-      <dt>Reports</dt><dd><a class="link" href="{% url 'items:mine' %}">{{ user.items.count }}</a></dd>
-      <dt>Claims</dt><dd><a class="link" href="{% url 'claims:mine' %}">{{ user.claims.count }}</a></dd>
-    </dl>
-    <a class="btn btn-secondary" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a>
+  <aside class="stack stack-6" aria-label="Account summary">
+    <div class="ledger">
+      <div class="ledger__row"><span class="ledger__k">Username</span><span class="ledger__fill"></span><span class="ledger__v mono">@{{ user.username }}</span></div>
+      <div class="ledger__row"><span class="ledger__k">Role</span><span class="ledger__fill"></span><span class="ledger__v">{{ user.get_role_display }}</span></div>
+      <div class="ledger__row"><span class="ledger__k">Member since</span><span class="ledger__fill"></span><span class="ledger__v">{{ user.date_joined|date:"j F Y" }}</span></div>
+      <div class="ledger__row"><span class="ledger__k">Tags</span><span class="ledger__fill"></span><span class="ledger__v"><a class="link" href="{% url 'items:mine' %}">{{ user.items.count }}</a></span></div>
+      <div class="ledger__row"><span class="ledger__k">Claims</span><span class="ledger__fill"></span><span class="ledger__v"><a class="link" href="{% url 'claims:mine' %}">{{ user.claims.count }}</a></span></div>
+    </div>
+    <div class="cluster"><button class="btn btn-paper btn-sm" type="button" data-theme-toggle>{% icon 'moon' %}Light / dark</button><a class="btn btn-plain btn-sm" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a></div>
   </aside>
 </div>
 {% endblock %}

@@ -27,9 +27,30 @@ PUBLIC_STATUSES = (Item.Status.APPROVED, Item.Status.CLAIMED)
 def home(request):
     if request.user.is_authenticated:
         return redirect('items:dashboard')
+    public = (Item.objects.filter(is_active=True, status__in=PUBLIC_STATUSES)
+              .select_related('category', 'location'))
+    with_photos = list(public.exclude(image='').exclude(image__isnull=True)[:12])
+    # The strongest current match between two public reports with photos:
+    # a real, engine-computed example for the landing page's matching story.
+    featured = (_current_matches().exclude(lost_item__image='').exclude(found_item__image='')
+                .select_related('lost_item', 'found_item', 'lost_item__category',
+                                'found_item__category', 'lost_item__location', 'found_item__location')
+                .order_by('-score').first())
     return render(request, 'items/home.html', {
-        'categories': Category.objects.all()[:8],
+        'categories': Category.objects.all()[:10],
         'weights': settings.MATCHING['WEIGHTS'],
+        'weight_rows': [(k, label, settings.MATCHING['WEIGHTS'][k]) for k, label in (
+            ('text', 'Description'), ('image', 'Photograph'), ('location', 'Campus zone'),
+            ('category', 'Category'), ('date', 'Date'), ('attribute', 'Brand & colour'))],
+        'hanging': with_photos[:3],
+        'strip': with_photos[:10],
+        'featured': featured,
+        'counts': {
+            'reports': public.count(),
+            'matches': _current_matches().filter(tier__in=['high', 'medium']).count(),
+            'returned': Item.objects.filter(status=Item.Status.RETURNED).count(),
+            'zones': Location.objects.count(),
+        },
     })
 
 
@@ -56,7 +77,7 @@ def dashboard(request):
                    .select_related('lost_item', 'found_item',
                                    'lost_item__category', 'found_item__category',
                                    'lost_item__location', 'found_item__location')
-                   .order_by('-score')[:4])
+                   .order_by('-score')[:8])
     rows = []
     for m in top_matches:
         mine = m.lost_item if m.lost_item_id in my_ids else m.found_item
@@ -70,7 +91,7 @@ def dashboard(request):
                     .order_by('-updated_at'))
 
     context = {
-        'my_items': my_items[:4],
+        'my_items': my_items[:8],
         'my_item_count': my_items.count(),
         'my_lost': my_items.filter(report_type=Item.Type.LOST).count(),
         'my_found': my_items.filter(report_type=Item.Type.FOUND).count(),

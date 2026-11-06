@@ -1,19 +1,16 @@
 {% load ui %}
-<form id="search-form" class="filterbar" method="get" action="{{ request.path }}" role="search" aria-label="Filter reports"
+<form id="search-form" class="finder" method="get" action="{{ request.path }}" role="search" aria-label="Filter the wall"
       data-endpoint="{% url 'items:search_api' %}" {% if locked_type %}data-locked-type="{{ locked_type }}"{% endif %}>
   {% if manual_mode %}<input type="hidden" name="study" value="manual">{% endif %}
-  <div class="filterbar__row">
-    <div class="filterbar__query">
+  <div class="finder__line">
+    <div class="finder__q">
+      {% icon 'search' %}
       <label class="sr-only" for="query">Search {{ page_kind }} reports</label>
-      <div class="input-group">
-        {% icon 'search' %}
-        <input id="query" class="input" type="search" name="q" value="{{ q }}" maxlength="120" autocomplete="off"
-               placeholder="Search title, description, brand or colour" {% if not locked_type %}autofocus{% endif %}>
-        <span class="input-action" style="right:var(--s-3)"><span class="search-spinner" id="search-spinner" hidden aria-hidden="true"></span></span>
-      </div>
+      <input id="query" class="input" type="search" name="q" value="{{ q }}" maxlength="120" autocomplete="off" placeholder="Describe it: “black wallet”, “Milton bottle”…">
+      <span class="finder__spin" id="search-spinner" hidden aria-hidden="true"></span>
     </div>
     {% if not locked_type %}
-    <fieldset class="segmented" style="border:0">
+    <fieldset class="seg" style="border:1px solid var(--line-2)">
       <legend class="sr-only">Report type</legend>
       <label><input type="radio" name="type" value="" {% if not sel_type %}checked{% endif %}>All</label>
       <label><input type="radio" name="type" value="lost" {% if sel_type == 'lost' %}checked{% endif %}>{% icon 'lost' %}Lost</label>
@@ -22,48 +19,38 @@
     {% endif %}
     <label class="sr-only" for="f-category">Category</label>
     <select id="f-category" name="category" class="input">
-      <option value="">All categories</option>
+      <option value="">Every category</option>
       {% for c in categories %}<option value="{{ c.slug }}" {% if sel_category == c.slug %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
     </select>
     <label class="sr-only" for="f-location">Campus zone</label>
     <select id="f-location" name="location" class="input">
-      <option value="">All campus zones</option>
+      <option value="">Anywhere on campus</option>
       {% for l in locations %}<option value="{{ l.slug }}" {% if sel_location == l.slug %}selected{% endif %}>{{ l.name }}</option>{% endfor %}
     </select>
   </div>
   <details class="disclosure" {% if date_from or date_to or sel_status %}open{% endif %}>
-    <summary>{% icon 'filter' %}More filters <span class="count" id="filter-count" {% if not active_filters %}hidden{% endif %}>{{ active_filters }}</span>{% icon 'chevron-down' %}</summary>
-    <div class="filterbar__more mt-2">
-      <div class="field">
-        <label class="label" for="f-from">Event from</label>
-        <input id="f-from" class="input" type="date" name="date_from" value="{{ date_from }}">
-      </div>
-      <div class="field">
-        <label class="label" for="f-to">Event until</label>
-        <input id="f-to" class="input" type="date" name="date_to" value="{{ date_to }}">
-      </div>
-      <div class="field">
-        <label class="label" for="f-status">Status</label>
+    <summary>{% icon 'filter' %}Dates, status &amp; order <span class="count" id="filter-count" {% if not active_filters %}hidden{% endif %}>{{ active_filters }}</span>{% icon 'chevron-down' 'chev' %}</summary>
+    <div class="finder__more">
+      <div class="field"><label class="label" for="f-from">Happened from</label><input id="f-from" class="input" type="date" name="date_from" value="{{ date_from }}"></div>
+      <div class="field"><label class="label" for="f-to">Happened until</label><input id="f-to" class="input" type="date" name="date_to" value="{{ date_to }}"></div>
+      <div class="field"><label class="label" for="f-status">Status</label>
         <select id="f-status" name="status" class="input">
           <option value="">Any open status</option>
-          <option value="approved" {% if sel_status == 'approved' %}selected{% endif %}>Awaiting owner or finder</option>
+          <option value="approved" {% if sel_status == 'approved' %}selected{% endif %}>Waiting for its person</option>
           <option value="claimed" {% if sel_status == 'claimed' %}selected{% endif %}>Claim in progress</option>
         </select>
       </div>
-      <div class="field">
-        <label class="label" for="f-sort">Sort by</label>
-        <select id="f-sort" name="sort" class="input">
-          {% for value, label in sort_options %}<option value="{{ value }}" {% if sel_sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-        </select>
+      <div class="field"><label class="label" for="f-sort">Order</label>
+        <select id="f-sort" name="sort" class="input">{% for value, label in sort_options %}<option value="{{ value }}" {% if sel_sort == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
       </div>
     </div>
   </details>
-  <div class="cluster cluster-between">
-    <div class="active-filters" id="active-filters" aria-label="Active filters"></div>
-    <div class="cluster cluster-sm">
-      {% if manual_mode %}<span class="subtle" style="font-size:var(--text-xs)">Study baseline: apply filters to reload results.</span>{% endif %}
-      <button class="btn btn-secondary btn-sm" type="submit">Apply filters</button>
-      <a class="btn btn-ghost btn-sm" href="{{ request.path }}{% if manual_mode %}?study=manual{% endif %}">Clear filters</a>
+  <div class="finder__foot">
+    <div id="active-filters" aria-label="Active filters"></div>
+    <div class="cluster" style="--gap:var(--s2)">
+      {% if manual_mode %}<span class="xs faint">Study baseline: apply filters to reload results.</span>{% endif %}
+      <button class="btn btn-paper btn-sm" type="submit">Apply filters</button>
+      <a class="btn btn-plain btn-sm" href="{{ request.path }}{% if manual_mode %}?study=manual{% endif %}">Clear filters</a>
     </div>
   </div>
 </form>

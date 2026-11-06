@@ -1,104 +1,102 @@
 {% extends 'base.html' %}
 {% load ui humanize %}
+{% block body_class %}app{% endblock %}
 
 {% block body %}
-<div class="shell">
-  <aside class="sidebar" id="sidebar" aria-label="Primary">
-    <div class="sidebar__brand">
-      {% include 'partials/brand.html' with href='/dashboard/' %}
-    </div>
-    {% with vn=request.resolver_match.view_name %}
-    <nav aria-label="Main">
-      <div class="nav-group">
-        <a href="{% url 'items:dashboard' %}" class="nav-item" {% if vn == 'items:dashboard' %}aria-current="page"{% endif %}>{% icon 'home' %}Overview</a>
-        <a href="{% url 'items:search' %}" class="nav-item" {% if vn == 'items:search' %}aria-current="page"{% endif %}>{% icon 'search' %}Discover</a>
-        <a href="{% url 'items:lost' %}" class="nav-item" {% if vn == 'items:lost' %}aria-current="page"{% endif %}>{% icon 'lost' %}Lost items</a>
-        <a href="{% url 'items:found' %}" class="nav-item" {% if vn == 'items:found' %}aria-current="page"{% endif %}>{% icon 'found' %}Found items</a>
-      </div>
-      <div class="nav-group">
-        <div class="nav-label">Your activity</div>
-        <a href="{% url 'items:report' %}" class="nav-item" {% if vn == 'items:report' %}aria-current="page"{% endif %}>{% icon 'plus' %}New report</a>
-        <a href="{% url 'items:mine' %}" class="nav-item" {% if vn == 'items:mine' %}aria-current="page"{% endif %}>{% icon 'list' %}My reports</a>
-        <a href="{% url 'claims:mine' %}" class="nav-item" {% if vn == 'claims:mine' %}aria-current="page"{% endif %}>{% icon 'key' %}Claims</a>
-        <a href="{% url 'notifications:inbox' %}" class="nav-item" {% if vn == 'notifications:inbox' %}aria-current="page"{% endif %}>{% icon 'bell' %}Notifications<span class="count count--strong" data-unread-badge {% if not unread_notifications %}hidden{% endif %}>{{ unread_notifications }}</span></a>
-      </div>
+{% with vn=request.resolver_match.view_name %}
+<header class="mast">
+  <div class="wrap mast__in">
+    {% include 'partials/brand.html' with href='/dashboard/' %}
+    <nav class="mast__nav" aria-label="Main">
+      <a class="mast__link" href="{% url 'items:dashboard' %}" {% if vn == 'items:dashboard' %}aria-current="page"{% endif %}>Desk</a>
+      <a class="mast__link" href="{% url 'items:search' %}" {% if vn == 'items:search' or vn == 'items:lost' or vn == 'items:found' %}aria-current="page"{% endif %}>The wall</a>
+      <a class="mast__link" href="{% url 'items:mine' %}" {% if vn == 'items:mine' %}aria-current="page"{% endif %}>My tags</a>
+      <a class="mast__link" href="{% url 'claims:mine' %}" {% if vn == 'claims:mine' %}aria-current="page"{% endif %}>Cases</a>
       {% if user.is_staff_role %}
-      <div class="nav-group">
-        <div class="nav-label">Moderation</div>
-        <a href="{% url 'dashboard:moderation' %}" class="nav-item" {% if vn == 'dashboard:moderation' %}aria-current="page"{% endif %}>{% icon 'shield' %}Review queue</a>
-        <a href="{% url 'dashboard:decisions' %}" class="nav-item" {% if vn == 'dashboard:decisions' %}aria-current="page"{% endif %}>{% icon 'history' %}Decision log</a>
-      </div>
-      {% endif %}
-      {% if user.is_administrator %}
-      <div class="nav-group">
-        <div class="nav-label">Administration</div>
-        <a href="{% url 'dashboard:analytics' %}" class="nav-item" {% if vn == 'dashboard:analytics' %}aria-current="page"{% endif %}>{% icon 'chart' %}Analytics</a>
-        <a href="{% url 'dashboard:users' %}" class="nav-item" {% if vn == 'dashboard:users' %}aria-current="page"{% endif %}>{% icon 'users' %}People &amp; roles</a>
-        <a href="{% url 'dashboard:taxonomy' %}" class="nav-item" {% if vn == 'dashboard:taxonomy' or vn == 'dashboard:taxonomy_edit' %}aria-current="page"{% endif %}>{% icon 'layers' %}Categories &amp; zones</a>
-      </div>
+      <details class="menu">
+        <summary class="mast__link" {% if vn == 'dashboard:moderation' or vn == 'dashboard:decisions' or vn == 'dashboard:analytics' or vn == 'dashboard:users' or vn == 'dashboard:taxonomy' %}aria-current="page"{% endif %}>Staff {% icon 'chevron-down' %}</summary>
+        <div class="menu__panel" style="right:auto;left:0">
+          <div class="menu__label">Moderation</div>
+          <a class="menu__item" href="{% url 'dashboard:moderation' %}">{% icon 'shield' %}Review desk</a>
+          <a class="menu__item" href="{% url 'dashboard:decisions' %}">{% icon 'history' %}Decision log</a>
+          {% if user.is_administrator %}
+          <div class="menu__sep"></div>
+          <div class="menu__label">Administration</div>
+          <a class="menu__item" href="{% url 'dashboard:analytics' %}">{% icon 'chart' %}Almanac</a>
+          <a class="menu__item" href="{% url 'dashboard:users' %}">{% icon 'users' %}People &amp; roles</a>
+          <a class="menu__item" href="{% url 'dashboard:taxonomy' %}">{% icon 'layers' %}Categories &amp; zones</a>
+          {% endif %}
+        </div>
+      </details>
       {% endif %}
     </nav>
-    {% endwith %}
 
-    <div class="sidebar__foot">
-      <details class="menu menu--up menu--left">
-        <summary class="user-chip" aria-label="Account menu">
-          <span class="avatar" aria-hidden="true">{{ user.initials }}</span>
-          <span class="grow"><span class="user-chip__name truncate" style="display:block">{{ user.display_name }}</span><span class="user-chip__role">{{ user.get_role_display }}</span></span>
-          {% icon 'chevron-down' %}
+    <div class="mast__tools">
+      <form class="mast__search" action="{% url 'items:search' %}" method="get" role="search">
+        {% icon 'search' %}
+        <label class="sr-only" for="global-search">Search the wall</label>
+        <input class="input" id="global-search" type="search" name="q" placeholder="Search the wall" autocomplete="off" data-search-shortcut>
+        <span class="kbd" aria-hidden="true">/</span>
+      </form>
+      <a href="{% url 'items:report' %}" class="btn btn-ink btn-sm btn-report">{% icon 'plus' %}New tag</a>
+      <details class="menu hide-tablet">
+        <summary class="icon-btn" aria-label="Notifications{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">
+          {% icon 'bell' %}<span class="icon-btn__count" data-unread-badge data-poll="{% url 'notifications:unread_count' %}" {% if not unread_notifications %}hidden{% endif %}>{{ unread_notifications }}</span>
         </summary>
-        <div class="menu__panel" role="menu">
-          <div class="menu__label">Signed in as {{ user.username }}</div>
-          <a class="menu__item" role="menuitem" href="{% url 'accounts:profile' %}">{% icon 'user' %}Profile &amp; contact</a>
-          <button class="menu__item" role="menuitem" type="button" data-theme-toggle>{% icon 'moon' %}Toggle dark mode</button>
+        <div class="menu__panel notif-pop">
+          <div class="notif-pop__head"><b>Dispatches</b><span class="faint xs" data-unread-label>{% if unread_notifications %}{{ unread_notifications }} unread{% else %}All read{% endif %}</span></div>
+          <div class="notif-pop__list">
+            {% for n in recent_notifications %}
+              <a class="list-row" href="{% url 'notifications:open' n.pk %}">
+                <span class="thumb thumb--sm">{% if n.item.image %}<img src="{{ n.item.image.url }}" alt="" loading="lazy">{% else %}{% icon n.icon_name %}{% endif %}</span>
+                <span><span class="list-row__title row" style="--gap:6px">{% if not n.is_read %}<span class="dot" aria-label="Unread"></span>{% endif %}<span class="truncate">{{ n.title }}</span></span><span class="list-row__meta">{{ n.created_at|naturaltime }}</span></span>
+              </a>
+            {% empty %}
+              <div class="empty empty--sm"><p>Nothing yet.</p></div>
+            {% endfor %}
+          </div>
+          <a class="notif-pop__foot" href="{% url 'notifications:inbox' %}">All dispatches →</a>
+        </div>
+      </details>
+      <details class="menu">
+        <summary class="account" aria-label="Account menu"><span class="avatar" aria-hidden="true">{{ user.initials }}</span>{% icon 'chevron-down' %}</summary>
+        <div class="menu__panel">
+          <div class="menu__label">{{ user.display_name }} · {{ user.get_role_display }}</div>
+          <a class="menu__item" href="{% url 'accounts:profile' %}">{% icon 'user' %}Profile &amp; contact</a>
+          <a class="menu__item" href="{% url 'notifications:inbox' %}">{% icon 'bell' %}Dispatches{% if unread_notifications %} <span class="count count--ink" style="margin-left:auto">{{ unread_notifications }}</span>{% endif %}</a>
+          {% if user.is_staff_role %}
+          <div class="only-tablet">
+            <div class="menu__sep"></div>
+            <a class="menu__item" href="{% url 'dashboard:moderation' %}">{% icon 'shield' %}Review desk</a>
+            <a class="menu__item" href="{% url 'dashboard:decisions' %}">{% icon 'history' %}Decision log</a>
+            {% if user.is_administrator %}
+            <a class="menu__item" href="{% url 'dashboard:analytics' %}">{% icon 'chart' %}Almanac</a>
+            <a class="menu__item" href="{% url 'dashboard:users' %}">{% icon 'users' %}People &amp; roles</a>
+            <a class="menu__item" href="{% url 'dashboard:taxonomy' %}">{% icon 'layers' %}Categories &amp; zones</a>
+            {% endif %}
+          </div>
+          {% endif %}
+          <button class="menu__item" type="button" data-theme-toggle>{% icon 'moon' %}Switch light / dark</button>
           <div class="menu__sep"></div>
-          <a class="menu__item" role="menuitem" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a>
+          <a class="menu__item" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a>
         </div>
       </details>
     </div>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <button class="icon-btn nav-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">{% icon 'menu' %}</button>
-      <span class="topbar__brand">{% include 'partials/brand.html' with href='/dashboard/' %}</span>
-      <div class="topbar__title">{% block page_title %}{% endblock %}</div>
-      <form class="topbar__search" action="{% url 'items:search' %}" method="get" role="search">
-        <label class="sr-only" for="global-search">Search reports</label>
-        <div class="input-group">
-          {% icon 'search' %}
-          <input class="input" id="global-search" type="search" name="q" placeholder="Search reports" autocomplete="off" data-search-shortcut>
-          <span class="kbd" aria-hidden="true">/</span>
-        </div>
-      </form>
-      <div class="topbar__actions">
-        <a href="{% url 'items:report' %}" class="btn btn-primary btn-sm btn-report">{% icon 'plus' %}<span>Report item</span></a>
-        <details class="menu">
-          <summary class="icon-btn" aria-label="Notifications{% if unread_notifications %}, {{ unread_notifications }} unread{% endif %}">
-            {% icon 'bell' %}<span class="icon-btn__badge" data-unread-badge data-poll="{% url 'notifications:unread_count' %}" {% if not unread_notifications %}hidden{% endif %}>{{ unread_notifications }}</span>
-          </summary>
-          <div class="menu__panel notif-pop">
-            <div class="notif-pop__head"><span>Notifications</span><span class="subtle" data-unread-label>{% if unread_notifications %}{{ unread_notifications }} unread{% else %}All caught up{% endif %}</span></div>
-            <div class="notif-pop__list">
-              {% for n in recent_notifications %}
-                <a class="list-row" href="{% url 'notifications:open' n.pk %}">
-                  <span class="thumb thumb--sm">{% if n.item.image %}<img src="{{ n.item.image.url }}" alt="" loading="lazy">{% else %}{% icon n.icon_name %}{% endif %}</span>
-                  <span><span class="list-row__title row" style="gap:6px">{% if not n.is_read %}<span class="unread-dot" aria-label="Unread"></span>{% endif %}<span class="truncate">{{ n.title }}</span></span><span class="list-row__meta">{{ n.created_at|naturaltime }}</span></span>
-                </a>
-              {% empty %}
-                <div class="empty empty--compact"><p>No notifications yet.</p></div>
-              {% endfor %}
-            </div>
-            <a class="notif-pop__foot" href="{% url 'notifications:inbox' %}">Open inbox</a>
-          </div>
-        </details>
-        <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Toggle dark mode"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
-      </div>
-    </header>
-
-    <main class="content enter" id="main-content" tabindex="-1">
-      {% block main %}{% endblock %}
-    </main>
   </div>
-</div>
+</header>
+
+<main id="main-content" tabindex="-1">
+  <div class="wrap">
+    {% block main %}{% endblock %}
+  </div>
+</main>
+
+<nav class="tabbar" aria-label="Main">
+  <a href="{% url 'items:dashboard' %}" {% if vn == 'items:dashboard' %}aria-current="page"{% endif %}>{% icon 'home' %}Desk</a>
+  <a href="{% url 'items:search' %}" {% if vn == 'items:search' or vn == 'items:lost' or vn == 'items:found' %}aria-current="page"{% endif %}>{% icon 'grid' %}Wall</a>
+  <a href="{% url 'items:report' %}" class="tabbar__report" aria-label="New tag" {% if vn == 'items:report' %}aria-current="page"{% endif %}><span class="plus">{% icon 'plus' %}</span></a>
+  <a href="{% url 'claims:mine' %}" {% if vn == 'claims:mine' %}aria-current="page"{% endif %}>{% icon 'key' %}Cases</a>
+  <a href="{% url 'notifications:inbox' %}" {% if vn == 'notifications:inbox' %}aria-current="page"{% endif %}>{% icon 'bell' %}Inbox<span class="icon-btn__count" data-unread-badge {% if not unread_notifications %}hidden{% endif %}>{{ unread_notifications }}</span></a>
+</nav>
+{% endwith %}
 {% endblock %}

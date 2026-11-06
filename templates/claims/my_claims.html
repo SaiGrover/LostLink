@@ -1,69 +1,53 @@
 {% extends 'shell.html' %}
 {% load humanize ui %}
-{% block title %}Claims{% endblock %}
-{% block page_title %}Claims{% endblock %}
+{% block title %}Cases{% endblock %}
 
 {% block main %}
-<header class="page-head">
-  <div class="page-head__text">
-    <span class="eyebrow">Recovery cases</span>
-    <h1>Claims and return offers</h1>
-    <p class="lede">Track items you've claimed, return offers you've made, and responses to your own reports.</p>
+<header class="phead">
+  <div class="phead__title">
+    <span class="kicker">Recovery cases</span>
+    <h1 class="title">Cases <em>in motion</em></h1>
+    <p class="lede">Claims you've made, return offers you've sent, and the people answering your own tags.</p>
   </div>
+  <nav class="seg phead__actions" aria-label="Filter cases">
+    <a href="{% query_with status=None page=None %}" {% if not sel_status %}aria-current="page"{% endif %}>All</a>
+    <a href="{% query_with status='open' page=None %}" {% if sel_status == 'open' %}aria-current="page"{% endif %}>Open</a>
+    <a href="{% query_with status='approved' page=None %}" {% if sel_status == 'approved' %}aria-current="page"{% endif %}>Approved</a>
+    <a href="{% query_with status='closed' page=None %}" {% if sel_status == 'closed' %}aria-current="page"{% endif %}>Closed</a>
+  </nav>
 </header>
 
-<div class="split" style="--aside:380px">
+<div class="desk-cols" style="margin-top:0">
   <section aria-labelledby="mine-title">
-    <div class="cluster cluster-between" style="margin-bottom:var(--s-4)">
-      <h2 class="h3" id="mine-title">You started</h2>
-      <nav class="segmented" aria-label="Filter claims">
-        <a href="{% query_with status=None page=None %}" {% if not sel_status %}aria-current="page"{% endif %}>All</a>
-        <a href="{% query_with status='open' page=None %}" {% if sel_status == 'open' %}aria-current="page"{% endif %}>Open</a>
-        <a href="{% query_with status='approved' page=None %}" {% if sel_status == 'approved' %}aria-current="page"{% endif %}>Approved</a>
-        <a href="{% query_with status='closed' page=None %}" {% if sel_status == 'closed' %}aria-current="page"{% endif %}>Closed</a>
-      </nav>
-    </div>
-    <div class="panel panel--flush">
-      {% if claims %}
-      <div class="list">
-        {% for c in claims %}
-        <a class="list-row" href="{% url 'claims:detail' c.pk %}">
-          {% include 'partials/thumb.html' with item=c.item %}
-          <span>
-            <span class="list-row__title truncate" style="display:block">{{ c.item.title }}</span>
-            <span class="list-row__meta"><span class="ref">{{ c.pk|claim_id }}</span><span>{% if c.item.is_found %}Claim{% else %}Return offer{% endif %}</span><span>{% icon 'pin' %} {{ c.item.location.name }}</span><span>{{ c.updated_at|naturaltime }}</span></span>
-            <span class="case-progress" aria-hidden="true" style="max-width:220px">{% for s in c.timeline %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
-          </span>
-          <span class="list-row__aside">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}{% icon 'chevron-right' %}</span>
-        </a>
-        {% endfor %}
-      </div>
-      {% elif sel_status %}
-        {% include 'partials/empty.html' with icon='filter' title='Nothing in this view' text='No claims match this filter.' action_url='/claims/mine/' action_label='Show all claims' %}
-      {% else %}
-        {% include 'partials/empty.html' with icon='key' title='No claims yet' text='Open a found report that belongs to you and start a claim, or offer to return something on a lost report.' action_url='/search/' action_label='Discover reports' %}
-      {% endif %}
-    </div>
+    <div class="section__head"><h2 class="title-sm" id="mine-title">You <em>started</em></h2></div>
+    {% for c in claims %}
+      <a class="case-row" href="{% url 'claims:detail' c.pk %}">
+        {% include 'partials/thumb.html' with item=c.item cls='thumb--lg' %}
+        <span style="min-width:0">
+          <span class="serial">{{ c.pk|claim_id }} · {% if c.item.is_found %}claim{% else %}return offer{% endif %} · {{ c.item.location.name }} · {{ c.updated_at|naturaltime }}</span>
+          <span class="case-row__title" style="display:block">{{ c.item.title }}</span>
+          <span class="route--mini" aria-hidden="true">{% for s in c.timeline %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
+        </span>
+        {% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}
+      </a>
+    {% empty %}
+      {% if sel_status %}{% include 'partials/empty.html' with icon='filter' title='Nothing in this view' text='No cases match this filter.' action_url='/claims/mine/' action_label='Show every case' %}
+      {% else %}{% include 'partials/empty.html' with icon='key' title='No cases yet' text='Open a found tag that belongs to you and start a claim, or offer to return something on a lost tag.' action_url='/search/' action_label='Walk the wall' %}{% endif %}
+    {% endfor %}
     {% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
   </section>
 
-  <aside aria-labelledby="incoming-title">
-    <div class="section-title" style="margin-bottom:var(--s-4)"><h2 class="h3" id="incoming-title">Responses to your reports</h2></div>
-    <div class="panel panel--flush">
-      {% if incoming %}
-      <div class="list">
-        {% for c in incoming %}
-        <a class="list-row" href="{% url 'claims:detail' c.pk %}">
-          <span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span>
-          <span><span class="list-row__title truncate" style="display:block">{{ c.item.title }}</span><span class="list-row__meta">{{ c.claimant.display_name }} · {{ c.updated_at|naturaltime }}</span></span>
-          <span class="list-row__aside">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</span>
-        </a>
-        {% endfor %}
-      </div>
-      {% else %}
-        {% include 'partials/empty.html' with compact=True icon='inbox' title='No responses yet' text="When someone claims your found item or offers to return your lost one, it appears here." %}
-      {% endif %}
-    </div>
-  </aside>
+  <section aria-labelledby="incoming-title">
+    <div class="section__head"><h2 class="title-sm" id="incoming-title">Answering <em>your tags</em></h2></div>
+    {% for c in incoming %}
+      <a class="case-row" href="{% url 'claims:detail' c.pk %}">
+        <span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span>
+        <span style="min-width:0"><span class="serial">{{ c.claimant.display_name }} · {{ c.updated_at|naturaltime }}</span><span class="case-row__title" style="display:block;font-size:1.1rem">{{ c.item.title }}</span></span>
+        {% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}
+      </a>
+    {% empty %}
+      {% include 'partials/empty.html' with compact=True icon='inbox' title='Nobody yet' text="When someone claims your found tag or offers to return your lost one, they appear here." %}
+    {% endfor %}
+  </section>
 </div>
 {% endblock %}

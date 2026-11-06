@@ -3,19 +3,19 @@
   <span class="pager__info">Page <b class="num">{{ page_obj.number }}</b> of <span class="num">{{ page_obj.paginator.num_pages }}</span> · {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
   <div class="pager__pages">
     {% if page_obj.has_previous %}
-      {% if ajax %}<button type="button" class="btn btn-secondary btn-sm" data-page="{{ page_obj.previous_page_number }}" aria-label="Previous page">{% icon 'chevron-left' %}</button>
-      {% else %}<a class="btn btn-secondary btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous page">{% icon 'chevron-left' %}</a>{% endif %}
+      {% if ajax %}<button type="button" class="btn btn-paper btn-sm" data-page="{{ page_obj.previous_page_number }}" aria-label="Previous page">{% icon 'chevron-left' %}</button>
+      {% else %}<a class="btn btn-paper btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous page">{% icon 'chevron-left' %}</a>{% endif %}
     {% endif %}
     {% for n in page_obj.paginator.page_range %}
       {% if n == page_obj.number %}<span class="btn btn-sm" aria-current="page">{{ n }}</span>
       {% elif n == 1 or n == page_obj.paginator.num_pages or n|add:'-2' <= page_obj.number and n|add:'2' >= page_obj.number %}
-        {% if ajax %}<button type="button" class="btn btn-ghost btn-sm" data-page="{{ n }}">{{ n }}</button>
-        {% else %}<a class="btn btn-ghost btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ n }}">{{ n }}</a>{% endif %}
-      {% elif n == 2 or n == page_obj.paginator.num_pages|add:'-1' %}<span class="btn btn-ghost btn-sm" aria-hidden="true">…</span>{% endif %}
+        {% if ajax %}<button type="button" class="btn btn-plain btn-sm" data-page="{{ n }}">{{ n }}</button>
+        {% else %}<a class="btn btn-plain btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ n }}">{{ n }}</a>{% endif %}
+      {% elif n == 2 or n == page_obj.paginator.num_pages|add:'-1' %}<span class="btn btn-plain btn-sm" aria-hidden="true">…</span>{% endif %}
     {% endfor %}
     {% if page_obj.has_next %}
-      {% if ajax %}<button type="button" class="btn btn-secondary btn-sm" data-page="{{ page_obj.next_page_number }}" aria-label="Next page">{% icon 'chevron-right' %}</button>
-      {% else %}<a class="btn btn-secondary btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next page">{% icon 'chevron-right' %}</a>{% endif %}
+      {% if ajax %}<button type="button" class="btn btn-paper btn-sm" data-page="{{ page_obj.next_page_number }}" aria-label="Next page">{% icon 'chevron-right' %}</button>
+      {% else %}<a class="btn btn-paper btn-sm" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next page">{% icon 'chevron-right' %}</a>{% endif %}
     {% endif %}
   </div>
 </nav>

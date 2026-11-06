@@ -1,8 +1,8 @@
 {% if items %}
-  <div class="item-grid">
+  <div class="wall">
     {% for item in items %}{% include 'items/partials/item_card.html' %}{% endfor %}
   </div>
   {% if manual_mode %}{% include 'partials/pagination.html' %}{% else %}{% include 'partials/pagination.html' with ajax=True %}{% endif %}
 {% else %}
-  {% include 'partials/empty.html' with icon='search' title='No items match your search' text='Try fewer words, a different category, or widen the date range. New reports appear here after moderator review.' %}
+  {% include 'partials/empty.html' with icon='search' title='No items match your search' text='Try fewer words, another category or a wider date range. New tags appear here once a moderator has reviewed them.' %}
 {% endif %}
