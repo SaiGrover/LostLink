@@ -1,1 +1,1 @@
-{% load ui %}<span class="stamp stamp--{{ item.report_type }}{% if tilt %} stamp--tilt{% endif %}">{% if item.is_lost %}{% icon 'lost' %}{% else %}{% icon 'found' %}{% endif %}{{ item.get_report_type_display }}</span>
+<span class="type type--{{ item.report_type }}"><i class="mk mk--{{ item.report_type }}" aria-hidden="true"></i>{{ item.get_report_type_display }}</span>

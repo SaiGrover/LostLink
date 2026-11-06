@@ -1,12 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}403{% endblock %}
+{% block title %}No access{% endblock %}
 {% block body %}
-<main class="error" id="main-content">
-  <div>
-    <span class="num" aria-hidden="true">403</span>
-    <h1>This isn’t <em>open</em> to you.</h1>
-    <p>{% if exception %}{{ exception }}{% else %}Your account doesn’t have permission for this page or action.{% endif %}</p>
-    <div class="cluster" style="justify-content:center"><a href="/dashboard/" class="btn btn-ink">Back to your desk</a><a href="/search/" class="btn">Walk the wall</a></div>
-  </div>
+<main class="wrap error-page" id="main-content">
+  <div class="empty__mark" aria-hidden="true"><i></i><b></b><i></i></div>
+  <h1>You don't have access to this page.</h1>
+  <p class="lede">{% if exception %}{{ exception }}{% else %}Your account doesn't have permission for this page or action.{% endif %}</p>
+  <div class="cluster"><a href="/dashboard/" class="btn btn-primary">Go to your home page</a><a href="/search/" class="btn">Search reports</a></div>
 </main>
 {% endblock %}

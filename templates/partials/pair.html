@@ -1,14 +1,12 @@
-{% load ui %}{# Compact match chip: mine, other, match, href #}
+{# Compact match row: mine, other, match, href #}
 <a class="pair tier-{{ match.tier }}" href="{{ href }}">
-  <span class="pair__photos" aria-hidden="true">
+  <span class="pair__end pair__end--a">
     {% include 'partials/thumb.html' with item=mine %}
-    <svg viewBox="0 0 92 64"><path d="M26 30 C 40 50, 56 10, 68 36"/></svg>
+    <span class="pair__text"><span class="pair__title clamp-2">{{ mine.title }}</span><span class="pair__meta">{% include 'partials/type_badge.html' with item=mine %}<span>{{ mine.location.name }}</span></span></span>
+  </span>
+  {% include 'partials/overlap.html' with a=mine b=other score=match.percent size='sm' %}
+  <span class="pair__end pair__end--b">
     {% include 'partials/thumb.html' with item=other %}
+    <span class="pair__text"><span class="pair__title clamp-2">{{ other.title }}</span><span class="pair__meta">{% include 'partials/type_badge.html' with item=other %}<span>{{ other.location.name }}</span></span></span>
   </span>
-  <span class="pair__text">
-    <span class="pair__title">{{ other.title }}</span>
-    <span class="pair__sub">↔ your {{ mine.get_report_type_display|lower }} · {{ mine.title }}</span>
-    <span>{% include 'partials/tier_badge.html' with tier=match.tier %}</span>
-  </span>
-  <span class="pair__score"><span class="num">{{ match.percent }}<small>%</small></span></span>
 </a>

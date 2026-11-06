@@ -1,0 +1,10 @@
+{# Two report discs overlapping by the similarity score. a, b: items; score: 0-100; size: sm|md|lg|xl; photos; reveal #}
+<div class="overlap overlap--{{ size|default:'md' }}" style="--s:{{ score }}" {% if reveal %}data-reveal data-count="{{ score }}"{% endif %} role="img" aria-label="{{ score }} out of 100 similarity between {{ a.get_report_type_display|lower }} report “{{ a.title }}” and {{ b.get_report_type_display|lower }} report “{{ b.title }}”">
+  <span class="overlap__disc overlap__disc--a overlap__disc--{{ a.report_type }}" aria-hidden="true"></span>
+  <span class="overlap__disc overlap__disc--b overlap__disc--{{ b.report_type }}" aria-hidden="true"></span>
+  <span class="overlap__score" aria-hidden="true"><span data-count-target>{{ score }}</span></span>
+  {% if photos %}
+  <span class="overlap__photo overlap__photo--a" aria-hidden="true">{% if a.image %}<img src="{{ a.image.url }}" alt="">{% else %}<span class="photo__none">{{ a.category.icon }}</span>{% endif %}</span>
+  <span class="overlap__photo overlap__photo--b" aria-hidden="true">{% if b.image %}<img src="{{ b.image.url }}" alt="">{% else %}<span class="photo__none">{{ b.category.icon }}</span>{% endif %}</span>
+  {% endif %}
+</div>

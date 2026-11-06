@@ -1,148 +1,112 @@
 {% extends 'base.html' %}
 {% load ui %}
-{% block title %}Every lost thing is someone's found thing{% endblock %}
+{% block title %}Campus lost and found{% endblock %}
+{% block body_class %}landing{% endblock %}
 
 {% block body %}
-<header class="mast landing-mast">
+<header class="mast">
   <div class="wrap mast__in">
     {% include 'partials/brand.html' with href='/' %}
     <nav class="mast__nav" aria-label="Sections">
-      <a class="mast__link" href="#story">How it works</a>
-      <a class="mast__link" href="#matching">Matching</a>
-      <a class="mast__link" href="#trust">Verification</a>
-      <a class="mast__link" href="{% url 'items:search' %}">The wall</a>
+      <a class="mast__link" href="{% url 'items:search' %}">Search reports</a>
+      <a class="mast__link" href="#matching">How matching works</a>
+      <a class="mast__link" href="#ownership">How ownership is checked</a>
     </nav>
     <div class="mast__tools">
       <a class="btn btn-plain btn-sm" href="{% url 'accounts:login' %}">Sign in</a>
-      <a class="btn btn-ink btn-sm hide-sm" href="{% url 'accounts:register' %}">Join your campus</a>
-      <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch light or dark"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
+      <a class="btn btn-primary btn-sm hide-sm" href="{% url 'accounts:register' %}">Create an account</a>
+      <button type="button" class="icon-btn" data-theme-toggle aria-label="Switch day or night colours">{% icon 'moon' %}</button>
     </div>
   </div>
 </header>
 
 <main id="main-content" tabindex="-1">
   <section class="wrap hero" aria-labelledby="hero-title">
-    <div class="hero__type">
-      <h1 class="hero__h" id="hero-title">
-        <span class="wipe-line"><span>Every <em>lost</em> thing</span></span>
-        <span class="wipe-line indent" style="--i:1"><span>is someone's</span></span>
-        <span class="wipe-line" style="--i:2"><span><em>found</em> thing.</span></span>
-      </h1>
-      <div class="hero__sub rise" style="--i:6">
-        <span class="kicker">Campus lost &amp; found</span>
-        <p class="lede-lg">LostLink pins every lost and found report on one wall, ties likely pairs together with explainable AI, and lets a person check who really owns what before anything changes hands.</p>
+    <div class="hero__copy page-head" style="margin:0">
+      <h1 id="hero-title">Lost, meet found.</h1>
+      <p class="lede">Every lost and found report on campus in one place. LostLink lays each lost report over each found one and shows how much they overlap, and why. A moderator checks who owns it before anything is handed over.</p>
+      <div class="hero__cta">
+        <a class="btn btn-lost btn-lg" href="{% url 'items:report' %}?type=lost"><i class="mk mk--lost" aria-hidden="true"></i>I lost something</a>
+        <a class="btn btn-found btn-lg" href="{% url 'items:report' %}?type=found"><i class="mk mk--found" aria-hidden="true"></i>I found something</a>
       </div>
-      <div class="hero__cta rise" style="--i:8">
-        <a class="btn btn-ink btn-lg" href="{% url 'items:report' %}?type=lost">{% icon 'lost' %}I lost something</a>
-        <a class="btn btn-lg" href="{% url 'items:report' %}?type=found">{% icon 'found' %}I found something</a>
-      </div>
+      <p class="small muted">{{ counts.reports }} open report{{ counts.reports|pluralize }} across {{ counts.zones }} campus zones, {{ counts.matches }} likely match{{ counts.matches|pluralize:"es" }}, {{ counts.returned }} item{{ counts.returned|pluralize }} returned. <a class="link" href="{% url 'items:search' %}">Search without an account</a></p>
     </div>
 
-    <div class="hero__stage" data-parallax aria-label="{% if featured %}Two real reports on LostLink, tied together by a {{ featured.percent }} out of 100 similarity score{% else %}Reports hanging on the LostLink wall{% endif %}">
-      <span class="hero__rail" aria-hidden="true"></span>
+    <div class="hero__stage">
       {% if featured %}
-        <div class="hang hang--a" data-depth="1.2">{% include 'items/partials/item_card.html' with item=featured.lost_item %}</div>
-        <div class="hang hang--b" data-depth="0.7">{% include 'items/partials/item_card.html' with item=featured.found_item %}</div>
-        <svg class="hero__link" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M25 68 C 33 93, 64 93, 73 67"/></svg>
-        <div class="hero__badge" aria-hidden="true"><span class="num">{{ featured.percent }}</span><span class="stack stack-2"><span class="kicker kicker--plain">similarity</span>{% include 'partials/tier_badge.html' with tier=featured.tier %}</span></div>
+        {% include 'partials/overlap.html' with a=featured.lost_item b=featured.found_item score=featured.percent size='xl' photos=True reveal=True %}
+        <div class="hero__caption">
+          <a href="{{ featured.lost_item.get_absolute_url }}"><span class="type type--lost">Lost<i class="mk mk--lost" aria-hidden="true"></i></span><b>{{ featured.lost_item.title }}</b><small>{{ featured.lost_item.location.name }}, {{ featured.lost_item.event_date|date:"j M" }}</small></a>
+          {% include 'partials/tier_badge.html' with tier=featured.tier %}
+          <a href="{{ featured.found_item.get_absolute_url }}"><span class="type type--found"><i class="mk mk--found" aria-hidden="true"></i>Found</span><b>{{ featured.found_item.title }}</b><small>{{ featured.found_item.location.name }}, {{ featured.found_item.event_date|date:"j M" }}</small></a>
+        </div>
+        <p class="hero__note">The strongest pair on campus right now. The overlap is the real score: {{ featured.percent }} out of 100.</p>
       {% else %}
-        {% for item in hanging %}<div class="hang {% cycle 'hang--a' 'hang--b' 'hang--c' %}" data-depth="{% cycle '1.2' '0.7' '1.6' %}">{% include 'items/partials/item_card.html' %}</div>{% endfor %}
+        <div class="overlap overlap--xl" style="--s:0" aria-hidden="true"><span class="overlap__disc overlap__disc--a overlap__disc--lost"></span><span class="overlap__disc overlap__disc--b overlap__disc--found"></span></div>
+        <p class="hero__note">No matches yet. As soon as two reviewed reports resemble each other, the strongest pair appears here with its real score.</p>
       {% endif %}
     </div>
   </section>
 
-  <div class="ticker" aria-label="Live from the wall">
-    <div class="ticker__track">
-      {% for _ in "ab" %}
-      <span><i>On the wall</i>{{ counts.reports }} tag{{ counts.reports|pluralize }}</span>
-      <span><i>Tied together</i>{{ counts.matches }} thread{{ counts.matches|pluralize }}</span>
-      <span><i>Brought home</i>{{ counts.returned }} item{{ counts.returned|pluralize }}</span>
-      <span><i>Mapped</i>{{ counts.zones }} campus zones</span>
-      <span><i>Handed over by AI</i>none, ever</span>
-      {% endfor %}
-    </div>
-  </div>
-
-  <section class="wrap story" id="story" aria-labelledby="story-title">
-    <h2 class="sr-only" id="story-title">How an item finds its way back</h2>
-    <div class="story__stage">
-      <div class="scene" data-scene data-step="1" aria-hidden="true">
-        <div class="scene__tag scene__tag--lost">
-          <div class="tag tag--lost"><div class="tag__paper"><div class="tag__head"><span class="stamp stamp--lost">{% icon 'lost' %}Lost</span><span class="serial">{% if featured %}{{ featured.lost_item.pk|report_id }}{% else %}LL-0017{% endif %}</span></div><div class="tag__media">{% if featured and featured.lost_item.image %}<img src="{{ featured.lost_item.image.url }}" alt="">{% else %}<div class="tag__placeholder">👜</div>{% endif %}</div><div class="tag__perf"></div><div class="tag__body"><div class="tag__title">{% if featured %}{{ featured.lost_item.title }}{% else %}Black leather wallet{% endif %}</div></div></div></div>
-        </div>
-        <div class="scene__tag scene__tag--found">
-          <div class="tag tag--found"><div class="tag__paper"><div class="tag__head"><span class="stamp stamp--found">{% icon 'found' %}Found</span><span class="serial">{% if featured %}{{ featured.found_item.pk|report_id }}{% else %}LL-0018{% endif %}</span></div><div class="tag__media">{% if featured and featured.found_item.image %}<img src="{{ featured.found_item.image.url }}" alt="">{% else %}<div class="tag__placeholder">👜</div>{% endif %}</div><div class="tag__perf"></div><div class="tag__body"><div class="tag__title">{% if featured %}{{ featured.found_item.title }}{% else %}Wallet near the reading room{% endif %}</div></div></div></div>
-        </div>
-        <svg class="scene__thread" viewBox="0 0 100 100" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M24 30 C 38 62, 62 62, 76 30"/></svg>
-        <div class="scene__score"><span class="num">{% if featured %}{{ featured.percent }}{% else %}?{% endif %}</span><span class="kicker kicker--plain">{% if featured %}similarity · real score{% else %}similarity{% endif %}</span></div>
-        <div class="scene__q"><span class="stamp stamp--ink">What's inside?</span><span class="stamp stamp--accent">A library card</span></div>
-        <span class="stamp stamp--xl stamp--ok scene__stamp">Returned</span>
+  <section class="band band--mist" id="matching" aria-labelledby="matching-title">
+    <div class="wrap band__grid">
+      <div class="band__intro">
+        <h2 id="matching-title">How matching works</h2>
+        <p>Every approved lost report is compared with every approved found report on six signals, each with a fixed weight. If a report has no photo, the photo isn't counted against the match; its weight is shared among the other signals.</p>
+        <ul class="weights" aria-label="Signal weights">
+          {% for key, label, w in weight_rows %}
+          <li><span style="--w:{% widthratio w 0.3 100 %}%">{{ label }}</span><b>{{ w|times100 }}%</b></li>
+          {% endfor %}
+        </ul>
       </div>
-    </div>
-    <div class="story__chapters">
-      <article class="chapter is-active" data-chapter="1"><span class="chapter__n">01</span><h3>Something goes <em>missing</em>.</h3><p>A wallet slips out in the library. Its owner fills out a tag: what it looks like, where, when, and a photo if they have one.</p></article>
-      <article class="chapter" data-chapter="2"><span class="chapter__n">02</span><h3>Someone <em>finds</em> it.</h3><p>A day later, someone hands in a wallet from a desk nearby and tags it as found. A moderator reads both tags before they go on the wall.</p></article>
-      <article class="chapter" data-chapter="3"><span class="chapter__n">03</span><h3>LostLink <em>recognises</em> the pair.</h3><p>Language and vision models compare the words and the photos, then weigh in the place, category, date, brand and colour. Both people get a dispatch with every reason shown.</p></article>
-      <article class="chapter" data-chapter="4"><span class="chapter__n">04</span><h3>A person <em>verifies</em> it.</h3><p>The owner answers private questions only they could know. A moderator reads the answers and decides. The score is context, never the verdict.</p></article>
-      <article class="chapter" data-chapter="5"><span class="chapter__n">05</span><h3>It goes <em>home</em>.</h3><p>Contact details unseal, the two meet, and a moderator confirms the handover. The tag is stamped returned and the case closes.</p></article>
+      <div>
+        {% if featured %}
+          {% include 'partials/match_card.html' with match=featured mine=featured.lost_item other=featured.found_item open=True size='lg' %}
+        {% else %}
+          {% include 'partials/empty.html' with title='No matches yet' text='As soon as two reviewed reports resemble each other, the strongest pair appears here with its real score and breakdown.' %}
+        {% endif %}
+      </div>
     </div>
   </section>
 
-  <section class="wrap feature" id="matching" aria-labelledby="matching-title">
-    <div class="stack stack-6" data-reveal>
-      <span class="kicker">The matching engine</span>
-      <h2 id="matching-title">One score. <em>Six</em> threads.</h2>
-      <p class="lede">Each signal is a thread between two tags; its thickness is what it adds to the score. If either tag has no photo, that thread isn't counted against the match: its weight is shared among the others.</p>
-      <div class="weights" data-observe>
-        {% for key, label, w in weight_rows %}
-        <div class="weight sig-{{ key }}" style="--i:{{ forloop.counter0 }};--h:{% widthratio w 1 16 %}px"><span class="weight__k">{{ label }}</span><span class="weight__line" style="width:{% widthratio w 0.3 100 %}%"></span><span class="num weight__v">{{ w|times100 }}</span></div>
-        {% endfor %}
+  <section class="band" id="ownership" aria-labelledby="ownership-title">
+    <div class="wrap band__grid">
+      <div class="band__intro">
+        <h2 id="ownership-title">How an item gets back</h2>
+        <p>A score only points two people at each other. Every step that decides who gets an item belongs to a person, and every decision is logged.</p>
       </div>
+      <ol class="route route--lg">
+        <li class="is-done"><span class="route__dot" aria-hidden="true">1</span><div><p class="route__title">Someone reports it</p><p class="route__text">The owner reports what they lost, or a finder what they picked up: what it looks like, where, when, and a photo if they have one.</p></div></li>
+        <li class="is-done"><span class="route__dot" aria-hidden="true">2</span><div><p class="route__title">A moderator reviews it</p><p class="route__text">Reports are published only after review, so search stays free of duplicates and spam.</p></div></li>
+        <li class="is-done"><span class="route__dot" aria-hidden="true">3</span><div><p class="route__title">LostLink finds the overlap</p><p class="route__text">Language and image models compare descriptions and photos, then weigh zone, category, date, brand and colour. Both people are notified, with the reasons.</p></div></li>
+        <li class="is-done"><span class="route__dot" aria-hidden="true">4</span><div><p class="route__title">The owner answers private questions</p><p class="route__text">The finder or a moderator asks what only the owner would know. A moderator reads the answers and decides; nobody can approve their own claim.</p></div></li>
+        <li class="is-current"><span class="route__dot" aria-hidden="true">5</span><div><p class="route__title">The handover is confirmed</p><p class="route__text">Contact details are shared only after approval. A moderator confirms the item changed hands and the report closes.</p></div></li>
+      </ol>
     </div>
-    <div data-reveal style="--i:1">
-      {% if featured %}
-        {% include 'partials/match_card.html' with match=featured mine=featured.lost_item other=featured.found_item open=True %}
-        <p class="disclaimer mt-4">{% icon 'info' %}<span>A real pair from this campus, scored by the engine. Similarity helps people find each other; it never proves ownership.</span></p>
-      {% else %}
-        <div class="sheet">{% include 'partials/empty.html' with icon='link' title='No threads on the wall yet' text='As soon as two reviewed tags resemble each other, the strongest pair appears here with its real score.' %}</div>
-      {% endif %}
-    </div>
-  </section>
-
-  <section class="wrap feature feature--flip" id="trust" aria-labelledby="trust-title">
-    <div class="stack stack-6" data-reveal>
-      <span class="kicker">{% icon 'shield' %}Human verification</span>
-      <h2 id="trust-title">A score is a <em>lead</em>, not a verdict.</h2>
-      <p class="lede">Valuable things attract false claims. Every consequential step belongs to a person, and every decision is written down.</p>
-    </div>
-    <ol class="verify-steps">
-      <li data-reveal style="--i:0"><h3>Private questions</h3><p>The finder or a moderator asks what only the owner could know. Answers are visible to the people involved, nobody else.</p><span class="stamp stamp--ink">Asked</span></li>
-      <li data-reveal style="--i:1"><h3>A moderator decides</h3><p>Answers are required before approval. Moderators can't approve their own claims, and only one owner can ever be verified per item.</p><span class="stamp stamp--ok">Approved</span></li>
-      <li data-reveal style="--i:2"><h3>Contacts unseal</h3><p>Phone numbers and emails stay hidden until approval, then appear to both people so they can meet.</p><span class="stamp stamp--accent">Unsealed</span></li>
-      <li data-reveal style="--i:3"><h3>Handover, on record</h3><p>A moderator confirms the physical return. Approvals, rejections, disputes and handovers all land in the decision log.</p><span class="stamp stamp--ok">Returned</span></li>
-    </ol>
   </section>
 
   {% if strip %}
-  <section class="wrap feature" style="grid-template-columns:minmax(0,1fr);gap:var(--s5)" aria-labelledby="wall-title">
-    <div class="cluster between" data-reveal>
-      <div class="stack stack-4"><span class="kicker">On the wall right now</span><h2 id="wall-title">Is one of these <em>yours</em>?</h2></div>
-      <a class="btn btn-lg" href="{% url 'items:search' %}">Walk the whole wall{% icon 'arrow-right' 'icon-go' %}</a>
+  <section class="band" style="padding-top:0" aria-labelledby="recent-title">
+    <div class="wrap">
+      <div class="sect-head"><h2 id="recent-title">Recently reported</h2><a class="link" href="{% url 'items:search' %}">Search all reports</a></div>
+      <div class="items items--rail">{% for item in strip %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
     </div>
-    <div class="strip">{% for item in strip %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
   </section>
   {% endif %}
 
-  <section class="wrap finale" aria-labelledby="finale-title">
-    <h2 id="finale-title" data-reveal>Bring it <em>home</em>.</h2>
-    <div class="hero__cta" style="justify-content:center" data-reveal>
-      <a class="btn btn-ink btn-lg" href="{% url 'accounts:register' %}">Join your campus{% icon 'arrow-right' 'icon-go' %}</a>
-      <a class="btn btn-lg" href="{% url 'items:search' %}">{% icon 'search' %}Search without an account</a>
+  <section class="finale" aria-labelledby="finale-title">
+    <div class="wrap">
+      <h2 id="finale-title">Report it once. Let it find its match.</h2>
+      <p>Create an account with your college email to report items, hear about matches and claim what's yours.</p>
+      <div class="hero__cta">
+        <a class="btn btn-primary btn-lg" href="{% url 'accounts:register' %}">Create an account</a>
+        <a class="btn btn-lg" href="{% url 'items:search' %}">{% icon 'search' %}Search reports</a>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="foot">
-  <div class="wrap"><span>LostLink · Full Stack Development Lab, JIIT Noida</span><span class="serial">Models rank. People verify.</span></div>
+  <div class="wrap">{% include 'partials/brand.html' with href='/' %}<span>Full Stack Development Lab, JIIT Noida. Models suggest; people decide.</span></div>
 </footer>
 {% endblock %}

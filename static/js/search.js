@@ -8,6 +8,7 @@
   var form = document.getElementById('search-form');
   if (!form) return;
   var L = window.LostLink;
+  form.classList.add('is-live');
   var results = document.getElementById('results');
   var countEl = document.getElementById('result-count');
   var feedback = document.getElementById('search-feedback');
@@ -26,9 +27,9 @@
   }
 
   function skeleton() {
-    var card = '<div class="skeleton-tag" aria-hidden="true"><div class="skeleton"></div>' +
-      '<div class="skeleton skeleton-line" style="width:70%;height:18px"></div><div class="skeleton skeleton-line" style="width:45%"></div></div>';
-    return '<div class="wall">' + new Array(9).join(card) + '</div>';
+    var card = '<div class="skeleton-item" aria-hidden="true"><div class="skeleton"></div>' +
+      '<div class="skeleton skeleton-line" style="width:75%;height:18px"></div><div class="skeleton skeleton-line" style="width:50%"></div></div>';
+    return '<div class="items">' + new Array(9).join(card) + '</div>';
   }
 
   function labelFor(name, value) {
@@ -76,8 +77,8 @@
         if (seq !== latest) return;
         clearTimeout(skeletonTimer);
         results.innerHTML = data.html;
-        var wall = results.querySelector('.wall');
-        if (wall) { wall.classList.add('is-entering'); }
+        var grid = results.querySelector('.items');
+        if (grid) grid.classList.add('is-entering');
         if (window.LostLink && LostLink.animateIn) LostLink.animateIn(results);
         if (countEl) countEl.textContent = data.total;
         document.querySelectorAll('[data-total]').forEach(function (n) { n.textContent = data.total; });
@@ -89,9 +90,9 @@
       .catch(function (e) {
         if (e.name === 'AbortError' || seq !== latest) return;
         clearTimeout(skeletonTimer);
-        results.innerHTML = '<div class="empty"><div class="empty__tag" aria-hidden="true"><svg class="icon"><use href="#i-alert"></use></svg></div>' +
-          '<p class="empty__title">The wall could not load</p><p>Check your connection and try again. Your filters are kept.</p>' +
-          '<button type="button" class="btn btn-paper btn-sm" data-retry>Try again</button></div>';
+        results.innerHTML = '<div class="empty"><div class="empty__mark" aria-hidden="true"><i></i><b></b><i></i></div>' +
+          '<p class="empty__title">Results could not load</p><p>Check your connection and try again. Your filters are kept.</p>' +
+          '<button type="button" class="btn btn-sm" data-retry>Try again</button></div>';
         if (feedback) feedback.textContent = 'Search could not load.';
       })
       .finally(function () {

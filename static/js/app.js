@@ -1,16 +1,15 @@
-/* LostLink interface behaviour — progressive enhancement only.
-   Every form and link works without this file. It adds motion, feedback,
-   shortcuts and the scroll-told story on the landing page. */
+/* LostLink interface behaviour: progressive enhancement only.
+   Every form and link works without this file. It adds feedback, shortcuts,
+   live previews and in-place updates. */
 (function () {
   'use strict';
   var doc = document, root = doc.documentElement;
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function $(s, c) { return (c || doc).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); }
   function csrf() { var m = doc.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); var i = $('input[name=csrfmiddlewaretoken]'); return m ? decodeURIComponent(m[1]) : (i ? i.value : ''); }
   window.LostLink = { $: $, $$: $$, csrf: csrf, toast: toast, animateIn: animateIn };
 
-  /* ---- Theme: paper by default, dark only when chosen --------------------- */
+  /* ---- Theme: day by default, night only when chosen ---------------------- */
   $$('[data-theme-toggle]').forEach(function (b) {
     b.addEventListener('click', function () {
       var dark = root.getAttribute('data-theme') !== 'dark';
@@ -19,9 +18,9 @@
     });
   });
 
-  /* ---- Masthead hairline on scroll --------------------------------------- */
+  /* ---- Masthead gains a hairline once the page scrolls -------------------- */
   var mast = $('.mast');
-  if (mast) { var onS = function () { mast.classList.toggle('is-scrolled', window.scrollY > 6); }; window.addEventListener('scroll', onS, { passive: true }); onS(); }
+  if (mast) { var onScroll = function () { mast.classList.toggle('is-scrolled', window.scrollY > 4); }; window.addEventListener('scroll', onScroll, { passive: true }); onScroll(); }
 
   /* ---- Menus: close on outside click / Escape; "/" focuses search -------- */
   doc.addEventListener('click', function (e) { $$('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); }); });
@@ -47,11 +46,11 @@
   }
   $$('#toasts .toast').forEach(arm);
 
-  /* ---- Confirmation dialog: consequential actions get a stamped question -- */
+  /* ---- Confirmation dialog for consequential actions ---------------------- */
   var dialog = $('#confirm-dialog'), pending = null;
   if (dialog && dialog.showModal) {
     var tEl = $('[data-confirm-title]', dialog), xEl = $('[data-confirm-text]', dialog), ok = $('[data-confirm-ok]', dialog),
-        noteWrap = $('[data-confirm-note]', dialog), note = $('textarea', noteWrap), stampEl = $('[data-confirm-stamp]', dialog);
+        noteWrap = $('[data-confirm-note]', dialog), note = $('textarea', noteWrap);
     doc.addEventListener('submit', function (e) {
       var f = e.target;
       if (!f.matches('form[data-confirm]') || f.dataset.confirmed === '1') return;
@@ -59,9 +58,8 @@
       var tone = f.dataset.confirmTone || 'neutral';
       tEl.textContent = f.dataset.confirm; xEl.textContent = f.dataset.confirmText || '';
       ok.textContent = f.dataset.confirmLabel || 'Confirm';
-      ok.className = 'btn ' + (tone === 'danger' ? 'btn-bad' : tone === 'success' ? 'btn-ok' : 'btn-ink');
-      stampEl.className = 'stamp stamp--lg dialog__stamp stamp--' + (tone === 'danger' ? 'bad' : tone === 'success' ? 'ok' : 'ink') + ' is-stamped';
-      stampEl.textContent = f.dataset.confirmStamp || (tone === 'danger' ? 'Careful' : tone === 'success' ? 'Approve' : 'Confirm');
+      ok.className = 'btn ' + (tone === 'danger' ? 'btn-danger' : tone === 'success' ? 'btn-ok' : 'btn-primary');
+      dialog.className = 'dialog' + (tone === 'danger' ? ' dialog--danger' : tone === 'success' ? ' dialog--success' : '');
       var wants = f.hasAttribute('data-confirm-note'); noteWrap.hidden = !wants;
       if (wants) { note.value = (f.querySelector('[name=note]') || {}).value || ''; note.placeholder = f.dataset.confirmNote || 'Optional note'; }
       dialog.showModal(); (wants ? note : ok).focus();
@@ -133,16 +131,16 @@
     var sync = function () {
       var g = function (n) { return form.elements[n]; };
       var type = (form.querySelector('input[name=report_type]:checked') || {}).value || 'lost';
-      var tag = $('.tag', pc); tag.className = 'tag tag--' + type;
-      var st = $('[data-p=type]', pc); st.className = 'stamp stamp--' + type; st.lastChild.textContent = type === 'found' ? 'Found' : 'Lost'; $('use', st).setAttribute('href', '#i-' + type);
-      $('[data-p=title]', pc).textContent = g('title').value.trim() || 'Name your item';
+      var st = $('[data-p=type]', pc); st.className = 'type type--' + type;
+      $('i', st).className = 'mk mk--' + type; st.lastChild.textContent = type === 'found' ? 'Found' : 'Lost';
+      $('[data-p=title]', pc).textContent = g('title').value.trim() || 'What is it?';
       var cat = g('category'), loc = g('location'), dt = g('event_date');
       $('[data-p=location]', pc).textContent = loc && loc.value ? loc.options[loc.selectedIndex].text : 'Campus zone';
       $('[data-p=date]', pc).textContent = dt && dt.value ? new Date(dt.value + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : 'Date';
       $('[data-p=category]', pc).textContent = cat && cat.value ? cat.options[cat.selectedIndex].text : 'Category';
     };
     form.addEventListener('input', sync); form.addEventListener('change', sync); sync();
-    form.addEventListener('photo:change', function (e) { var m = $('[data-p=media]', pc); m.innerHTML = e.detail && e.detail.url ? '<img alt="" src="' + e.detail.url + '">' : '<div class="tag__placeholder" aria-hidden="true">·</div>'; });
+    form.addEventListener('photo:change', function (e) { var m = $('[data-p=media]', pc); m.innerHTML = e.detail && e.detail.url ? '<img alt="" src="' + e.detail.url + '">' : '<span class="photo__none">?</span>'; });
   }
 
   /* ---- Tabs (all panels visible without JS) -------------------------------- */
@@ -160,47 +158,33 @@
     sel(tabs.filter(function (t) { return '#' + t.getAttribute('aria-controls') === location.hash; })[0] || tabs[0]);
   });
 
-  /* ---- In-view choreography: reveals, boards, counters, weights ---------- */
-  function countUp(el) {
-    var target = Number(el.dataset.count); if (!isFinite(target) || reduce) return;
-    var t0 = null, dur = 900;
-    function step(ts) { if (!t0) t0 = ts; var p = Math.min((ts - t0) / dur, 1); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }
+  /* ---- Overlaps print into place ------------------------------------------
+     When a match comes into view its two discs slide from touching to their
+     real overlap while the score counts up, so the number is seen being made
+     of the overlap. With reduced motion everything is shown at rest. */
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function countUp(el, target) {
+    if (reduce) { el.textContent = target; return; }
+    var t0 = null, dur = 1100;
+    function step(ts) { if (!t0) t0 = ts; var p = Math.min((ts - t0) / dur, 1); el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))); if (p < 1) requestAnimationFrame(step); }
     el.textContent = '0'; requestAnimationFrame(step);
   }
+  function reveal(el) {
+    if (el.classList.contains('is-in')) return;
+    var n = $('[data-count-target]', el);
+    el.classList.add('is-in');
+    if (n && el.dataset.count) countUp(n, Number(el.dataset.count));
+  }
   function animateIn(scope) {
-    var els = $$('[data-reveal], [data-board], [data-observe]', scope || doc);
-    if (!('IntersectionObserver' in window) || reduce) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        en.target.classList.add('is-in');
-        $$('[data-count]', en.target).forEach(countUp);
-        io.unobserve(en.target);
-      });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 });
+    var els = $$('[data-reveal]', scope || doc);
+    if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { io.unobserve(en.target); setTimeout(function () { reveal(en.target); }, 120); } });
+    }, { threshold: 0.4 });
     els.forEach(function (e) { io.observe(e); });
   }
   animateIn();
-
-  /* ---- Landing story: chapters drive the sticky scene --------------------- */
-  var scene = $('[data-scene]'), chapters = $$('[data-chapter]');
-  if (scene && chapters.length) {
-    var setStep = function (n) { scene.setAttribute('data-step', n); chapters.forEach(function (c) { c.classList.toggle('is-active', c.dataset.chapter === String(n)); }); };
-    if ('IntersectionObserver' in window) {
-      var cio = new IntersectionObserver(function (es) { es.forEach(function (en) { if (en.isIntersecting) setStep(en.target.dataset.chapter); }); }, { rootMargin: '-45% 0px -45% 0px' });
-      chapters.forEach(function (c) { cio.observe(c); });
-    } else setStep(5);
-  }
-
-  /* ---- Hero tags follow the pointer a little (desktop, motion allowed) ---- */
-  var stage = $('[data-parallax]');
-  if (stage && !reduce && window.matchMedia('(pointer: fine)').matches) {
-    stage.addEventListener('pointermove', function (e) {
-      var r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      $$('[data-depth]', stage).forEach(function (el) { var d = Number(el.dataset.depth); el.style.translate = (x * d * 18) + 'px ' + (y * d * 12) + 'px'; });
-    });
-    stage.addEventListener('pointerleave', function () { $$('[data-depth]', stage).forEach(function (el) { el.style.translate = '0 0'; }); });
-  }
+  window.LostLink.animateIn = animateIn;
 
   /* ---- Notifications: mark read/unread in place, live badge -------------- */
   function setBadge(n) { $$('[data-unread-badge]').forEach(function (b) { b.textContent = n; b.hidden = !n; }); $$('[data-unread-label]').forEach(function (b) { b.textContent = n ? n + ' unread' : 'All read'; }); }
@@ -217,7 +201,7 @@
           $$('[data-notification] form[data-ajax-read] button').forEach(function (b) { b.textContent = 'Mark unread'; b.classList.remove('is-loading'); });
           $$('[data-notification] form[data-ajax-read] input[name=unread]').forEach(function (i) { i.value = '1'; });
           $$('form[data-read-all] button').forEach(function (b) { b.classList.remove('is-loading'); });
-          toast('Every dispatch is marked as read.', 'success');
+          toast('All notifications are marked as read.', 'success');
         }
         setBadge(d.unread);
       })

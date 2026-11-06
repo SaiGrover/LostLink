@@ -3,15 +3,12 @@
 {% block title %}Edit {{ obj.name }}{% endblock %}
 
 {% block main %}
-<header class="phead">
-  <div class="phead__top"><nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'dashboard:taxonomy' %}">Categories &amp; zones</a><span>/</span><span>{{ obj.name }}</span></nav></div>
-  <div class="phead__title">
-    <span class="kicker">Edit {% if kind == 'category' %}category{% else %}campus zone{% endif %}</span>
-    <h1 class="title">{{ obj.name }}</h1>
-    <p class="lede">Used by {{ usage }} tag{{ usage|pluralize }}. Matching uses the record, not its label, so renaming is safe.</p>
-  </div>
+<header class="page-head page-head--tight">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'dashboard:taxonomy' %}">Categories and zones</a>{% icon 'chevron-right' %}<span>{{ obj.name }}</span></nav>
+  <h1>Edit {% if kind == 'category' %}category{% else %}zone{% endif %}: {{ obj.name }}</h1>
+  <p class="lede">Used by {{ usage }} report{{ usage|pluralize }}. Matching uses the record, not its name, so renaming is safe.</p>
 </header>
-<form method="post" novalidate class="stack" style="max-width:620px">
+<form method="post" novalidate class="stack" style="--gap:var(--s5);max-width:620px">
   {% csrf_token %}
   {% for field in form %}
     <div class="field{% if field.errors %} has-error{% endif %}">
@@ -21,6 +18,6 @@
       {{ field.errors }}
     </div>
   {% endfor %}
-  <div class="cluster end mt-4"><a class="btn btn-plain" href="{% url 'dashboard:taxonomy' %}">Cancel</a><button class="btn btn-ink" type="submit">Save changes</button></div>
+  <div class="report__submit" style="margin-top:var(--s4)"><button class="btn btn-primary" type="submit">Save changes</button><a class="btn btn-plain" href="{% url 'dashboard:taxonomy' %}">Cancel</a></div>
 </form>
 {% endblock %}

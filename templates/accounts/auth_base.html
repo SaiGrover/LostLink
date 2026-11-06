@@ -2,31 +2,23 @@
 {% load ui %}
 {% block body %}
 <div class="auth">
-  <div class="auth__form">
+  <div class="auth__main">
     <div class="cluster between">
       {% include 'partials/brand.html' with href='/' %}
-      <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch light or dark"><svg class="icon i-moon" aria-hidden="true"><use href="#i-moon"></use></svg><svg class="icon i-sun" aria-hidden="true"><use href="#i-sun"></use></svg></button>
+      <button type="button" class="icon-btn" data-theme-toggle aria-label="Switch day or night colours">{% icon 'moon' %}</button>
     </div>
-    <main class="auth__form-in" id="main-content" tabindex="-1">
+    <main class="auth__form" id="main-content" tabindex="-1">
       {% block form %}{% endblock %}
     </main>
-    <p class="serial">Models rank. People verify.</p>
   </div>
-  <aside class="auth__art" aria-label="About LostLink">
-    <div class="auth__hang" aria-hidden="true">
-      <div class="tag tag--found"><div class="tag__paper">
-        <div class="tag__head"><span class="stamp stamp--found">{% icon 'found' %}Found</span><span class="serial">LL-0042</span></div>
-        <div class="tag__media"><div class="tag__placeholder">🔑</div></div>
-        <div class="tag__perf"></div>
-        <div class="tag__body"><div class="tag__title">Keys on a red ring</div><div class="tag__meta"><span>Main gate</span><span>Tue · 09:40</span></div></div>
-      </div></div>
-    </div>
-    <h2>{% block aside_title %}Good things <em>find their way</em> back.{% endblock %}</h2>
-    <div class="auth__points">
-      <div>{% icon 'link' %}<div><b>Tied together, with reasons</b>Words, photos, place and date combine into one score you can read thread by thread.</div></div>
-      <div>{% icon 'shield' %}<div><b>Checked by a person</b>Private questions and a moderator decision come before any handover.</div></div>
-      <div>{% icon 'lock' %}<div><b>Sealed contacts</b>Phone numbers and emails stay hidden until a claim is approved.</div></div>
-    </div>
+  <aside class="auth__side" aria-label="How LostLink works">
+    <h2>{% block aside_title %}From lost to back in your hands.{% endblock %}</h2>
+    <ol class="route">
+      <li class="is-done"><span class="route__dot" aria-hidden="true">1</span><div><p class="route__title">Report it once</p><p class="route__text">Lost or found, with the zone, the day and a photo if you have one.</p></div></li>
+      <li class="is-done"><span class="route__dot" aria-hidden="true">2</span><div><p class="route__title">See likely matches, with reasons</p><p class="route__text">Description, photo, zone, category, date, brand and colour, each shown with its share of the score.</p></div></li>
+      <li class="is-done"><span class="route__dot" aria-hidden="true">3</span><div><p class="route__title">Prove it's yours</p><p class="route__text">Private questions and a moderator's decision come before any handover.</p></div></li>
+      <li class="is-current"><span class="route__dot" aria-hidden="true">4</span><div><p class="route__title">Meet and hand it over</p><p class="route__text">Contact details are shared only after approval.</p></div></li>
+    </ol>
   </aside>
 </div>
 {% endblock %}

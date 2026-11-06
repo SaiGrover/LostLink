@@ -1,81 +1,109 @@
-# Frontend design system: "Tag & Thread"
+# Frontend design system: "Overprint"
 
 LostLink's interface is Django templates, four stylesheets and two scripts.
 There is no build step and no CSS or JavaScript framework. Every page works
-without JavaScript; scripts add live search, motion and feedback.
+without JavaScript; the scripts add live search, previews, in-place updates
+and motion.
 
-## Creative concept
+## Concept
 
-The product reconnects people with belongings, so the interface is built from
-the physical objects of a lost-property office:
+The product's one job is to put a lost report next to a found report and say
+how alike they are. The identity is built from that act:
 
-| Idea | Component | Where |
+- Every report is a disc of ink: **signal orange** for lost (something is
+  missing) and **clear cyan** for found (it's safe).
+- A match prints one disc over the other. Where they overlap, orange over cyan
+  mixes into **deep green**, the colour of "this is it". The width of the
+  overlap is the real similarity score: at 87 the lens is 87% of a disc's width.
+- The discs use real multiply blending, in both the day and night schemes, so
+  the green is the actual mix of the two inks.
+
+The same rule is used everywhere, so a person learns it once:
+
+| Where | What the overlap shows |
+| --- | --- |
+| Landing hero | The strongest real match on campus, large, with both photos |
+| Home | The person's own strongest match, then every likely match as a row |
+| Match card (item page, landing) | The pair with both reports either side |
+| Why this score | Six small overlaps, one per signal, each overlapping by that signal's similarity, with its weight and points |
+| Signals that couldn't be compared | Two dashed discs that don't touch |
+| Empty states, errors | Two discs that haven't met |
+| Brand, favicon, sign-in panel, closing banner | Two overlapping discs |
+
+## Palette
+
+| Name | Hex | Role |
 | --- | --- | --- |
-| A report is a **luggage tag** | `.tag`: die-cut corners, a punched eyelet (a real CSS mask hole), a perforated tear line in the report-type colour, a stamped serial and a rubber-stamp LOST/FOUND | the wall, desk, My tags, landing |
-| A match is a **thread** | `.board` evidence board: six threads fan out from one tag, pass through their signal label and rejoin the other tag. Thickness = that signal's real points | item page, desk, landing |
-| A decision is a **stamp** | `.stamp` (and `--xl`), rotated, animated in with `stamp` | statuses, tiers, claim headers, confirm dialog |
-| A case is a **route** | `.route`: stops on a thread, with done / current / blocked states | claim page, cases list, desk |
-| Facts are a **ledger** | `.ledger`: mono keys, dotted leaders, values | item page, profile, almanac |
-| A photo is a **specimen** | `.specimen`: a mounted print with tape and a stamped type | item page |
+| Paper | `#FFFFFF` | Page |
+| Mist | `#F2F5F3` | Quiet surfaces: panels, fields, match cards |
+| Ink | `#10241B` | Text, primary actions |
+| Lost orange | `#FF7A1A` | Lost reports, "I lost something" (ink text) |
+| Found cyan | `#19B5D6` | Found reports, "I found something" (ink text) |
+| Match green | `#195615` | Orange × cyan: matches, the main action in a view, focus rings |
 
-Typography carries the voice: **Instrument Serif** for headlines and quotes
-(with italic emphasis), **Bricolage Grotesque** for the interface, and its
-condensed width axis (`'wdth' 75`) for numbers and stamps. **Geist Mono** is
-used for serials, marginalia and machine facts.
+Orange and cyan are too light for white text, so buttons in those inks use ink
+text (above 6:1). Smaller coloured text uses darker variants (`--lost-text`
+`#B54A00`, `--found-text` `#00728A`) to stay above 4.5:1. The score inside the
+green lens is white (8.8:1). Report type is never shown by colour alone: a disc
+is always paired with the word Lost or Found, tiers carry a shape (triangle,
+diamond, ring) and statuses carry words.
 
-Navigation is a slim top masthead on desktop (Desk · The wall · My tags ·
-Cases · Staff menu) and a bottom tab bar with a raised "new tag" button on
-phones. Each role's main screen has its own composition rather than a shared
-dashboard template:
+The night scheme (deep green-black page, brighter inks, light green for actions)
+applies only when chosen from the account menu. The inks still multiply there,
+so the lens stays a readable green (`#3C6C37`, 6.2:1 with white).
 
-- **Student desk:** a greeting, a one-sentence brief with linked numbers, a tally, a rail of match pairs, one full evidence board, cases with route bars, an editorial ledger of activity, and a rail of your tags.
-- **Review desk:** a vertical queue switcher and inspection cards with approve or reject stamps.
-- **Almanac:** a data-journalism layout with large condensed figures and annotated charts.
+## Type
+
+- **Unbounded** for headings and numbers: a wide, round display face whose
+  circular bowls echo the discs. Set tight, with negative tracking.
+- **Hanken Grotesk** for everything people read: calm, open, 17px body text
+  with 1.6 line height and lines under about 70 characters.
+
+There are no all-caps labels, no eyebrows above headings and no single accented
+words in headlines; size and the two faces carry the hierarchy.
+
+## Layout
+
+- A light, translucent masthead (blurred) with the current page marked by a
+  pill and a green dot. Phones get a floating tab bar with the report action
+  in the middle.
+- Radius follows hierarchy: 28px for panels, 18px for cards and photos, 14px
+  for controls, 8px for small labels, round for buttons, chips and discs.
+- Content is grouped by tone, not borders: match cards, fact lists, filters
+  and form sections sit on mist panels; lists are rows separated by hairlines.
+
+## Motion
+
+Motion explains something or answers a person:
+
+- **Overlaps print into place.** When a match comes into view its discs slide
+  from touching to their real overlap while the score counts up, so the number
+  is seen being made of the overlap (`@property --k`, `app.js`).
+- **Shared photo transition.** An item card's photo and the item page's photo
+  share a `view-transition-name`, so opening a report morphs the photo into
+  place (cross-document view transitions, current Chrome).
+- **Search results** arrive with a short stagger after each search.
+- **Responses:** buttons compress on press, menus, tabs and disclosures open
+  with a short rise, toasts and the confirmation dialog arrive with a slight
+  spring, the report-type choice cards grow their disc when chosen.
+- With `prefers-reduced-motion` everything resolves instantly and overlaps
+  are shown at their final position.
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
-| `static/css/tokens.css` | Palette slots, semantic colours (paper default, opt-in dark), type, spacing, geometry, motion, textures (grain, dots, hatch). |
-| `static/css/base.css` | Reset, typography roles, layout primitives, motion keyframes, view transitions, reduced-motion rules. |
-| `static/css/components.css` | Buttons, fields, stamps, tags, sheets, ledger, route, evidence board, pairs, notes, chips, segmented controls, stamp choice, dropzone, tables, lists, figures and charts, menus, dialog, toasts, empty states, skeletons, pager, transcript, dispatches. |
-| `static/css/layout.css` | Masthead, tab bar, page heads, and each page's composition (desk, wall, case file, report form, claim, review desk, almanac, landing story, auth, errors). |
-| `static/js/app.js` | Theme, menus, toasts, stamped confirmation dialog, submit states, password tools, dropzone and live tag preview, tabs, in-view choreography (reveals, thread drawing, count-ups), the landing scroll story, hero parallax, AJAX mark-read and unread polling. |
-| `static/js/search.js` | Debounced AJAX search, skeleton tags, filter chips, category chips, URL state, staggered wall entry. |
-
-## Applying the final palette
-
-No palette has been chosen. Components only read semantic tokens. Every
-semantic token is derived in OKLCH from these slots at the top of
-`tokens.css`:
-
-```css
---paper-h --paper-c                  surfaces (paper, card, kraft)
---ink-h --ink-c                      text and rules
---thread-h --thread-c --thread-l     the connecting accent
---lost-h --found-h                   report-type hues
---ok-h --warn-h --bad-h --info-h     status hues
---status-c                           saturation of type and status colours
-```
-
-Paper is the default theme. Dark mode exists only when a person chooses it;
-the operating-system preference is deliberately not followed. Status is never
-shown by colour alone: stamps carry words, tiers carry a glyph (triangle,
-diamond, ring), and report types carry an icon.
-
-## Motion
-
-- **Entrance:** headline lines wipe up from a mask; content rises in a stagger.
-- **Tags:** tags swing around their eyelet on hover; hero and preview tags sway on their strings; wall results drop in after each search.
-- **Threads:** threads draw when a board scrolls into view; hovering a signal thickens its thread and dims the others.
-- **Stamps:** decision stamps land with a short overshoot.
-- **Landing:** the story chapters drive a sticky scene (lost, found, tied, questioned, returned).
-- **Pages:** cross-document view transitions fade between pages where the browser supports them.
-- **Reduced motion:** with `prefers-reduced-motion`, all of this resolves instantly and content is shown at rest.
+| `static/css/tokens.css` | Inks, semantic colours (day default, opt-in night), type, spacing, geometry, motion. |
+| `static/css/base.css` | Reset, type roles, layout primitives, utilities, keyframes, view transitions, reduced motion. |
+| `static/css/components.css` | The overlap and signals, buttons, fields, choice cards, segmented controls, markers, badges, photos, item cards, match cards and rows, routes, rows, facts, notices, menus, dialog, toasts, empty states, pager, tables, chips, tabs, dropzone, Q&A, charts. |
+| `static/css/layout.css` | Brand, masthead, tab bar, page heads, and each page's composition. |
+| `templates/partials/overlap.html` | The overlap diagram: two items, a score, a size, optional photos and reveal. |
+| `templates/partials/match_card.html`, `pair.html` | Full and compact matches built on the overlap. |
+| `static/js/app.js` | Theme, menus, toasts, confirmation dialog, submit states, password tools, dropzone and live report preview, tabs, the overlap reveal and count-up, mark-read and unread polling. |
+| `static/js/search.js` | Debounced AJAX search, skeletons, filter chips, URL state, staggered results. |
 
 ## Real data only
 
-Every number on screen comes from the database or the matching engine. The
-landing page shows the strongest current match between two public reports
-with photos, and the ticker shows live counts. Without such a match, the
-landing page says so instead of inventing one.
+Every number and every overlap comes from the database or the matching engine.
+The landing page shows the strongest current match between two public reports
+with photos; without one it shows two discs that haven't met and says so.
