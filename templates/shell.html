@@ -81,7 +81,8 @@
             {% endif %}
           </div>
           {% endif %}
-          <button class="menu__item" type="button" data-theme-toggle>{% icon 'moon' %}Switch day or night colours</button>
+          <div class="menu__label">Colour theme</div>
+          <div style="padding:0 var(--s2) var(--s2)">{% include 'partials/theme_choice.html' %}</div>
           <div class="menu__sep"></div>
           <a class="menu__item" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a>
         </div>

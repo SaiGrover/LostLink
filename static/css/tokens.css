@@ -1,27 +1,29 @@
 /* ==========================================================================
-   LostLink design tokens: "Overprint"
+   LostLink design tokens: Black + Vermilion
    --------------------------------------------------------------------------
-   Every report is a disc of ink. Lost reports print in signal orange (the
-   colour of something missing), found reports in clear cyan (safe again).
-   A match prints one disc over the other: orange over cyan mixes into deep
-   green, the colour of "this is it", and the width of that overlap is the
-   real similarity score.
+   One brand, two expressions. Light mode is warm off-white with white cards;
+   dark mode is layered charcoal. Vermilion is the signature colour and is
+   kept for what matters most: the primary action, lost reports, active
+   navigation, focus and match scores.
 
-   Palette
-     Paper        #FFFFFF  page
-     Mist         #F2F5F3  quiet surfaces
-     Ink          #10241B  text, primary actions
-     Lost orange  #FF7A1A  lost reports
-     Found cyan   #19B5D6  found reports
-     Match green  #195615  orange × cyan: matches, focus, the main action
+   Components read only the semantic tokens below. The theme is resolved
+   before first paint (see base.html) into data-theme="light" | "dark";
+   the person's choice (light, dark or system) is kept in localStorage.
+
+   Only colours are defined here by the palette; type, spacing, radius
+   and motion are unchanged.
+
+   Contrast adjustments (WCAG AA, 4.5:1 for normal text):
+     --btn-accent   #C94B34  white text 4.6:1 (brand #D6533B gives 4.1:1;
+                             it stays the brand colour for marks, dots, rings)
+     --text-3       #716A64  4.8:1 on the page (#827B75 is kept for placeholders)
+     accent text    #B83E2B  5.0:1 on the page
    ========================================================================== */
 
 :root {
-  /* ---- Inks --------------------------------------------------------------- */
-  --ink-lost: #FF7A1A;
-  --ink-found: #19B5D6;
-  --ink-match: #195615;
-  --ink-c: #10241B;
+  /* ---- Vermilion scale ----------------------------------------------------- */
+  --v-50: #FFF1ED; --v-100: #FFE0D7; --v-200: #FFC0AE; --v-300: #FFA18A; --v-400: #F78369;
+  --v-500: #F0785E; --v-600: #E65E43; --v-700: #D6533B; --v-800: #B83E2B; --v-900: #913021;
 
   /* ---- Type -----------------------------------------------------------------
      Unbounded: a wide, round display face; its circular bowls echo the discs.
@@ -70,103 +72,141 @@
   --z-sticky: 30; --z-mast: 50; --z-menu: 70; --z-dialog: 90; --z-toast: 100;
 
   /* ======================================================================
-     Semantic colours: DAY
+     LIGHT: warm off-white
      ====================================================================== */
   color-scheme: light;
   --blend: multiply;
-  --page: #FFFFFF;
-  --surface: #FFFFFF;
-  --mist: #F2F5F3;
-  --mist-2: #E5EBE7;
-  --rule: #E1E8E3;
-  --rule-2: #C7D2CB;
+  --page: #F5F3F0;
+  --surface: #FFFFFF;          /* cards */
+  --mist: #EEEAE5;             /* secondary surface: secondary buttons, tracks, quiet fills */
+  --mist-2: #E4DED8;           /* tertiary surface */
+  --elevated: #FFFEFC;         /* dropdowns, popovers, modals */
+  --nav-bg: #FFFFFF;
+  --hover: #F5F3F0;            /* row and navigation hover */
 
-  --text: var(--ink-c);
-  --text-2: #3F5449;
-  --text-3: #566A60;
+  --text: #211F1E;
+  --text-2: #625D59;
+  --text-3: #716A64;
+  --text-placeholder: #827B75;
+  --text-disabled: #BDB4AC;
 
-  --primary: var(--ink-c);
-  --primary-text: #FFFFFF;
-  --primary-hover: #1E3A2D;
+  --rule: #E4DED8;             /* card borders */
+  --rule-soft: #EEEAE5;        /* dividers */
+  --rule-2: #C9C2BC;           /* strong: input hover, outlines */
+  --input-border: #E4DED8;
+  --input-bg: #FFFFFF;
 
-  /* The main action and the overlap share the match colour */
-  --accent: var(--ink-match);
-  --accent-text: #FFFFFF;
-  --accent-hover: #226E1D;
-  --on-ink: var(--ink-c);          /* text on orange and cyan */
-  --overlap-label: #FFFFFF;        /* the score inside the green lens */
+  --accent: #D6533B;           /* brand: marks, dots, rings, focus */
+  --accent-ink: #B83E2B;       /* accent-coloured text */
+  --accent-soft: #FFF1ED;
+  --accent-border: #FFC0AE;
+  --btn-accent: #C94B34;
+  --btn-accent-hover: #B83E2B;
+  --btn-accent-pressed: #913021;
+  --btn-accent-text: #FFFFFF;
+  --btn-2: #EEEAE5;
+  --btn-2-hover: #E4DED8;
+  --btn-2-text: #211F1E;
+  --btn-danger: #913021;
+  --btn-danger-hover: #7A281B;
 
-  --lost: var(--ink-lost);
-  --lost-text: #B54A00;
-  --lost-tint: #FFEEE1;
-  --found: var(--ink-found);
-  --found-text: #00728A;
-  --found-tint: #DDF4F9;
-  --match: var(--ink-match);
-  --match-tint: #E3F1E1;
+  /* Report types and statuses: text, background, dot, border */
+  --lost-text: #B83E2B;   --lost-tint: #FFF1ED;   --lost-dot: #D6533B;   --lost-border: #FFC0AE;
+  --found-text: #625D59;  --found-tint: #EEEAE5;  --found-dot: #827B75;  --found-border: #D5CEC7;
+  --match-text: #8A542A;  --match-tint: #F6E8D9;  --match-dot: #B97845;
+  --pending-text: #77623D; --pending-tint: #F5EEDC; --pending-dot: #B58A42;
+  --rejected-text: #625D59; --rejected-tint: #EEEAE5; --rejected-dot: #827B75;
 
-  --ok: #1E7A4C;  --ok-tint: #E2F2E8;  --ok-text: #17663F;
-  --warn: #9A6A00; --warn-tint: #FFF5CC; --warn-text: #6E4C00;
-  --bad: #C42B2B;  --bad-tint: #FCE6E4; --bad-text: #A82222;
-  --info: var(--found-text); --info-tint: var(--found-tint); --info-text: var(--found-text);
-  --muted-tint: var(--mist); --muted-text: var(--text-2);
+  /* Tone aliases used by badges and notices */
+  --ok-text: var(--match-text);   --ok-tint: var(--match-tint);   --ok: var(--match-dot);
+  --warn-text: var(--pending-text); --warn-tint: var(--pending-tint); --warn: var(--pending-dot);
+  --bad-text: var(--lost-text);   --bad-tint: var(--lost-tint);   --bad: var(--lost-dot);
+  --info-text: var(--found-text); --info-tint: var(--found-tint); --info: var(--found-dot);
+  --muted-text: var(--rejected-text); --muted-tint: var(--rejected-tint); --muted: var(--rejected-dot);
 
-  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px var(--ink-match);
-  --shadow-1: 0 1px 2px rgb(16 36 27 / 0.06), 0 2px 8px rgb(16 36 27 / 0.05);
-  --shadow-2: 0 2px 4px rgb(16 36 27 / 0.06), 0 18px 40px -12px rgb(16 36 27 / 0.22);
+  /* Older names, mapped so every component reads the same palette */
+  --ink-c: var(--text);
+  --ink-lost: var(--lost-dot);
+  --ink-found: var(--found-dot);
+  --ink-match: var(--accent);
+  --match: var(--accent-ink);
+  --primary: var(--btn-accent);
+  --primary-text: var(--btn-accent-text);
+  --primary-hover: var(--btn-accent-hover);
+  --on-ink: #FFFFFF;
 
-  --sig-text: #0E8FB0;
-  --sig-image: #6D5BD0;
-  --sig-location: #FF7A1A;
-  --sig-category: #1F9E6E;
-  --sig-date: #D9A400;
-  --sig-attribute: #D1495B;
+  /* Score rings */
+  --ring-track: #EEEAE5;
+  --ring-bar: #D6533B;
+
+  /* Focus: a subtle 2px accent outline */
+  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px rgb(214 83 59 / 0.55);
+  --focus-soft: 0 0 0 3px rgb(214 83 59 / 0.18);
+
+  /* Shadows */
+  --shadow-1: 0 2px 8px rgb(33 31 30 / 0.04);     /* cards */
+  --shadow-2: 0 8px 24px rgb(33 31 30 / 0.08);    /* dropdowns */
+  --shadow-3: 0 16px 48px rgb(33 31 30 / 0.12);   /* modals */
 }
 
 /* ======================================================================
-   Night: deep green-black page, brighter inks. The inks still multiply
-   inside each overlap, so the lens stays a readable green.
-   Applied only when chosen in the account menu.
+   DARK: deep charcoal. Depth comes from surfaces, not shadows.
    ====================================================================== */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink-lost: #FF8A3D;
-  --ink-found: #3CC8E6;
-  --ink-match: #3C6C37;
-  --page: #0C1310;
-  --surface: #121C17;
-  --mist: #17231D;
-  --mist-2: #1F2E26;
-  --rule: #24352C;
-  --rule-2: #355043;
+  --page: #101010;
+  --surface: #1B1918;
+  --mist: #211F1E;
+  --mist-2: #302D2B;
+  --elevated: #262321;
+  --nav-bg: #151413;
+  --hover: #302D2B;
 
-  --text: #EEF5F0;
-  --text-2: #B9C9BF;
-  --text-3: #8BA195;
+  --text: #FAF8F5;
+  --text-2: #C9C2BC;
+  --text-3: #A69E97;
+  --text-placeholder: #A69E97;
+  --text-disabled: #625D59;
 
-  --primary: #EEF5F0;
-  --primary-text: #0C1310;
-  --primary-hover: #D3E2D8;
+  --rule: #302D2B;
+  --rule-soft: #302D2B;
+  --rule-2: #625D59;
+  --input-border: #45413E;
+  --input-bg: #211F1E;
 
-  --accent: #7FD38A;
-  --accent-text: #0C1310;
-  --accent-hover: #9BE0A4;
-  --on-ink: #0C1310;
-  --overlap-label: #FFFFFF;
+  --accent: #F0785E;
+  --accent-ink: #FFA18A;
+  --accent-soft: #49251F;
+  --accent-border: #71372D;
+  --btn-accent: #F0785E;
+  --btn-accent-hover: #F78369;
+  --btn-accent-pressed: #E65E43;
+  --btn-accent-text: #211F1E;
+  --btn-2: #302D2B;
+  --btn-2-hover: #45413E;
+  --btn-2-text: #FAF8F5;
+  --btn-danger: #B83E2B;
+  --btn-danger-hover: #D6533B;
 
-  --lost-text: #FFA766; --lost-tint: #33200F;
-  --found-text: #6FD6EE; --found-tint: #0F2B33;
-  --match: #7FD38A; --match-tint: #1A3320;
+  --lost-text: #FFA18A;   --lost-tint: #49251F;   --lost-dot: #F0785E;   --lost-border: #71372D;
+  --found-text: #D5CEC7;  --found-tint: #302D2B;  --found-dot: #A69E97;  --found-border: #45413E;
+  --match-text: #E8B98B;  --match-tint: #403023;  --match-dot: #D49A65;
+  --pending-text: #E3C88E; --pending-tint: #393020; --pending-dot: #D8B56C;
+  --rejected-text: #C9C2BC; --rejected-tint: #302D2B; --rejected-dot: #A69E97;
 
-  --ok: #5BD08F; --ok-tint: #12301F; --ok-text: #7EDCA8;
-  --warn: #F2C54A; --warn-tint: #332A0E; --warn-text: #F5D371;
-  --bad: #FF7A72; --bad-tint: #3A1918; --bad-text: #FF9B95;
-  --muted-tint: var(--mist); --muted-text: var(--text-2);
+  --on-ink: #211F1E;
+  --ring-track: #45413E;
+  --ring-bar: #F0785E;
 
-  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px #7FD38A;
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-2: 0 2px 4px rgb(0 0 0 / 0.4), 0 22px 48px -12px rgb(0 0 0 / 0.7);
+  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px rgb(240 120 94 / 0.6);
+  --focus-soft: 0 0 0 3px rgb(240 120 94 / 0.22);
 
-  --sig-text: #6FD6EE; --sig-image: #A99BF0; --sig-location: #FFA766;
-  --sig-category: #5BD08F; --sig-date: #F2C54A; --sig-attribute: #F08A97;
+  --shadow-1: none;
+  --shadow-2: 0 0 0 1px #302D2B;
+  --shadow-3: 0 0 0 1px #45413E;
+}
+
+/* Theme changes fade colours briefly (added by app.js only while switching) */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, fill 200ms ease, stroke 200ms ease !important;
 }

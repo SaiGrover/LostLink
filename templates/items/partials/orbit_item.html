@@ -1,0 +1,11 @@
+{# One object on an orbit. kind: chip|square|pill|photo; tone: lost|found; angle (deg); delay (s); icon or item; label; pair #}
+<div class="lp-item lp-item--{{ kind }} lp-item--{{ tone }}" style="--angle:{{ angle }}deg;--delay:{{ delay }}s"{% if pair %} data-pair="{{ pair }}"{% endif %}>
+  <div class="lp-item__up"><div class="lp-item__fly">
+    {% if item %}
+      <span class="lp-photo"><img src="{{ item.image.url }}" alt="" decoding="async"></span>
+      <span class="lp-chip"><i></i>{{ item.get_report_type_display }}</span>
+    {% else %}
+      <svg class="lp-ico"><use href="#lp-{{ icon }}"></use></svg>{% if label %}<span class="lp-item__label">{{ label }}</span>{% endif %}<i class="lp-dot"></i>
+    {% endif %}
+  </div></div>
+</div>

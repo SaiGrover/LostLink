@@ -70,3 +70,25 @@ def qs_without(context, key='page'):
     params = context['request'].GET.copy()
     params.pop(key, None)
     return params.urlencode()
+
+
+@register.simple_tag
+def asset(path):
+    """Static URL with a version stamp so browsers never keep a stale copy.
+
+    In development the stamp is the file's modification time; with the
+    manifest storage used in production, ``static()`` already returns a
+    content-hashed name and is returned unchanged.
+    """
+    import os
+    from django.conf import settings
+    from django.contrib.staticfiles import finders
+    from django.templatetags.static import static
+    url = static(path)
+    if not settings.DEBUG:
+        return url
+    found = finders.find(path)
+    try:
+        return f'{url}?v={int(os.path.getmtime(found))}' if found else url
+    except OSError:
+        return url

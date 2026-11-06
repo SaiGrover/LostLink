@@ -28,7 +28,7 @@ Built with Django for the JIIT Full Stack Development Lab (project-based learnin
 | Notifications | Persistent in-app notifications for matches, claims, questions, answers, decisions, disputes and handovers; de-duplicated across matching runs; mark read/unread without reload; live unread badge. |
 | Analytics | Users, lost/found counts, pending moderation, match tiers and score histogram, claim outcomes, returns and recovery rate, categories, zones, weekly trends, photo coverage, lost-to-found day gaps, wording variation, monitoring snapshots. Optional date range. |
 | Exports | CSV of reports (no usernames, contacts or answers; formula-injection safe) and PDF summaries for a month or a date range. |
-| Interface | "Overprint" design system: lost reports are orange discs, found reports cyan ones, and a match prints one over the other so the width of the green overlap is the real similarity score (also per signal in each explanation). Unbounded and Hanken Grotesk type, a translucent masthead and floating phone tab bar, shared-photo page transitions, day colours by default with an opt-in night scheme, reduced-motion support. See [docs/FRONTEND.md](docs/FRONTEND.md). |
+| Interface | Black + Vermilion design system: warm off-white light mode and layered charcoal dark mode, with Light, Dark and System choices that persist and never flash. Vermilion marks the primary action, lost reports, active navigation and match scores; statuses pair a coloured dot with a word. Each match shows the two reports overlapping by the real similarity score. Unbounded and Hanken Grotesk type, an animated landing page, reduced-motion support. See [docs/FRONTEND.md](docs/FRONTEND.md). |
 
 ## Quick start
 

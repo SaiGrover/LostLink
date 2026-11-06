@@ -1,52 +1,139 @@
 {% extends 'base.html' %}
-{% load ui %}
-{% block title %}Campus lost and found{% endblock %}
-{% block body_class %}landing{% endblock %}
+{% load static ui %}
+{% block title %}Lost something? Let's bring it back together{% endblock %}
+{% block fonts %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Urbanist:wght@600;700&display=swap">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% asset 'css/landing.css' %}">{% endblock %}
+{% block body_class %}landing lp{% endblock %}
 
 {% block body %}
-<header class="mast">
-  <div class="wrap mast__in">
-    {% include 'partials/brand.html' with href='/' %}
-    <nav class="mast__nav" aria-label="Sections">
-      <a class="mast__link" href="{% url 'items:search' %}">Search reports</a>
-      <a class="mast__link" href="#matching">How matching works</a>
-      <a class="mast__link" href="#ownership">How ownership is checked</a>
-    </nav>
-    <div class="mast__tools">
-      <a class="btn btn-plain btn-sm" href="{% url 'accounts:login' %}">Sign in</a>
-      <a class="btn btn-primary btn-sm hide-sm" href="{% url 'accounts:register' %}">Create an account</a>
-      <button type="button" class="icon-btn" data-theme-toggle aria-label="Switch day or night colours">{% icon 'moon' %}</button>
-    </div>
-  </div>
-</header>
-
-<main id="main-content" tabindex="-1">
-  <section class="wrap hero" aria-labelledby="hero-title">
-    <div class="hero__copy page-head" style="margin:0">
-      <h1 id="hero-title">Lost, meet found.</h1>
-      <p class="lede">Every lost and found report on campus in one place. LostLink lays each lost report over each found one and shows how much they overlap, and why. A moderator checks who owns it before anything is handed over.</p>
-      <div class="hero__cta">
-        <a class="btn btn-lost btn-lg" href="{% url 'items:report' %}?type=lost"><i class="mk mk--lost" aria-hidden="true"></i>I lost something</a>
-        <a class="btn btn-found btn-lg" href="{% url 'items:report' %}?type=found"><i class="mk mk--found" aria-hidden="true"></i>I found something</a>
+{% include 'items/partials/landing_icons.svg' %}
+<div class="landing-page">
+  <header class="lp-nav" data-lp-nav>
+    <div class="lp-nav__in">
+      <div class="lp-nav__left">
+        {% include 'partials/brand.html' with href='/' %}
+        <nav class="lp-nav__links" aria-label="Main">
+          {% if user.is_authenticated %}
+          <a class="lp-link" href="{% url 'items:dashboard' %}">Dashboard</a>
+          {% else %}
+          <a class="lp-link" href="{% url 'items:home' %}" aria-current="page">Home</a>
+          {% endif %}
+          <a class="lp-link" href="{% url 'items:search' %}">Browse items</a>
+          <a class="lp-link" href="{% url 'items:report' %}?type=lost">Report lost</a>
+          <a class="lp-link" href="{% url 'items:report' %}?type=found">Report found</a>
+        </nav>
       </div>
-      <p class="small muted">{{ counts.reports }} open report{{ counts.reports|pluralize }} across {{ counts.zones }} campus zones, {{ counts.matches }} likely match{{ counts.matches|pluralize:"es" }}, {{ counts.returned }} item{{ counts.returned|pluralize }} returned. <a class="link" href="{% url 'items:search' %}">Search without an account</a></p>
+      <div class="lp-nav__right">
+        {% if user.is_authenticated %}
+        <a class="lp-link lp-hide-sm" href="{% url 'items:mine' %}">My reports</a>
+        <a class="lp-btn lp-btn--ring lp-btn--nav" href="{% url 'items:dashboard' %}"><span class="lp-btn__fill" aria-hidden="true"></span><span class="lp-btn__label">Dashboard</span></a>
+        {% else %}
+        <a class="lp-link lp-hide-sm" href="{% url 'accounts:login' %}">Log in</a>
+        <a class="lp-btn lp-btn--ring lp-btn--nav lp-hide-sm" href="{% url 'accounts:register' %}"><span class="lp-btn__fill" aria-hidden="true"></span><span class="lp-btn__label">Get started</span></a>
+        {% endif %}
+        {% include 'partials/theme_toggle.html' with cls='lp-icon-btn' %}
+        <button type="button" class="lp-icon-btn lp-menu-btn" aria-expanded="false" aria-controls="lp-menu" aria-label="Open menu" data-lp-menu-btn><span class="lp-burger" aria-hidden="true"><i></i><i></i></span></button>
+      </div>
     </div>
-
-    <div class="hero__stage">
-      {% if featured %}
-        {% include 'partials/overlap.html' with a=featured.lost_item b=featured.found_item score=featured.percent size='xl' photos=True reveal=True %}
-        <div class="hero__caption">
-          <a href="{{ featured.lost_item.get_absolute_url }}"><span class="type type--lost">Lost<i class="mk mk--lost" aria-hidden="true"></i></span><b>{{ featured.lost_item.title }}</b><small>{{ featured.lost_item.location.name }}, {{ featured.lost_item.event_date|date:"j M" }}</small></a>
-          {% include 'partials/tier_badge.html' with tier=featured.tier %}
-          <a href="{{ featured.found_item.get_absolute_url }}"><span class="type type--found"><i class="mk mk--found" aria-hidden="true"></i>Found</span><b>{{ featured.found_item.title }}</b><small>{{ featured.found_item.location.name }}, {{ featured.found_item.event_date|date:"j M" }}</small></a>
-        </div>
-        <p class="hero__note">The strongest pair on campus right now. The overlap is the real score: {{ featured.percent }} out of 100.</p>
+    <nav class="lp-menu" id="lp-menu" aria-label="Menu" hidden>
+      {% if user.is_authenticated %}
+      <a href="{% url 'items:dashboard' %}">Dashboard</a>
+      <a href="{% url 'items:mine' %}">My reports</a>
       {% else %}
-        <div class="overlap overlap--xl" style="--s:0" aria-hidden="true"><span class="overlap__disc overlap__disc--a overlap__disc--lost"></span><span class="overlap__disc overlap__disc--b overlap__disc--found"></span></div>
-        <p class="hero__note">No matches yet. As soon as two reviewed reports resemble each other, the strongest pair appears here with its real score.</p>
+      <a href="{% url 'items:home' %}" aria-current="page">Home</a>
       {% endif %}
+      <a href="{% url 'items:search' %}">Browse items</a>
+      <a href="{% url 'items:report' %}?type=lost">Report lost</a>
+      <a href="{% url 'items:report' %}?type=found">Report found</a>
+      <div class="lp-menu__actions">
+        {% if user.is_authenticated %}
+        <a class="lp-btn lp-btn--ghost" href="{% url 'accounts:profile' %}"><span class="lp-btn__label">Profile</span></a>
+        {% else %}
+        <a class="lp-btn lp-btn--ghost" href="{% url 'accounts:login' %}"><span class="lp-btn__label">Log in</span></a>
+        <a class="lp-btn lp-btn--primary" href="{% url 'accounts:register' %}"><span class="lp-btn__fill" aria-hidden="true"></span><span class="lp-btn__label">Get started</span></a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content" tabindex="-1">
+    <div class="lp-first">
+    <section class="lp-hero" aria-labelledby="lp-title">
+      <div class="lp-hero__copy">
+        <h1 id="lp-title" class="lp-title" data-typewriter data-speed="35" data-delay="400" aria-label="Lost something? Let's bring it back together.">
+          <span class="lp-title__a" data-tw>Lost something?</span>
+          <span class="lp-title__b"><span data-tw>Let's bring it </span><span class="lp-title__c" data-tw>back together.</span></span>
+        </h1>
+        <p class="lp-lede">Report what you lost, browse what others have found, and let LostLink match the two. A moderator checks who owns it before anything changes hands.</p>
+        <div class="lp-cta" data-after-type>
+          <a class="lp-btn lp-btn--primary lp-btn--ring lp-btn--lg" href="{% url 'items:report' %}?type=lost"><span class="lp-btn__fill" aria-hidden="true"></span><span class="lp-btn__label">Report a lost item</span><svg class="lp-btn__arrow" aria-hidden="true"><use href="#lp-arrow"></use></svg></a>
+          <a class="lp-btn lp-btn--ghost lp-btn--lg" href="{% url 'items:found' %}"><span class="lp-btn__label">Browse found items</span></a>
+          <div class="lp-cursor" aria-hidden="true"><svg class="lp-cursor__arrow"><use href="#lp-pointer"></use></svg><span class="lp-cursor__label">Someone found it</span></div>
+        </div>
+        <p class="lp-proof" data-after-type><b>{{ counts.reports }}</b> open report{{ counts.reports|pluralize }} across {{ counts.zones }} campus zones right now{% if counts.matches %}, <b>{{ counts.matches }}</b> likely match{{ counts.matches|pluralize:"es" }}{% endif %}.</p>
+      </div>
+
+      <div class="lp-viz" role="img" aria-label="{% if featured %}Illustration: lost and found belongings circling LostLink. The strongest real match on campus, {{ featured.lost_item.title }} and {{ featured.found_item.title }}, is connected with its score of {{ featured.percent }} out of 100.{% else %}Illustration: lost and found belongings circling LostLink.{% endif %}">
+        <div class="lp-viz__box" aria-hidden="true">
+          <div class="lp-viz__in" data-orbits>
+            <div class="lp-orbit lp-orbit--1">
+              {% include 'items/partials/orbit_item.html' with kind='chip' tone='lost' icon='keys' angle=200 delay=0.6 %}
+              {% include 'items/partials/orbit_item.html' with kind='chip' tone='found' icon='id' angle=20 delay=0.75 %}
+            </div>
+            <div class="lp-orbit lp-orbit--2">
+              {% if featured %}{% include 'items/partials/orbit_item.html' with kind='photo' tone='lost' item=featured.lost_item angle=300 delay=0.95 pair='lost' %}
+              {% else %}{% include 'items/partials/orbit_item.html' with kind='square' tone='lost' icon='umbrella' angle=300 delay=0.95 %}{% endif %}
+              {% include 'items/partials/orbit_item.html' with kind='square' tone='found' icon='phone' angle=120 delay=1.1 %}
+              {% include 'items/partials/orbit_item.html' with kind='pill' tone='lost' icon='bottle' label='Water bottle' angle=205 delay=1.25 %}
+            </div>
+            <div class="lp-orbit lp-orbit--3">
+              {% if featured %}{% include 'items/partials/orbit_item.html' with kind='photo' tone='found' item=featured.found_item angle=55 delay=1.4 pair='found' %}
+              {% else %}{% include 'items/partials/orbit_item.html' with kind='square' tone='found' icon='laptop' angle=55 delay=1.4 %}{% endif %}
+              {% include 'items/partials/orbit_item.html' with kind='chip' tone='lost' icon='wallet' angle=165 delay=1.55 %}
+              {% include 'items/partials/orbit_item.html' with kind='square' tone='found' icon='headphones' angle=255 delay=1.7 %}
+            </div>
+            <div class="lp-orbit lp-orbit--4">
+              {% include 'items/partials/orbit_item.html' with kind='pill' tone='found' icon='backpack' label='Backpack' angle=330 delay=1.85 %}
+              {% include 'items/partials/orbit_item.html' with kind='chip' tone='lost' icon='watch' angle=105 delay=2.0 %}
+              {% include 'items/partials/orbit_item.html' with kind='square' tone='lost' icon='laptop' angle=215 delay=2.15 %}
+              {% include 'items/partials/orbit_item.html' with kind='chip' tone='found' icon='umbrella' angle=20 delay=2.3 %}
+            </div>
+
+            <div class="lp-hub">
+              <span class="lp-hub__mark"><i></i><i></i></span>
+              <span class="lp-hub__name">LostLink</span>
+              <span class="lp-hub__line">Every lost item deserves a way home.</span>
+            </div>
+
+            {% if featured %}
+            <svg class="lp-link-path" viewBox="0 0 920 920" data-link-svg>
+              <defs><linearGradient id="lp-link-grad" gradientUnits="userSpaceOnUse" data-link-grad><stop offset="0" stop-color="var(--ink-lost)"/><stop offset="1" stop-color="var(--ink-found)"/></linearGradient></defs>
+              <path class="lp-link-path__track" data-link-track/>
+              <path class="lp-link-path__line" data-link-line stroke="url(#lp-link-grad)"/>
+              <circle class="lp-link-path__spark" r="5" data-link-spark/>
+            </svg>
+            <div class="lp-match" data-link-label><span class="lp-match__mark"><i></i><i></i></span><b>{{ featured.percent }}% match</b></div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="lp-ticker" aria-hidden="true">
+      <div class="lp-ticker__track">
+        {% for _ in "ab" %}
+        <div class="lp-ticker__set">
+          <span>Report</span><svg><use href="#lp-wallet"></use></svg>
+          <span>Discover</span><svg><use href="#lp-keys"></use></svg>
+          <span>Reconnect</span><svg><use href="#lp-phone"></use></svg>
+          <span>Recover</span><svg><use href="#lp-backpack"></use></svg>
+          <span>Lost &amp; found</span><svg><use href="#lp-headphones"></use></svg>
+          <span>Every item matters</span><svg><use href="#lp-id"></use></svg>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-  </section>
+    </div>
 
   <section class="band band--mist" id="matching" aria-labelledby="matching-title">
     <div class="wrap band__grid">
@@ -104,9 +191,12 @@
       </div>
     </div>
   </section>
-</main>
+  </main>
 
-<footer class="foot">
-  <div class="wrap">{% include 'partials/brand.html' with href='/' %}<span>Full Stack Development Lab, JIIT Noida. Models suggest; people decide.</span></div>
-</footer>
+  <footer class="foot">
+    <div class="wrap">{% include 'partials/brand.html' with href='/' %}<span>Full Stack Development Lab, JIIT Noida. Models suggest; people decide.</span></div>
+  </footer>
+</div>
 {% endblock %}
+
+{% block scripts %}<script src="{% asset 'js/landing.js' %}" defer></script>{% endblock %}
