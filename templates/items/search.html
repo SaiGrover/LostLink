@@ -26,4 +26,4 @@
 <div id="results">{% include 'items/partials/result_grid.html' %}</div>
 {% endblock %}
 
-{% block scripts %}{% if not manual_mode %}<script src="{% static 'js/search.js' %}" defer></script>{% endif %}{% endblock %}
+{% block scripts %}{% if not manual_mode %}<script src="{% asset 'js/search.js' %}" defer></script>{% endif %}{% endblock %}

@@ -243,8 +243,9 @@ a.match__end:hover .match__title { text-decoration: underline; text-decoration-t
 .match__facts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); font-size: var(--t-14); color: var(--text-2); }
 .match .disclosure__body { padding-top: var(--s5); }
 .match .signal { background: var(--surface); }
-@media (max-width: 719px) {
-  .match { padding: var(--s5); }
+@media (max-width: 719px) { .match { padding: var(--s5); } }
+/* The pair stacks when the card itself is narrow, wherever it is placed */
+@container match (max-width: 600px) {
   .match__pair { grid-template-columns: minmax(0, 1fr); justify-items: start; gap: var(--s4); }
   .match__end--b { flex-direction: row; text-align: left; }
   .match__end--b .type { flex-direction: row; }

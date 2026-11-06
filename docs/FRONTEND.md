@@ -102,6 +102,41 @@ Motion explains something or answers a person:
 | `static/js/app.js` | Theme, menus, toasts, confirmation dialog, submit states, password tools, dropzone and live report preview, tabs, the overlap reveal and count-up, mark-read and unread polling. |
 | `static/js/search.js` | Debounced AJAX search, skeletons, filter chips, URL state, staggered results. |
 
+## Landing page
+
+The landing page (`templates/items/home.html`, `static/css/landing.css`,
+`static/js/landing.js`) uses its own type pairing, **Urbanist** for display and
+**Inter** for text, loaded only on that page through the `fonts` block. Colours
+come from the shared tokens, so the night scheme works there too.
+
+- **Hero:** a typed headline (vanilla `TypewriterHeading`: 35ms per character
+  after 400ms; characters hold their space from the start, so nothing shifts),
+  a short description, *Report a lost item* and *Browse found items*, and a
+  live line of real counts from the view.
+- **Orbit visualization:** four rings (353, 501, 649 and 797px, alternating
+  direction, 30 to 60s) carrying illustrated belongings that stay upright. When
+  a real strongest match exists, its two photos ride the orbits and every seven
+  seconds a connection arcs between them around the hub with the actual score.
+  It is drawn at 920px (the true bounds of the outer ring and its objects) and
+  scaled per breakpoint, with the wrapper taking the scaled size.
+- **Header:** underline-on-hover links, a pill button with a rotating
+  conic-gradient border (`@property --border-angle`, masked to a ring) and a
+  sliding fill, and an accessible phone menu (Escape closes it, focus moves in).
+  Signed-in visitors would see Dashboard and My reports, but the home view
+  sends them to their home page first.
+- **Ticker:** an infinite strip of words and item icons, 20s per loop, with
+  faded edges; it pauses on hover.
+- **Sequence:** header, hero copy, visualization, items (0.6 to 2.3s), ticker,
+  typed heading, then the actions and the floating pointer. With reduced motion
+  the page is shown at rest and the connection is drawn statically.
+
+## Static file versions
+
+`{% asset 'css/tokens.css' %}` (in `items/templatetags/ui.py`) appends the
+file's modification time while `DEBUG` is on, so a browser never keeps a stale
+stylesheet or script after a change. In production the manifest storage
+already hashes file names and the URL is returned unchanged.
+
 ## Real data only
 
 Every number and every overlap comes from the database or the matching engine.
