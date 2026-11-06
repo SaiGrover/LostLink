@@ -1,97 +1,116 @@
 {% extends 'shell.html' %}
 {% load humanize ui %}
-{% block title %}Your desk{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block main %}
-<section class="desk-hero" aria-labelledby="greet">
-  <div class="desk-hero__greet">
-    <span class="kicker">{% now "l · j F Y" %} · Recovery desk</span>
-    <h1 class="display" id="greet"><span class="wipe-line"><span>Hello,</span></span><span class="wipe-line" style="--i:1"><span><em>{{ user.first_name|default:user.username }}.</em></span></span></h1>
-    <p class="brief">
-      {% if match_count %}<a href="#threads"><span class="num">{{ match_count }}</span> thread{{ match_count|pluralize }}</a> tie{{ match_count|pluralize:"s," }} your tags to someone else's{% else %}No threads yet: nothing on the wall resembles your tags{% endif %}{% if open_claims %}, and <a href="{% url 'claims:mine' %}"><span class="num">{{ open_claims }}</span> case{{ open_claims|pluralize }}</a> {{ open_claims|pluralize:"is,are" }} moving{% endif %}{% if my_pending %}. <a href="{% url 'items:mine' %}?status=active"><span class="num">{{ my_pending }}</span> tag{{ my_pending|pluralize }}</a> {{ my_pending|pluralize:"is,are" }} with a moderator{% endif %}.
+<section class="home-hero" aria-labelledby="home-title">
+  <div class="stack" style="--gap:var(--s5)">
+    <h1 id="home-title">{% if match_count %}{{ match_count }} likely match{{ match_count|pluralize:"es" }} for your reports{% elif my_item_count %}No likely matches yet{% else %}Lost or found something?{% endif %}</h1>
+    <p class="home-summary">
+      <a href="{% url 'items:mine' %}"><b class="num">{{ my_item_count }}</b> report{{ my_item_count|pluralize }}</a>
+      {% if my_pending %}<a href="{% url 'items:mine' %}?status=active"><b class="num">{{ my_pending }}</b> waiting for review</a>{% endif %}
+      <a href="{% url 'claims:mine' %}"><b class="num">{{ open_claims }}</b> claim{{ open_claims|pluralize }} in progress</a>
+      <span><b class="num">{{ my_returned }}</b> returned</span>
     </p>
     <div class="cluster">
-      <a href="{% url 'items:report' %}?type=lost" class="btn btn-ink btn-lg">{% icon 'lost' %}I lost something</a>
-      <a href="{% url 'items:report' %}?type=found" class="btn btn-lg">{% icon 'found' %}I found something</a>
+      <a href="{% url 'items:report' %}?type=lost" class="btn btn-lost btn-lg"><i class="mk mk--lost" aria-hidden="true"></i>I lost something</a>
+      <a href="{% url 'items:report' %}?type=found" class="btn btn-found btn-lg"><i class="mk mk--found" aria-hidden="true"></i>I found something</a>
     </div>
   </div>
-  <div class="desk-tally" aria-label="Your numbers">
-    <a class="figure" href="{% url 'items:mine' %}"><span class="figure__meta">Tags filed</span><span class="num figure__n" data-count="{{ my_item_count }}">{{ my_item_count }}</span><span class="figure__cap">{{ my_lost }} lost, {{ my_found }} found</span></a>
-    <a class="figure" href="#threads"><span class="figure__meta">Threads</span><span class="num figure__n">{{ match_count }}</span><span class="figure__cap">medium or high</span></a>
-    <a class="figure" href="{% url 'claims:mine' %}"><span class="figure__meta">Open cases</span><span class="num figure__n">{{ open_claims }}</span><span class="figure__cap">claims moving</span></a>
-    <div class="figure"><span class="figure__meta">Brought home</span><span class="num figure__n">{{ my_returned }}</span><span class="figure__cap">handovers confirmed</span></div>
-  </div>
+
+  {% if top_matches %}{% with first=top_matches.0 %}
+  <a class="best" href="{{ first.other.get_absolute_url }}" aria-label="Your strongest match: {{ first.mine.title }} and {{ first.other.title }}, {{ first.match.percent }} out of 100. Open the other report.">
+    <span class="best__label">Your strongest match</span>
+    {% include 'partials/overlap.html' with a=first.mine b=first.other score=first.match.percent size='lg' photos=True reveal=True %}
+    <span class="best__names" aria-hidden="true">
+      <span>{{ first.mine.title }}<br><span class="type type--{{ first.mine.report_type }}" style="justify-content:flex-end;width:100%">{{ first.mine.get_report_type_display }}<i class="mk mk--{{ first.mine.report_type }}"></i></span></span>
+      {% include 'partials/tier_badge.html' with tier=first.match.tier %}
+      <span>{{ first.other.title }}<br><span class="type type--{{ first.other.report_type }}"><i class="mk mk--{{ first.other.report_type }}"></i>{{ first.other.get_report_type_display }}</span></span>
+    </span>
+  </a>
+  {% endwith %}{% endif %}
 </section>
 
 {% if awaiting_answers or incoming_claims %}
-<section class="todo" aria-label="Waiting on you">
+<section class="stack" style="--gap:var(--s3);margin-bottom:var(--s9)" aria-label="Waiting on you">
   {% for c in awaiting_answers %}
-  <a class="todo__item" href="{% url 'claims:detail' c.pk %}">{% icon 'question' %}<span><b>Answer the verification questions</b><span>Your claim on “{{ c.item.title|truncatechars:36 }}”</span></span>{% icon 'arrow-right' %}</a>
+  <div class="notice notice--here">
+    {% icon 'question' %}
+    <div class="notice__body"><span class="notice__title">Answer the verification questions</span><span>Your claim on “{{ c.item.title }}” is waiting for your answers.</span></div>
+    <a class="btn btn-here btn-sm" href="{% url 'claims:detail' c.pk %}">Answer now</a>
+  </div>
   {% endfor %}
   {% for c in incoming_claims %}
-  <a class="todo__item todo__item--soft" href="{% url 'claims:detail' c.pk %}">{% icon 'key' %}<span><b>{% if c.status == 'approved' %}Arrange the handover{% elif c.item.is_found %}Someone says this is theirs{% else %}Someone may have found it{% endif %}</b><span class="faint">“{{ c.item.title|truncatechars:36 }}” · {{ c.get_status_display }}</span></span>{% icon 'arrow-right' %}</a>
+  <div class="notice">
+    {% icon 'key' %}
+    <div class="notice__body"><span class="notice__title">{% if c.status == 'approved' %}Arrange the handover{% elif c.item.is_found %}Someone says this is theirs{% else %}Someone may have found it{% endif %}</span><span>“{{ c.item.title }}”, {{ c.get_status_display|lower }}</span></div>
+    <a class="btn btn-sm" href="{% url 'claims:detail' c.pk %}">Open claim</a>
+  </div>
   {% endfor %}
 </section>
 {% endif %}
 
-<section class="section" id="threads" aria-labelledby="threads-title">
-  <div class="section__head">
-    <h2 class="title-sm" id="threads-title">Threads <em>to follow</em></h2>
-    <span class="margin-note">Ranked by similarity · from the matching engine</span>
-  </div>
-  {% if top_matches %}
-    <div class="thread-rail">
-      {% for row in top_matches %}{% include 'partials/pair.html' with match=row.match mine=row.mine other=row.other href=row.mine.get_absolute_url %}{% endfor %}
-    </div>
-    {% with first=top_matches.0 %}
-    <div class="mt-6" data-observe>{% include 'partials/match_card.html' with match=first.match mine=first.mine other=first.other action_url=first.mine.get_absolute_url action_label='Open the case' %}</div>
-    {% endwith %}
-  {% else %}
-    <div class="sheet">{% include 'partials/empty.html' with icon='link' title='No threads yet' text='When a moderator approves a tag that resembles yours, a thread appears here with every reason behind the score.' action_url='/report/' action_label='File a tag' %}</div>
-  {% endif %}
-</section>
-
-<div class="desk-cols">
-  <section aria-labelledby="cases-title">
-    <div class="section__head"><h2 class="title-sm" id="cases-title">Cases <em>in motion</em></h2><a class="link xs" href="{% url 'claims:mine' %}">Every case</a></div>
-    {% for c in active_cases %}
-      <a class="case-row" href="{% url 'claims:detail' c.pk %}">
-        {% include 'partials/thumb.html' with item=c.item cls='thumb--lg' %}
-        <span style="min-width:0">
-          <span class="serial">{{ c.pk|claim_id }} · {% if c.item.is_found %}your claim{% else %}your return offer{% endif %}</span>
-          <span class="case-row__title" style="display:block">{{ c.item.title }}</span>
-          <span class="route--mini" aria-hidden="true">{% for s in c.timeline %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
-        </span>
-        {% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}
-      </a>
-    {% empty %}
-      {% include 'partials/empty.html' with compact=True icon='key' title='No cases moving' text='Claims you start and return offers you make are tracked here, from first message to handover.' %}
-    {% endfor %}
-  </section>
-
-  <section aria-labelledby="ledger-title">
-    <div class="section__head"><h2 class="title-sm" id="ledger-title">The <em>ledger</em></h2><a class="link xs" href="{% url 'notifications:inbox' %}">All dispatches</a></div>
-    {% if recent_notes %}
-      <div class="timeline-ed">
-      {% for n in recent_notes %}
-        <a class="timeline-ed__item" href="{% url 'notifications:open' n.pk %}">
-          <span class="timeline-ed__when">{{ n.created_at|date:"j M" }}<br>{{ n.created_at|time:"H:i" }}</span>
-          <span><span class="timeline-ed__title">{% if not n.is_read %}<span class="dot" aria-hidden="true"></span><span class="sr-only">Unread:</span>{% endif %}{{ n.title }}</span>{% if n.body %}<span class="timeline-ed__body clamp-2" style="display:block">{{ n.body }}</span>{% endif %}</span>
-        </a>
-      {% endfor %}
-      </div>
+<div class="home-grid">
+  <section id="matches" aria-labelledby="matches-title">
+    <div class="sect-head"><h2 id="matches-title">Likely matches</h2>{% if top_matches %}<p class="small">Most overlap first</p>{% endif %}</div>
+    {% if top_matches %}
+      <ul class="rows">
+        {% for row in top_matches %}<li>{% include 'partials/pair.html' with match=row.match mine=row.mine other=row.other href=row.other.get_absolute_url %}</li>{% endfor %}
+      </ul>
+      <p class="small muted mt-4">Open a report to see why it overlaps with yours, signal by signal.</p>
     {% else %}
-      {% include 'partials/empty.html' with compact=True icon='bell' title='A quiet ledger' text='Match alerts, questions and decisions will be written here.' %}
+      {% include 'partials/empty.html' with title='No likely matches yet' text='When a moderator approves a report that resembles one of yours, it appears here with every reason behind the score.' action_url='/report/' action_label='Report an item' %}
     {% endif %}
   </section>
+
+  <div class="stack" style="--gap:var(--s9)">
+    <section aria-labelledby="claims-title">
+      <div class="sect-head"><h2 id="claims-title" style="font-size:var(--t-24)">Claims in progress</h2><a class="link" href="{% url 'claims:mine' %}">All claims</a></div>
+      {% if active_cases %}
+      <ul class="rows">
+        {% for c in active_cases %}
+        <li><div class="r r--link">
+          {% include 'partials/thumb.html' with item=c.item %}
+          <div class="r__main">
+            <span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.item.title }}</a></span>
+            <span class="progress" aria-hidden="true">{% for s in c.timeline %}{% if not forloop.first %}<b class="{% if s.state == 'done' or s.state == 'current' %}is-done{% endif %}"></b>{% endif %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
+            <span class="r__meta">{% if c.item.is_found %}Your claim{% else %}Your offer to return it{% endif %}, {{ c.get_status_display|lower }}</span>
+          </div>
+        </div></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+        {% include 'partials/empty.html' with compact=True title='No claims in progress' text='Claims you start and offers to return items are tracked here until the handover.' %}
+      {% endif %}
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <div class="sect-head"><h2 id="notes-title" style="font-size:var(--t-24)">Recent notifications</h2><a class="link" href="{% url 'notifications:inbox' %}">All</a></div>
+      {% if recent_notes %}
+      <ul class="rows">
+        {% for n in recent_notes %}
+        <li><div class="r r--link{% if not n.is_read %} is-unread{% endif %}">
+          <div class="r__main">
+            <span class="r__title"><a href="{% url 'notifications:open' n.pk %}">{% if not n.is_read %}<span class="sr-only">Unread: </span>{% endif %}{{ n.title }}</a></span>
+            {% if n.body %}<span class="small muted clamp-2">{{ n.body }}</span>{% endif %}
+            <span class="r__meta">{{ n.created_at|naturaltime }}</span>
+          </div>
+        </div></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+        {% include 'partials/empty.html' with compact=True title='Nothing new' text='Match alerts, questions and decisions about your reports appear here.' %}
+      {% endif %}
+    </section>
+  </div>
 </div>
 
-<section class="section" aria-labelledby="mine-title">
-  <div class="section__head"><h2 class="title-sm" id="mine-title">Your <em>tags</em></h2><a class="link xs" href="{% url 'items:mine' %}">All {{ my_item_count }}</a></div>
+<section class="mt-10" aria-labelledby="mine-title">
+  <div class="sect-head"><h2 id="mine-title">Your reports</h2><a class="link" href="{% url 'items:mine' %}">All {{ my_item_count }}</a></div>
   {% if my_items %}
-    <div class="my-rail">{% for item in my_items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
+    <div class="items">{% for item in my_items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
   {% else %}
-    <div class="sheet">{% include 'partials/empty.html' with icon='tag' title="You haven't filed a tag" text='It takes about a minute. A clear photo and a specific description make matching far more reliable.' action_url='/report/' action_label='File your first tag' %}</div>
+    {% include 'partials/empty.html' with title="You haven't reported anything yet" text='It takes about a minute. A clear photo and a specific description make matching far more reliable.' action_url='/report/' action_label='Report an item' %}
   {% endif %}
 </section>
 {% endblock %}

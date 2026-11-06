@@ -3,20 +3,21 @@
 {% block title %}Decision log{% endblock %}
 
 {% block main %}
-<header class="phead">
-  <div class="phead__title">
-    <span class="kicker">{% icon 'history' %}Audit trail</span>
-    <h1 class="title">The decision <em>log</em></h1>
-    <p class="lede">Every approval, rejection, handover, dispute, flag and role change, with who decided and why.</p>
+<header class="page-head page-head--tight">
+  <div class="page-head__row">
+    <div class="stack" style="--gap:var(--s3)">
+      <h1>Decision log</h1>
+      <p class="lede">Every approval, rejection, handover, dispute, flag and role change, with who decided and why.</p>
+    </div>
+    <form method="get" class="cluster" style="--gap:var(--s2)">
+      <label class="small strong" for="action-filter">Show</label>
+      <select name="action" id="action-filter" class="input" style="width:auto" onchange="this.form.submit()">
+        <option value="">Every kind of decision</option>
+        {% for value, label in actions %}<option value="{{ value }}" {% if sel_action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <noscript><button class="btn" type="submit">Filter</button></noscript>
+    </form>
   </div>
-  <form method="get" class="phead__actions">
-    <label class="sr-only" for="action-filter">Filter by action</label>
-    <select name="action" id="action-filter" class="input" style="width:auto;border-radius:var(--r-pill)" onchange="this.form.submit()">
-      <option value="">Every kind of decision</option>
-      {% for value, label in actions %}<option value="{{ value }}" {% if sel_action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
-    <noscript><button class="btn btn-paper" type="submit">Filter</button></noscript>
-  </form>
 </header>
 
 <div class="table-wrap">
@@ -26,14 +27,14 @@
     <tbody>
     {% for d in decisions %}
       <tr>
-        <td data-label="When" class="nowrap mono"><time datetime="{{ d.created_at|date:'c' }}">{{ d.created_at|date:"j M Y · H:i" }}</time></td>
-        <td data-label="Decision"><span class="stamp stamp--{{ d.tone }}">{{ d.get_action_display }}</span></td>
-        <td data-label="By">{{ d.actor.display_name|default:"—" }}</td>
-        <td data-label="About">{% if d.claim %}<a class="link" href="{{ d.claim.get_absolute_url }}">{{ d.claim_id|claim_id }}</a> · {% endif %}{% if d.item %}<a class="link" href="{{ d.item.get_absolute_url }}">{{ d.item.title }}</a>{% elif d.subject_user %}{{ d.subject_user.display_name }}{% endif %}</td>
-        <td data-label="Note" class="muted">{{ d.note|default:"—" }}</td>
+        <td data-label="When" class="num" style="white-space:nowrap"><time datetime="{{ d.created_at|date:'c' }}">{{ d.created_at|date:"j M Y, H:i" }}</time></td>
+        <td data-label="Decision">{% include 'partials/status_badge.html' with tone=d.tone label=d.get_action_display %}</td>
+        <td data-label="By">{{ d.actor.display_name|default:"System" }}</td>
+        <td data-label="About">{% if d.claim %}<a class="link" href="{{ d.claim.get_absolute_url }}">{{ d.claim_id|claim_id }}</a>{% if d.item %}, {% endif %}{% endif %}{% if d.item %}<a class="link" href="{{ d.item.get_absolute_url }}">{{ d.item.title }}</a>{% elif d.subject_user %}{{ d.subject_user.display_name }}{% endif %}</td>
+        <td data-label="Note" class="muted">{{ d.note|default:"No note" }}</td>
       </tr>
     {% empty %}
-      <tr><td colspan="5">{% include 'partials/empty.html' with icon='history' title='No decisions recorded' text='They appear here as moderators and administrators act.' %}</td></tr>
+      <tr><td colspan="5">{% include 'partials/empty.html' with title='No decisions recorded' text='They appear here as moderators and administrators act.' %}</td></tr>
     {% endfor %}
     </tbody>
   </table>

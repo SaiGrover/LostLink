@@ -3,29 +3,27 @@
 {% block title %}{% if is_lost %}Lost items{% else %}Found items{% endif %}{% endblock %}
 
 {% block main %}
-<header class="wall-head">
-  <div class="stack" style="--gap:var(--s4)">
-    <span class="kicker">{% if is_lost %}Somebody is looking for these{% else %}Somebody handed these in{% endif %}</span>
-    <h1 class="display">{% if is_lost %}<em>Lost</em> tags{% else %}<em>Found</em> tags{% endif %}</h1>
-    <p class="lede">{% if is_lost %}Recognise one? Open it and offer to return it. The owner answers private questions before a moderator approves the handover.{% else %}If one is yours, open it and start a claim. You'll answer private questions so the finder and a moderator can be sure.{% endif %}</p>
-  </div>
-  <div class="wall-head__count">
-    <span class="num" id="result-count">{{ total }}</span>
-    <span class="kicker kicker--plain">{{ page_kind }} tag{{ total|pluralize }}</span>
-    <nav class="seg mt-4" aria-label="Report type">
-      <a href="{% url 'items:lost' %}" {% if is_lost %}aria-current="page"{% endif %}>{% icon 'lost' %}Lost</a>
-      <a href="{% url 'items:found' %}" {% if not is_lost %}aria-current="page"{% endif %}>{% icon 'found' %}Found</a>
-      <a href="{% url 'items:search' %}">Both</a>
+<header class="page-head page-head--tight">
+  <div class="page-head__row">
+    <div class="stack" style="--gap:var(--s3)">
+      <h1>{% if is_lost %}Lost items{% else %}Found items{% endif %}</h1>
+      <p class="lede">{% if is_lost %}People are looking for these. If you have one, open it and offer to return it; the owner answers private questions before a moderator approves the handover.{% else %}Someone handed these in. If one is yours, open it and start a claim; you'll answer private questions so the finder and a moderator can be sure.{% endif %}</p>
+    </div>
+    <nav class="seg" aria-label="Report type" style="padding:3px">
+      <a class="btn btn-sm{% if not is_lost %} btn-plain{% endif %}" href="{% url 'items:lost' %}" {% if is_lost %}aria-current="page"{% endif %}>Lost</a>
+      <a class="btn btn-sm{% if is_lost %} btn-plain{% endif %}" href="{% url 'items:found' %}" {% if not is_lost %}aria-current="page"{% endif %}>Found</a>
+      <a class="btn btn-sm btn-plain" href="{% url 'items:search' %}">Both</a>
     </nav>
   </div>
 </header>
 
 {% include 'items/partials/filterbar.html' %}
 
-<div class="results-meta">
-  <span><b data-total>{{ total }}</b> {{ page_kind }} result{{ total|pluralize }}</span>
+<div class="results-head">
+  <h2>Results</h2>
+  <p class="muted"><b class="num" data-total id="result-count">{{ total }}</b> {{ page_kind }} report{{ total|pluralize }}</p>
   <span id="search-feedback" class="sr-only" role="status" aria-live="polite"></span>
-  <a class="link" href="{% url 'items:report' %}?type={% if is_lost %}found{% else %}lost{% endif %}">{% if is_lost %}Found something? Tag it{% else %}Lost something? Tag it{% endif %}</a>
+  <a class="link" href="{% url 'items:report' %}?type={% if is_lost %}found{% else %}lost{% endif %}">{% if is_lost %}Found something? Report it{% else %}Lost something? Report it{% endif %}</a>
 </div>
 <div id="results">{% include 'items/partials/result_grid.html' %}</div>
 {% endblock %}

@@ -1,74 +1,52 @@
-{% load ui humanize %}{# Evidence board. Expects: match, other; optional: mine, action_url, action_label, open, compact #}
-<article class="board tier-{{ match.tier }}" data-board aria-labelledby="board-{{ match.pk }}-title">
-  <div class="board__top">
-    <div class="board__score">
-      <span class="num board__num"><span data-count="{{ match.percent }}">{{ match.percent }}</span><small>/100</small></span>
-      <div class="board__score-cap">
-        {% include 'partials/tier_badge.html' with tier=match.tier %}
-        <span class="kicker kicker--plain">similarity, not proof</span>
-      </div>
-    </div>
-    <div class="stack stack-2" style="align-items:flex-end;text-align:right">
-      <span class="serial">MATCH · {{ match.engine_version }}</span>
-      <span class="faint xs">{{ match.model_label }}</span>
-    </div>
+{% load ui humanize %}{# A match: the two reports printed over each other. Expects: match, other; optional: mine, action_url, action_label, open, size #}
+{% with left=mine|default:match.lost_item %}
+<article class="match" aria-labelledby="match-{{ match.pk }}-title">
+  <div class="match__pair">
+    <a class="match__end" href="{{ left.get_absolute_url }}">
+      {% include 'partials/thumb.html' with item=left cls='thumb--lg' %}
+      <span class="match__text">
+        {% include 'partials/type_badge.html' with item=left %}
+        <span class="match__title clamp-2">{{ left.title }}</span>
+        <span class="match__meta">{{ left.location.name }}, <span class="num">{{ left.event_date|date:"j M" }}</span></span>
+      </span>
+    </a>
+    {% include 'partials/overlap.html' with a=left b=other score=match.percent size=size|default:'md' reveal=True %}
+    <a class="match__end match__end--b" href="{{ other.get_absolute_url }}" id="match-{{ match.pk }}-title">
+      {% include 'partials/thumb.html' with item=other cls='thumb--lg' %}
+      <span class="match__text">
+        {% include 'partials/type_badge.html' with item=other %}
+        <span class="match__title clamp-2">{{ other.title }}</span>
+        <span class="match__meta">{{ other.location.name }}, <span class="num">{{ other.event_date|date:"j M" }}</span></span>
+      </span>
+    </a>
   </div>
 
-  <div class="board__grid">
-    <div class="board__side">
-      {% if mine %}
-      <a class="evidence-tag" href="{{ mine.get_absolute_url }}">
-        <div class="evidence-tag__img">{% if mine.image %}<img src="{{ mine.image.url }}" alt="" loading="lazy">{% else %}<span aria-hidden="true">{{ mine.category.icon }}</span>{% endif %}</div>
-        <div class="evidence-tag__title clamp-2">{{ mine.title }}</div>
-        <div class="evidence-tag__meta">{{ mine.get_report_type_display|upper }} · {{ mine.pk|report_id }}</div>
-      </a>
-      {% endif %}
+  <div class="match__foot">
+    <div class="match__facts">
+      {% include 'partials/tier_badge.html' with tier=match.tier %}
+      <span>{{ match.percent }} out of 100 similar. Similarity, not proof of ownership.</span>
     </div>
-
-    <div class="threads" role="list" aria-label="How the {{ match.percent }} points are made up">
-      {% for c in match.breakdown %}
-      <div class="thread sig-{{ c.key }}{% if c.missing %} thread--missing{% endif %}" role="listitem" style="--pts:{{ c.contribution_percent }}; --i:{{ forloop.counter0 }}" tabindex="0">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path vector-effect="non-scaling-stroke" d="M0 {% cycle '300' '200' '100' '0' '-100' '-200' %} C 22 {% cycle '300' '200' '100' '0' '-100' '-200' %}, 26 50, 44 50 L 56 50 C 74 50, 78 {% cycle '300' '200' '100' '0' '-100' '-200' %}, 100 {% cycle '300' '200' '100' '0' '-100' '-200' %}"/></svg>
-        <span class="thread__label">
-          {{ c.label }}
-          {% if c.missing %}<span class="thread__pts">not compared</span>
-          {% else %}<b>{{ c.percent }}%</b><span class="thread__pts">+{{ c.contribution_percent }}</span>{% endif %}
-        </span>
-      </div>
-      {% endfor %}
-    </div>
-
-    <div class="board__side board__side--r">
-      <a class="evidence-tag" href="{{ other.get_absolute_url }}" id="board-{{ match.pk }}-title">
-        <div class="evidence-tag__img">{% if other.image %}<img src="{{ other.image.url }}" alt="" loading="lazy">{% else %}<span aria-hidden="true">{{ other.category.icon }}</span>{% endif %}</div>
-        <div class="evidence-tag__title clamp-2">{{ other.title }}</div>
-        <div class="evidence-tag__meta">{{ other.get_report_type_display|upper }} · {{ other.location.name }} · {{ other.event_date|date:"j M" }}</div>
-      </a>
-    </div>
+    {% if action_url %}<a href="{{ action_url }}" class="btn btn-primary btn-sm">{{ action_label }}</a>{% endif %}
   </div>
 
-  <details class="disclosure board__evidence"{% if open %} open{% endif %}>
-    <summary>{% icon 'scale' %}Read the evidence{% icon 'chevron-down' 'chev' %}</summary>
-    <table class="evidence-table">
-      <caption class="sr-only">Score breakdown for {{ other.title }}</caption>
-      <thead><tr><th scope="col">Signal</th><th scope="col" class="n">Similarity</th><th scope="col" class="n hide-sm">Weight</th><th scope="col" class="n">Points</th></tr></thead>
-      <tbody>
-      {% for c in match.breakdown %}
-        <tr{% if c.missing %} class="is-missing"{% endif %}>
-          <td><span class="row" style="--gap:10px"><i class="swatch sig-{{ c.key }}{% if c.missing %} swatch--missing{% endif %}" aria-hidden="true"></i>{{ c.label }}</span>{% if c.missing %}<div class="xs faint">Not compared · {{ c.missing_reason }}</div>{% endif %}</td>
-          <td class="n">{% if c.missing %}—{% else %}{{ c.percent }}%{% endif %}</td>
-          <td class="n hide-sm">{% if c.missing %}—{% else %}{{ c.effective_percent }}%{% endif %}</td>
-          <td class="n">{% if c.missing %}—{% else %}{{ c.contribution_percent }}{% endif %}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-      <tfoot><tr><td>Total</td><td class="n xs faint" style="font-weight:400">{% if match.missing_components %}weights re-balanced{% else %}all six compared{% endif %}</td><td class="hide-sm"></td><td class="n">{{ match.percent }}</td></tr></tfoot>
-    </table>
-    <p class="disclaimer mt-4">{% icon 'info' %}<span>Thread thickness shows each signal's points. Similarity helps people find each other's reports; it never proves ownership. Every claim is checked with private questions and approved by a moderator.</span></p>
+  <details class="disclosure"{% if open %} open{% endif %}>
+    <summary>Why this score{% icon 'chevron-down' 'chev' %}</summary>
+    <div class="disclosure__body">
+      <ul class="signals" aria-label="How the {{ match.percent }} points for {{ other.title }} are made up">
+        {% for c in match.breakdown %}
+        <li class="signal{% if c.missing %} is-missing{% endif %}">
+          {% if c.missing %}
+          <div class="overlap overlap--sm" style="--s:0" aria-hidden="true"><span class="overlap__disc overlap__disc--a overlap__disc--ghost"></span><span class="overlap__disc overlap__disc--b overlap__disc--ghost"></span></div>
+          <div><p class="signal__label">{{ c.label }}</p><p class="signal__meta">Not compared: {{ c.missing_reason }}</p></div>
+          {% else %}
+          {% include 'partials/overlap.html' with a=left b=other score=c.percent size='sm' %}
+          <div><p class="signal__label">{{ c.label }}</p><p class="signal__meta"><span>{{ c.percent }}% similar</span><span>weight {{ c.effective_percent }}%</span><span class="signal__pts">+{{ c.contribution_percent }}</span></p></div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="small muted mt-4" style="max-width:68ch">Each pair of discs overlaps by how similar that signal is. Points are similarity times weight; they add up to {{ match.percent }}.{% if match.missing_components %} Signals that couldn't be compared are left out and their weight is shared among the rest.{% endif %} Scored {{ match.updated_at|default:match.created_at|naturaltime }} with {{ match.model_label }}. A moderator, not the score, decides ownership.</p>
+    </div>
   </details>
-
-  <div class="board__foot">
-    <span class="serial">Scored {{ match.updated_at|default:match.created_at|naturaltime }}</span>
-    {% if action_url %}<a href="{{ action_url }}" class="btn btn-ink btn-sm">{{ action_label }}{% icon 'arrow-right' 'icon-go' %}</a>{% endif %}
-  </div>
 </article>
+{% endwith %}

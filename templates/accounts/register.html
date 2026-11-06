@@ -1,17 +1,17 @@
 {% extends 'accounts/auth_base.html' %}
 {% load ui %}
-{% block title %}Join LostLink{% endblock %}
-{% block aside_title %}One wall for <em>everything</em> lost &amp; found.{% endblock %}
+{% block title %}Create an account{% endblock %}
 
 {% block form %}
-<span class="kicker">Join your campus</span>
-<h1 class="title mt-4">Make an <em>account</em>.</h1>
-<p class="muted mt-4">Already have one? <a class="link" href="{% url 'accounts:login' %}">Sign in</a></p>
+<div class="stack" style="--gap:var(--s3)">
+  <h1>Create an account</h1>
+  <p class="muted">Already have one? <a class="link" href="{% url 'accounts:login' %}">Sign in</a></p>
+</div>
 
-<form method="post" novalidate class="stack stack-6" data-validate>
+<form method="post" novalidate class="stack" style="--gap:var(--s5)" data-validate>
   {% csrf_token %}
-  {% if form.non_field_errors %}<div class="note note--bad" role="alert">{% icon 'alert' %}<div>{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div></div>{% endif %}
-  <div class="field-row">
+  {% if form.non_field_errors %}<div class="notice notice--bad" role="alert">{% icon 'alert' %}<div class="notice__body">{% for e in form.non_field_errors %}<span>{{ e }}</span>{% endfor %}</div></div>{% endif %}
+  <div class="form-grid form-grid--2">
     <div class="field{% if form.first_name.errors %} has-error{% endif %}"><label class="label" for="id_first_name">First name</label><input class="input" id="id_first_name" name="first_name" value="{{ form.first_name.value|default:'' }}" autocomplete="given-name" required maxlength="60">{{ form.first_name.errors }}</div>
     <div class="field"><label class="label" for="id_last_name">Last name <span class="opt">optional</span></label><input class="input" id="id_last_name" name="last_name" value="{{ form.last_name.value|default:'' }}" autocomplete="family-name" maxlength="60"></div>
   </div>
@@ -24,20 +24,20 @@
   <div class="field{% if form.email.errors %} has-error{% endif %}">
     <label class="label" for="id_email">College email</label>
     <input class="input" id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="email" required>
-    <span class="error-text" id="id_email-live-error" aria-live="polite"></span>
+    <span class="error" id="id_email-live-error" aria-live="polite"></span>
     {{ form.email.errors }}
   </div>
-  <div class="field"><label class="label" for="id_enrolment_no">Enrolment number <span class="opt">optional</span></label><input class="input mono" id="id_enrolment_no" name="enrolment_no" value="{{ form.enrolment_no.value|default:'' }}" maxlength="30"></div>
+  <div class="field"><label class="label" for="id_enrolment_no">Enrolment number <span class="opt">optional</span></label><input class="input num" id="id_enrolment_no" name="enrolment_no" value="{{ form.enrolment_no.value|default:'' }}" maxlength="30"></div>
   <div class="field{% if form.password1.errors %} has-error{% endif %}">
     <label class="label" for="id_password1">Password</label>
-    <div class="input-wrap">
-      <input class="input" type="password" id="id_password1" name="password1" autocomplete="new-password" required data-password-strength="pw-rules" data-confirm-with="id_password2" aria-describedby="pw-rules" style="padding-right:52px">
-      <button type="button" class="btn btn-plain btn-icon btn-sm input-end" data-reveal-password aria-controls="id_password1" aria-pressed="false" aria-label="Show password"><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg></button>
+    <div class="input-action">
+      <input class="input" type="password" id="id_password1" name="password1" autocomplete="new-password" required data-password-strength="pw-rules" data-confirm-with="id_password2" aria-describedby="pw-rules">
+      <button type="button" class="icon-btn" data-reveal-password aria-controls="id_password1" aria-pressed="false" aria-label="Show password"><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg></button>
     </div>
-    <span class="caps" id="id_password1-caps" hidden>{% icon 'alert' %}Caps Lock is on</span>
-    <ul class="pw-rules" id="pw-rules" aria-label="Password guidance">
+    <span class="error" id="id_password1-caps" hidden>Caps Lock is on</span>
+    <ul class="rules" id="pw-rules" aria-label="Password guidance">
       <li data-rule="length">8 or more characters</li>
-      <li data-rule="mix">Letters and something else</li>
+      <li data-rule="mix">Letters and at least one other character</li>
       <li data-rule="numeric">Not only numbers</li>
       <li data-rule="match">Both passwords match</li>
     </ul>
@@ -48,7 +48,7 @@
     <input class="input" type="password" id="id_password2" name="password2" autocomplete="new-password" required>
     {{ form.password2.errors }}
   </div>
-  <button type="submit" class="btn btn-ink btn-lg btn-block">Create account{% icon 'arrow-right' 'icon-go' %}</button>
-  <p class="hint">Tags are used only for campus lost-and-found matching. Contact details are shared with the other person in a claim only after a moderator approves.</p>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Create account</button>
+  <p class="hint">Your reports are used only for campus lost and found matching. Your contact details are shared with the other person in a claim only after a moderator approves it.</p>
 </form>
 {% endblock %}

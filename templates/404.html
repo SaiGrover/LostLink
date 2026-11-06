@@ -1,12 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}404{% endblock %}
+{% block title %}Page not found{% endblock %}
 {% block body %}
-<main class="error" id="main-content">
-  <div>
-    <span class="num" aria-hidden="true">404</span>
-    <h1>This tag <em>went missing</em>.</h1>
-    <p>The page or tag may have been removed, or the link is mistyped.</p>
-    <div class="cluster" style="justify-content:center"><a href="/search/" class="btn btn-ink">Search the wall</a><a href="/" class="btn">Home</a></div>
-  </div>
+<main class="wrap error-page" id="main-content">
+  <div class="empty__mark" aria-hidden="true"><i></i><b></b><i></i></div>
+  <h1>This page isn't here.</h1>
+  <p class="lede">The page or report may have been removed, or the link has a typo.</p>
+  <div class="cluster"><a href="/search/" class="btn btn-primary">Search reports</a><a href="/" class="btn">Go to the home page</a></div>
 </main>
 {% endblock %}

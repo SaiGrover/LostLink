@@ -3,148 +3,151 @@
 {% block title %}{{ item.title }}{% endblock %}
 
 {% block main %}
-<div class="phead__top" style="margin-bottom:var(--s6)">
-  <nav class="crumbs" aria-label="Breadcrumb"><a href="{% if item.is_lost %}{% url 'items:lost' %}{% else %}{% url 'items:found' %}{% endif %}">{{ item.get_report_type_display }} tags</a><span>/</span><span>Case {{ item.pk|report_id }}</span></nav>
-  <span class="serial">Filed {{ item.created_at|date:"j M Y, H:i" }}</span>
-</div>
+<nav class="crumbs" aria-label="Breadcrumb" style="margin-bottom:var(--s5)">
+  <a href="{% if item.is_lost %}{% url 'items:lost' %}{% else %}{% url 'items:found' %}{% endif %}">{{ item.get_report_type_display }} items</a>{% icon 'chevron-right' %}<span class="num">Report {{ item.pk|report_id }}</span>
+</nav>
 
 {% if item.status == 'pending' %}
-  <div class="note note--warn" style="margin-bottom:var(--s7)">{% icon 'clock' %}<div><b>Waiting for a moderator.</b> Only you and moderators can see this tag. It joins the wall and matching once approved.</div></div>
+  <div class="notice notice--warn" style="margin-bottom:var(--s7)">{% icon 'clock' %}<div class="notice__body"><span class="notice__title">Waiting for a moderator</span><span>Only you and moderators can see this report. It becomes searchable and is matched once it's approved.</span></div></div>
 {% elif item.status == 'rejected' %}
-  <div class="note note--bad" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div><b>This tag was rejected.</b> It's hidden from the wall and from matching.{% if is_owner and item.is_active %} You can edit and resubmit it.{% endif %}</div></div>
+  <div class="notice notice--bad" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">This report was rejected</span><span>It's hidden from search and matching.{% if is_owner and item.is_active %} You can edit it and send it for review again.{% endif %}</span></div></div>
 {% elif item.status == 'returned' %}
-  <div class="note note--ok" style="margin-bottom:var(--s7)">{% icon 'check' %}<div><b>Returned.</b> A moderator confirmed the handover. This case is closed.</div></div>
+  <div class="notice notice--ok" style="margin-bottom:var(--s7)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Returned to its owner</span><span>A moderator confirmed the handover. This report is closed.</span></div></div>
 {% elif not item.is_active %}
-  <div class="note" style="margin-bottom:var(--s7)">{% icon 'info' %}<div><b>Withdrawn by the reporter.</b> Hidden from the wall and from matching.</div></div>
+  <div class="notice" style="margin-bottom:var(--s7)">{% icon 'info' %}<div class="notice__body"><span class="notice__title">Withdrawn by the reporter</span><span>Hidden from search and matching.</span></div></div>
 {% endif %}
 
-<div class="casefile">
-  <figure class="specimen">
-    <div class="specimen__img">
+<div class="case">
+  <figure>
+    <div class="photo" style="view-transition-name:item-{{ item.pk }}">
       {% if item.image %}<img src="{{ item.image.url }}" alt="Photo of {{ item.title }}">
-      {% else %}<div class="tag__placeholder" role="img" aria-label="No photo provided">{{ item.category.icon }}</div>{% endif %}
+      {% else %}<span class="photo__none" role="img" aria-label="No photo provided">{{ item.category.icon }}</span>{% endif %}
     </div>
-    <span class="stamp stamp--xl stamp--{{ item.report_type }} specimen__stamp is-stamped">{{ item.get_report_type_display }}</span>
-    <figcaption class="specimen__cap">
-      <span>{{ item.pk|report_id }} · {{ item.category.name }}</span>
-      {% if item.is_demo_photo %}<span>Representative demo photo, not the reported item's actual photograph.{% if photo_credit %} <a href="{{ photo_credit.source }}" target="_blank" rel="noopener noreferrer">{{ photo_credit.artist|default:"Wikimedia Commons" }}</a> · {% if photo_credit.license_url %}<a href="{{ photo_credit.license_url }}" target="_blank" rel="noopener noreferrer">{{ photo_credit.license }}</a>{% else %}{{ photo_credit.license }}{% endif %}{% endif %}</span>{% endif %}
-    </figcaption>
+    {% if item.is_demo_photo %}<figcaption class="case__credit">Representative demo photo, not the reported item's actual photograph.{% if photo_credit %} Photo: <a href="{{ photo_credit.source }}" target="_blank" rel="noopener noreferrer">{{ photo_credit.artist|default:"Wikimedia Commons" }}</a>, {% if photo_credit.license_url %}<a href="{{ photo_credit.license_url }}" target="_blank" rel="noopener noreferrer">{{ photo_credit.license }}</a>{% else %}{{ photo_credit.license }}{% endif %}.{% endif %}</figcaption>{% endif %}
   </figure>
 
-  <div class="stack stack-6">
-    <div class="cluster">{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}<span class="serial">{{ item.category.icon }} {{ item.category.name }}</span></div>
-    <h1 class="case-title">{{ item.title }}</h1>
-    <p class="case-quote">{{ item.description }}</p>
-
-    <div class="ledger" aria-label="Report details">
-      <div class="ledger__row"><span class="ledger__k">{% icon 'pin' %}Zone</span><span class="ledger__fill"></span><span class="ledger__v">{{ item.location.name }}</span></div>
-      <div class="ledger__row"><span class="ledger__k">{% icon 'calendar' %}{% if item.is_lost %}Lost on{% else %}Found on{% endif %}</span><span class="ledger__fill"></span><span class="ledger__v">{{ item.event_date|date:"l, j F Y" }}</span></div>
-      {% if item.event_time %}<div class="ledger__row"><span class="ledger__k">{% icon 'clock' %}Around</span><span class="ledger__fill"></span><span class="ledger__v">{{ item.event_time|time:"H:i" }}</span></div>{% endif %}
-      {% if item.brand %}<div class="ledger__row"><span class="ledger__k">{% icon 'tag' %}Brand</span><span class="ledger__fill"></span><span class="ledger__v">{{ item.brand }}</span></div>{% endif %}
-      {% if item.color %}<div class="ledger__row"><span class="ledger__k">{% icon 'dot' %}Colour</span><span class="ledger__fill"></span><span class="ledger__v">{{ item.color }}</span></div>{% endif %}
-      <div class="ledger__row"><span class="ledger__k">{% icon 'user' %}Filed by</span><span class="ledger__fill"></span><span class="ledger__v">{% if is_owner %}You{% elif can_review %}{{ item.reporter.display_name }}{% else %}A campus member{% endif %}</span></div>
-      <div class="ledger__row"><span class="ledger__k">{% icon 'history' %}Filed</span><span class="ledger__fill"></span><span class="ledger__v">{{ item.created_at|naturaltime }}</span></div>
+  <div class="stack" style="--gap:var(--s6)">
+    <div class="stack" style="--gap:var(--s3)">
+      <div class="cluster">{% include 'partials/type_badge.html' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}</div>
+      <h1 class="case__title">{{ item.title }}</h1>
+      <p class="prose" style="font-size:var(--t-18)">{{ item.description }}</p>
     </div>
+
+    <dl class="facts">
+      <dt>Zone</dt><dd>{{ item.location.name }}{% with near=item.location.adjacent.all %}{% if near %}<span class="small muted" style="display:block;font-weight:500">Next door: {% for z in near %}{{ z.name }}{% if not forloop.last %}, {% endif %}{% endfor %}. Matching gives a zone next door partial credit.</span>{% endif %}{% endwith %}</dd>
+      <dt>{% if item.is_lost %}Lost on{% else %}Found on{% endif %}</dt><dd>{{ item.event_date|date:"l j F Y" }}{% if item.event_time %}, around {{ item.event_time|time:"H:i" }}{% endif %}</dd>
+      <dt>Category</dt><dd>{{ item.category.name }}</dd>
+      {% if item.brand %}<dt>Brand</dt><dd>{{ item.brand }}</dd>{% endif %}
+      {% if item.color %}<dt>Colour</dt><dd>{{ item.color }}</dd>{% endif %}
+      <dt>Reported by</dt><dd>{% if is_owner %}You{% elif can_review %}{{ item.reporter.display_name }}{% else %}A campus member{% endif %}, {{ item.created_at|naturaltime }}</dd>
+    </dl>
 
     {% if is_owner %}
       {% if item.is_active and item.status != 'returned' %}
-      <div class="case-desk">
-        <span class="kicker" style="color:inherit;opacity:.7">Your tag</span>
-        <div class="cluster">
-          <a class="btn" href="{% url 'items:edit' item.pk %}">{% icon 'edit' %}Edit tag</a>
-          <form method="post" action="{% url 'items:withdraw' item.pk %}" data-confirm="Withdraw this tag?" data-confirm-text="It leaves the wall and matching, and its match scores are removed. This can't be undone from the app." data-confirm-tone="danger" data-confirm-label="Withdraw tag" data-confirm-stamp="Withdraw">
-            {% csrf_token %}<button class="btn btn-line" type="submit">{% icon 'trash' %}Withdraw report</button>
-          </form>
-        </div>
+      <div class="case__actions">
+        <a class="btn" href="{% url 'items:edit' item.pk %}">{% icon 'edit' %}Edit report</a>
+        <form method="post" action="{% url 'items:withdraw' item.pk %}" data-confirm="Withdraw this report?" data-confirm-text="It's removed from search and matching, and its match scores are deleted. You can't undo this in the app." data-confirm-tone="danger" data-confirm-label="Withdraw report">
+          {% csrf_token %}<button class="btn btn-plain" type="submit">{% icon 'trash' %}Withdraw report</button>
+        </form>
       </div>
       {% endif %}
     {% elif item.is_public %}
-      <div class="case-desk">
+      <div class="panel panel--here">
         {% if existing_claim %}
-          <span class="kicker" style="color:inherit;opacity:.7">Your {% if item.is_found %}claim{% else %}return offer{% endif %}</span>
-          <a href="{% url 'claims:detail' existing_claim.pk %}" class="btn">Open {{ existing_claim.pk|claim_id }} · {{ existing_claim.get_status_display }}{% icon 'arrow-right' 'icon-go' %}</a>
+          <h2 class="h3">Your {% if item.is_found %}claim{% else %}offer to return it{% endif %}</h2>
+          <p class="muted mt-2">{{ existing_claim.get_status_display }}.</p>
+          <a href="{% url 'claims:detail' existing_claim.pk %}" class="btn btn-primary mt-4">Open claim {{ existing_claim.pk|claim_id }}</a>
         {% elif item.is_found %}
-          <p class="title-sm">Is this <em>yours</em>?</p>
-          <p class="muted small">Start a claim. You'll answer private questions only the owner could know, and a moderator approves before contact details are shared.</p>
-          <a href="{% url 'claims:start' item.pk %}" class="btn btn-lg">{% icon 'key' %}Claim this item{% icon 'arrow-right' 'icon-go' %}</a>
+          <h2 class="h3">Is this yours?</h2>
+          <p class="muted mt-2">Start a claim. You'll answer private questions only the owner would know, and a moderator approves it before contact details are shared.</p>
+          <a href="{% url 'claims:start' item.pk %}" class="btn btn-here btn-lg mt-4">{% icon 'key' %}Claim this item</a>
         {% else %}
-          <p class="title-sm">Have you <em>found</em> it?</p>
-          <p class="muted small">Offer to return it. The owner is told, and a moderator verifies before you swap contact details.</p>
-          <a href="{% url 'claims:start' item.pk %}" class="btn btn-lg">{% icon 'swap' %}Offer to return it{% icon 'arrow-right' 'icon-go' %}</a>
+          <h2 class="h3">Have you found it?</h2>
+          <p class="muted mt-2">Offer to return it. The owner is told, and a moderator checks it before you exchange contact details.</p>
+          <a href="{% url 'claims:start' item.pk %}" class="btn btn-here btn-lg mt-4">{% icon 'swap' %}Offer to return it</a>
         {% endif %}
       </div>
     {% endif %}
 
     {% if can_review %}
-    <section class="staff-desk" aria-labelledby="mod-title">
-      <div class="row"><span class="kicker" id="mod-title">{% icon 'shield' %}Moderator's desk</span></div>
-      {% if item.duplicate_of %}<div class="note note--warn">{% icon 'alert' %}<div><b>Possible duplicate</b> of <a href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }} · {{ item.duplicate_of.title }}</a> by the same reporter.</div></div>{% endif %}
+    <section class="panel stack" style="--gap:var(--s4)" aria-labelledby="mod-title">
+      <h2 class="h3" id="mod-title">For moderators</h2>
+      {% if item.duplicate_of %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Possible duplicate</span><span>Same reporter as <a class="link" href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }}, {{ item.duplicate_of.title }}</a>.</span></div></div>{% endif %}
       {% if item.status == 'pending' and item.is_active %}
       <div class="cluster">
-        <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve this tag?" data-confirm-text="It joins the wall and is compared with opposite tags. People with strong matches are notified." data-confirm-tone="success" data-confirm-label="Approve" data-confirm-note="Optional note to the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-ok btn-sm" type="submit">{% icon 'check' %}Approve</button></form>
-        <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" data-confirm="Reject this tag?" data-confirm-text="It stays off the wall. The reporter sees your reason and can edit and resubmit." data-confirm-tone="danger" data-confirm-label="Reject" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-bad btn-sm" type="submit">{% icon 'x' %}Reject</button></form>
+        <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve this report?" data-confirm-text="It becomes searchable and is compared with reports of the other type. People with strong matches are notified." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-ok" type="submit">{% icon 'check' %}Approve</button></form>
+        <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" data-confirm="Reject this report?" data-confirm-text="It stays hidden. The reporter sees your reason and can edit and resubmit it." data-confirm-tone="danger" data-confirm-label="Reject report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-danger" type="submit">{% icon 'x' %}Reject</button></form>
       </div>
       {% endif %}
       {% if open_flags %}
-        <div class="stack stack-2">
-          <span class="serial">{{ open_flags|length }} OPEN FLAG{{ open_flags|length|pluralize:"S" }}</span>
-          {% for f in open_flags %}<div class="flag-note">{% icon 'flag' %}<span><b>{{ f.get_reason_display }}</b>{% if f.note %} · {{ f.note }}{% endif %} <span class="faint">· {{ f.reporter.display_name }}, {{ f.created_at|naturaltime }}</span></span></div>{% endfor %}
+        <div class="stack" style="--gap:var(--s2)">
+          <h3 class="h4">{{ open_flags|length }} open flag{{ open_flags|length|pluralize }}</h3>
+          <ul class="rows" style="border-top-width:1px">
+            {% for f in open_flags %}<li class="r" style="padding:var(--s3) 0">{% icon 'flag' %}<div class="r__main"><span class="r__title">{{ f.get_reason_display }}</span>{% if f.note %}<span>{{ f.note }}</span>{% endif %}<span class="r__meta">{{ f.reporter.display_name }}, {{ f.created_at|naturaltime }}</span></div></li>{% endfor %}
+          </ul>
           <div class="cluster mt-2">
-            <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'dismiss' %}">{% csrf_token %}<button class="btn btn-paper btn-sm" type="submit">Dismiss flags</button></form>
-            <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove this tag?" data-confirm-text="It's rejected and deactivated, its matches are removed, and the reporter is told." data-confirm-tone="danger" data-confirm-label="Remove tag" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-bad btn-sm" type="submit">Remove tag</button></form>
+            <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'dismiss' %}">{% csrf_token %}<button class="btn btn-sm" type="submit">Dismiss flags</button></form>
+            <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove this report?" data-confirm-text="It's rejected and deactivated, its matches are removed, and the reporter is told." data-confirm-tone="danger" data-confirm-label="Remove report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger btn-sm" type="submit">Remove report</button></form>
           </div>
         </div>
       {% endif %}
       {% if claims %}
-        <div class="stack stack-2">
-          <span class="serial">CLAIMS ON THIS TAG</span>
-          {% for c in claims %}<a class="list-row" style="padding:var(--s2) 0" href="{% url 'claims:detail' c.pk %}"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><span><span class="list-row__title">{{ c.claimant.display_name }}</span><span class="list-row__meta">{{ c.pk|claim_id }} · {{ c.created_at|naturaltime }}</span></span><span class="list-row__end">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</span></a>{% endfor %}
+        <div class="stack" style="--gap:var(--s2)">
+          <h3 class="h4">Claims on this report</h3>
+          <ul class="rows" style="border-top-width:1px">
+            {% for c in claims %}<li><div class="r r--link"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><div class="r__main"><span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.claimant.display_name }}</a></span><span class="r__meta"><span class="num">{{ c.pk|claim_id }}</span><span>{{ c.created_at|naturaltime }}</span></span></div><div class="r__side r__side--keep">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</div></div></li>{% endfor %}
+          </ul>
         </div>
       {% endif %}
       {% if decisions %}
         <details class="disclosure"><summary>{% icon 'history' %}Decision history{% icon 'chevron-down' 'chev' %}</summary>
-          <ul role="list" class="stack stack-2 mt-2 small">{% for d in decisions %}<li><span class="stamp stamp--{{ d.tone }}">{{ d.get_action_display }}</span> <span class="faint">{{ d.actor.display_name|default:"system" }}, {{ d.created_at|naturaltime }}</span>{% if d.note %}<div class="muted">{{ d.note }}</div>{% endif %}</li>{% endfor %}</ul>
+          <ul class="rows disclosure__body" style="border-top-width:1px">{% for d in decisions %}<li class="r" style="padding:var(--s3) 0"><div class="r__main"><span>{% include 'partials/status_badge.html' with tone=d.tone label=d.get_action_display %}</span><span class="r__meta">{{ d.actor.display_name|default:"System" }}, {{ d.created_at|naturaltime }}</span>{% if d.note %}<span class="small">{{ d.note }}</span>{% endif %}</div></li>{% endfor %}</ul>
         </details>
       {% endif %}
-      {% if not item.duplicate_of and item.status != 'pending' and not open_flags and not claims and not decisions %}<p class="faint small">Nothing to review on this tag.</p>{% endif %}
+      {% if not item.duplicate_of and item.status != 'pending' and not open_flags and not claims and not decisions %}<p class="muted small">Nothing to review on this report.</p>{% endif %}
     </section>
     {% elif is_owner and claims %}
-    <section class="sheet sheet--flat" aria-labelledby="responses-title">
-      <div class="sheet__head"><h2 class="heading" id="responses-title">Responses to your tag</h2></div>
-      <div class="list">{% for c in claims %}<a class="list-row" href="{% url 'claims:detail' c.pk %}"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><span><span class="list-row__title">{{ c.pk|claim_id }}</span><span class="list-row__meta">{{ c.created_at|naturaltime }}</span></span><span class="list-row__end">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</span></a>{% endfor %}</div>
+    <section class="panel" aria-labelledby="responses-title">
+      <h2 id="responses-title">Responses to your report</h2>
+      <ul class="rows" style="border-top-width:1px">
+        {% for c in claims %}<li><div class="r r--link"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><div class="r__main"><span class="r__title"><a href="{% url 'claims:detail' c.pk %}">Claim {{ c.pk|claim_id }}</a></span><span class="r__meta">{{ c.created_at|naturaltime }}</span></div><div class="r__side r__side--keep">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</div></div></li>{% endfor %}
+      </ul>
     </section>
     {% endif %}
 
     {% if can_flag %}
     <details class="disclosure">
-      <summary>{% icon 'flag' %}Something wrong with this tag?{% icon 'chevron-down' 'chev' %}</summary>
-      <form method="post" action="{% url 'items:flag' item.pk %}" class="stack stack-3 mt-2">
+      <summary>{% icon 'flag' %}Something wrong with this report?{% icon 'chevron-down' 'chev' %}</summary>
+      <form method="post" action="{% url 'items:flag' item.pk %}" class="stack disclosure__body" style="--gap:var(--s4)">
         {% csrf_token %}
         <div class="field"><label class="label" for="{{ flag_form.reason.id_for_label }}">Reason</label>{{ flag_form.reason }}</div>
-        <div class="field"><label class="label" for="{{ flag_form.note.id_for_label }}">Detail <span class="opt">optional</span></label>{{ flag_form.note }}</div>
+        <div class="field"><label class="label" for="{{ flag_form.note.id_for_label }}">Details <span class="opt">optional</span></label>{{ flag_form.note }}</div>
         <p class="hint">Flags go to moderators only. The reporter isn't told who flagged it.</p>
-        <div><button class="btn btn-paper btn-sm" type="submit">Send flag</button></div>
+        <div><button class="btn btn-sm" type="submit">Send flag</button></div>
       </form>
     </details>
     {% elif my_flag %}
-    <p class="hint">{% icon 'flag' %} You flagged this tag {{ my_flag.created_at|naturaltime }}. A moderator will look at it.</p>
+    <p class="hint">You flagged this report {{ my_flag.created_at|naturaltime }}. A moderator will look at it.</p>
     {% endif %}
   </div>
 </div>
 
-<section class="section" aria-labelledby="matches-title">
-  <div class="section__head">
-    <h2 class="title-md" id="matches-title">{% if item.is_lost %}Found tags that <em>resemble</em> this{% else %}Lost tags that <em>resemble</em> this{% endif %}</h2>
-    <span class="count count--ink">{{ match_rows|length }}</span>
+
+<section class="mt-9" aria-labelledby="matches-title">
+  <div class="sect-head">
+    <h2 id="matches-title">{% if item.is_lost %}Found reports that look similar{% else %}Lost reports that look similar{% endif %}</h2>
+    <p class="muted"><b class="num">{{ match_rows|length }}</b> candidate{{ match_rows|length|pluralize }}</p>
   </div>
   {% if match_rows %}
+    <div>
     {% for row in match_rows %}
       {% include 'partials/match_card.html' with match=row.match mine=item other=row.other open=forloop.first action_url=row.action_url action_label=row.action_label %}
     {% endfor %}
+    </div>
   {% elif not item.is_matchable %}
-    <div class="sheet">{% include 'partials/empty.html' with compact=True icon='link' title='Matching starts after approval' text='Only active, moderator-approved tags are compared. Pending, rejected, withdrawn and returned tags never are.' %}</div>
+    {% include 'partials/empty.html' with compact=True title='Matching starts after approval' text='Only active, approved reports are compared. Pending, rejected, withdrawn and returned reports never are.' %}
   {% else %}
-    <div class="sheet">{% include 'partials/empty.html' with compact=True icon='link' title='No threads yet' text="Every newly approved tag is compared with this one. You'll get a dispatch when a medium or high confidence candidate appears." %}</div>
+    {% include 'partials/empty.html' with compact=True title='No similar reports yet' text="Every newly approved report is compared with this one. You'll be notified when a medium or high similarity candidate appears." %}
   {% endif %}
 </section>
 {% endblock %}

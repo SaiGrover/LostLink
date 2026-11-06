@@ -4,22 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <script>
-    /* Light paper is the default; dark is only applied when chosen. */
+    /* Day scheme by default; the night scheme only when chosen. */
     (function () {
       var d = document.documentElement; d.classList.add('js');
       try { if (localStorage.getItem('lostlink-theme') === 'dark') d.setAttribute('data-theme', 'dark'); } catch (e) {}
     })();
   </script>
   <title>{% block title %}LostLink{% endblock %} · LostLink</title>
-  <meta name="description" content="{% block description %}LostLink ties lost and found reports together with explainable AI matching, then lets people verify who really owns what.{% endblock %}">
+  <meta name="description" content="{% block description %}LostLink matches lost and found reports across campus, shows why each pair might be the same item, and has a moderator confirm ownership before anything is handed over.{% endblock %}">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400..800;1,400..600&family=Unbounded:wght@400..700&display=swap">
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 22'><rect x='1.5' y='3' width='16' height='16' rx='3' fill='none' stroke='%23222' stroke-width='2.4'/><rect x='16.5' y='3' width='16' height='16' rx='3' fill='none' stroke='%23222' stroke-width='2.4'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 22'><circle cx='11' cy='11' r='11' fill='%23FF7A1A'/><circle cx='23' cy='11' r='11' fill='%2319B5D6' style='mix-blend-mode:multiply'/></svg>">
   {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -40,7 +41,6 @@
 
   <dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
     <div class="dialog__body">
-      <span class="stamp stamp--lg dialog__stamp" data-confirm-stamp>Confirm</span>
       <h2 class="dialog__title" id="confirm-title" data-confirm-title>Are you sure?</h2>
       <p class="dialog__text" id="confirm-text" data-confirm-text></p>
       <div class="field" data-confirm-note hidden>
@@ -49,8 +49,8 @@
       </div>
     </div>
     <div class="dialog__foot">
-      <button type="button" class="btn btn-paper" data-confirm-cancel>Cancel</button>
-      <button type="button" class="btn btn-ink" data-confirm-ok>Confirm</button>
+      <button type="button" class="btn" data-confirm-cancel>Cancel</button>
+      <button type="button" class="btn btn-primary" data-confirm-ok>Confirm</button>
     </div>
   </dialog>
 

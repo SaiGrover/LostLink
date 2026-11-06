@@ -1,25 +1,15 @@
-{% load ui %}<div class="tag-wrap" style="--i:{{ forloop.counter0|default:0 }}">
-  <a href="{% url 'items:detail' item.pk %}" class="tag tag--{{ item.report_type }}{% if item.status == 'returned' %} tag--returned{% endif %}" aria-label="{{ item.get_report_type_display }}: {{ item.title }}">
-    <div class="tag__paper">
-      <div class="tag__head">
-        {% include 'partials/type_badge.html' %}
-        <span class="serial">{{ item.pk|report_id }}</span>
-      </div>
-      <div class="tag__media">
-        {% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy" decoding="async">
-        {% else %}<div class="tag__placeholder" aria-hidden="true">{{ item.category.icon }}</div>{% endif %}
-        {% if item.status == 'returned' %}<div class="tag__returned"><span class="stamp stamp--ok stamp--lg">Returned</span></div>{% endif %}
-      </div>
-      <div class="tag__perf" aria-hidden="true"></div>
-      <div class="tag__body">
-        <h3 class="tag__title clamp-2">{{ item.title }}</h3>
-        {% if item.status == 'claimed' or item.status == 'pending' or item.status == 'rejected' %}<span>{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}</span>{% endif %}
-        <div class="tag__meta">
-          <span>{% icon 'pin' %}{{ item.location.name }}</span>
-          <span>{% icon 'calendar' %}{{ item.event_date|date:"j M" }}{% if item.event_time %} · {{ item.event_time|time:"H:i" }}{% endif %}</span>
-          {% if item.is_demo_photo %}<span title="Representative demo photo, not the reported item">Representative photo</span>{% endif %}
-        </div>
-      </div>
+<article class="item{% if item.status == 'returned' %} is-returned{% endif %}" style="--i:{{ forloop.counter0|default:0 }}">
+  <div class="item__photo">
+    <div class="photo" style="view-transition-name:item-{{ item.pk }}">
+      {% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy" decoding="async">
+      {% else %}<span class="photo__none" aria-hidden="true">{{ item.category.icon }}</span>{% endif %}
     </div>
-  </a>
-</div>
+    {% if item.status == 'claimed' or item.status == 'pending' or item.status == 'rejected' or item.status == 'returned' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}{% endif %}
+    <span class="item__ink item__ink--{{ item.report_type }}" aria-hidden="true"></span>
+  </div>
+  <div class="stack" style="--gap:6px">
+    <h3 class="item__title clamp-2"><a href="{% url 'items:detail' item.pk %}">{{ item.title }}</a></h3>
+    <div class="item__where">{% include 'partials/type_badge.html' %}<span>{{ item.location.name }}</span><span class="num">{{ item.event_date|date:"j M" }}{% if item.event_time %}, {{ item.event_time|time:"H:i" }}{% endif %}</span></div>
+    {% if item.is_demo_photo %}<p class="item__note">Representative photo, not the reported item</p>{% endif %}
+  </div>
+</article>

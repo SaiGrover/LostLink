@@ -1,12 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}500{% endblock %}
+{% block title %}Something went wrong{% endblock %}
 {% block body %}
-<main class="error" id="main-content">
-  <div>
-    <span class="num" aria-hidden="true">500</span>
-    <h1>Something <em>snapped</em> on our side.</h1>
-    <p>It has been logged. Your tags and cases are safe; try again in a moment.</p>
-    <div class="cluster" style="justify-content:center"><a href="/" class="btn btn-ink">Back to LostLink</a></div>
-  </div>
+<main class="wrap error-page" id="main-content">
+  <div class="empty__mark" aria-hidden="true"><i></i><b></b><i></i></div>
+  <h1>Something went wrong on our side.</h1>
+  <p class="lede">The error has been logged. Your reports and claims are safe. Try again in a moment.</p>
+  <div class="cluster"><a href="/" class="btn btn-primary">Back to LostLink</a></div>
 </main>
 {% endblock %}

@@ -1,37 +1,39 @@
 {% extends 'shell.html' %}
 {% load ui %}
-{% block title %}My tags{% endblock %}
+{% block title %}My reports{% endblock %}
 
 {% block main %}
-<header class="phead">
-  <div class="phead__title">
-    <span class="kicker">Everything you've filed</span>
-    <h1 class="title">My <em>tags</em></h1>
-    <p class="lede">Including tags still with a moderator, withdrawn ones, and the ones that made it home.</p>
+<header class="page-head page-head--tight">
+  <div class="page-head__row">
+    <div class="stack" style="--gap:var(--s3)">
+      <h1>My reports</h1>
+      <p class="lede">Everything you've reported, including reports waiting for review, withdrawn ones and items that were returned.</p>
+    </div>
+    <a href="{% url 'items:report' %}" class="btn btn-here">{% icon 'plus' %}Report an item</a>
   </div>
-  <div class="phead__actions"><a href="{% url 'items:report' %}" class="btn btn-ink">{% icon 'plus' %}New tag</a></div>
 </header>
 
-<div class="cluster between" style="margin-bottom:var(--s8)">
+<nav class="tabs" aria-label="Filter by state">
+  <a href="{% query_with status=None page=None %}" {% if not sel_status %}aria-current="page"{% endif %}>All</a>
+  <a href="{% query_with status='active' page=None %}" {% if sel_status == 'active' %}aria-current="page"{% endif %}>Active</a>
+  <a href="{% query_with status='returned' page=None %}" {% if sel_status == 'returned' %}aria-current="page"{% endif %}>Returned</a>
+  <a href="{% query_with status='withdrawn' page=None %}" {% if sel_status == 'withdrawn' %}aria-current="page"{% endif %}>Withdrawn</a>
+</nav>
+<div class="cluster between" style="margin-bottom:var(--s7)">
   <nav class="seg" aria-label="Filter by type">
-    <a href="{% query_with type=None page=None %}" {% if not sel_type %}aria-current="page"{% endif %}>All</a>
-    <a href="{% query_with type='lost' page=None %}" {% if sel_type == 'lost' %}aria-current="page"{% endif %}>{% icon 'lost' %}Lost</a>
-    <a href="{% query_with type='found' page=None %}" {% if sel_type == 'found' %}aria-current="page"{% endif %}>{% icon 'found' %}Found</a>
+    <a href="{% query_with type=None page=None %}" {% if not sel_type %}aria-current="page"{% endif %}>Lost and found</a>
+    <a href="{% query_with type='lost' page=None %}" {% if sel_type == 'lost' %}aria-current="page"{% endif %}><i class="mk mk--lost" aria-hidden="true"></i>Lost</a>
+    <a href="{% query_with type='found' page=None %}" {% if sel_type == 'found' %}aria-current="page"{% endif %}><i class="mk mk--found" aria-hidden="true"></i>Found</a>
   </nav>
-  <nav class="seg" aria-label="Filter by state">
-    <a href="{% query_with status=None page=None %}" {% if not sel_status %}aria-current="page"{% endif %}>Everything</a>
-    <a href="{% query_with status='active' page=None %}" {% if sel_status == 'active' %}aria-current="page"{% endif %}>Active</a>
-    <a href="{% query_with status='returned' page=None %}" {% if sel_status == 'returned' %}aria-current="page"{% endif %}>Home</a>
-    <a href="{% query_with status='withdrawn' page=None %}" {% if sel_status == 'withdrawn' %}aria-current="page"{% endif %}>Withdrawn</a>
-  </nav>
+  <p class="muted"><b class="num">{{ total }}</b> report{{ total|pluralize }}</p>
 </div>
 
 {% if items %}
-  <div class="wall">{% for item in items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
+  <div class="items">{% for item in items %}{% include 'items/partials/item_card.html' %}{% endfor %}</div>
   {% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
 {% elif sel_type or sel_status %}
-  <div class="sheet">{% include 'partials/empty.html' with icon='filter' title='Nothing in this view' text='No tags match these filters.' action_url='/mine/' action_label='Show every tag' %}</div>
+  {% include 'partials/empty.html' with title='Nothing here' text='None of your reports match these filters.' action_url='/mine/' action_label='Show all my reports' %}
 {% else %}
-  <div class="sheet">{% include 'partials/empty.html' with icon='tag' title="You haven't filed a tag" text='Tag something you lost or found. A moderator reads it, then LostLink starts looking for its other half.' action_url='/report/' action_label='File your first tag' %}</div>
+  {% include 'partials/empty.html' with title="You haven't reported anything yet" text='Report something you lost or found. A moderator reads it, then LostLink starts looking for its match.' action_url='/report/' action_label='Report an item' %}
 {% endif %}
 {% endblock %}

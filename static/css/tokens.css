@@ -1,195 +1,172 @@
 /* ==========================================================================
-   LostLink design tokens — "Tag & Thread"
+   LostLink design tokens: "Overprint"
    --------------------------------------------------------------------------
-   The palette is NOT chosen yet. Every colour below is derived from the
-   palette slots in the first block; components read only the semantic
-   tokens (paper, card, kraft, ink, thread, lost, found, status…).
+   Every report is a disc of ink. Lost reports print in signal orange (the
+   colour of something missing), found reports in clear cyan (safe again).
+   A match prints one disc over the other: orange over cyan mixes into deep
+   green, the colour of "this is it", and the width of that overlap is the
+   real similarity score.
 
-   To apply the final palette, change only the slots:
-     --paper-h --paper-c      tint of paper, card and kraft surfaces
-     --ink-h   --ink-c        tint of text and rules
-     --thread-h --thread-c --thread-l   the connecting accent (threads, focus, primary actions)
-     --lost-h  --found-h      report-type hues
-     --ok-h --warn-h --bad-h --info-h   functional status hues
-     --status-c               saturation of type and status colours
-
-   Light paper is the default. Dark is opt-in through the theme toggle
-   (data-theme="dark"); the OS preference is deliberately not followed so
-   the product never falls back to "dark mode as design".
+   Palette
+     Paper        #FFFFFF  page
+     Mist         #F2F5F3  quiet surfaces
+     Ink          #10241B  text, primary actions
+     Lost orange  #FF7A1A  lost reports
+     Found cyan   #19B5D6  found reports
+     Match green  #195615  orange × cyan: matches, focus, the main action
    ========================================================================== */
 
 :root {
-  /* ---- Palette slots (provisional, near-neutral) ----------------------- */
-  --paper-h: 85;   --paper-c: 0.007;
-  --ink-h: 85;     --ink-c: 0.012;
-  --thread-h: 85;  --thread-c: 0.02;  --thread-l: 0.24;
-  --lost-h: 40;    --found-h: 200;
-  --ok-h: 150;     --warn-h: 75;      --bad-h: 25;   --info-h: 245;
-  --status-c: 0.09;
+  /* ---- Inks --------------------------------------------------------------- */
+  --ink-lost: #FF7A1A;
+  --ink-found: #19B5D6;
+  --ink-match: #195615;
+  --ink-c: #10241B;
 
-  /* ---- Type families ---------------------------------------------------- */
-  --font-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
-  --font-sans: 'Bricolage Grotesque', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  /* ---- Type -----------------------------------------------------------------
+     Unbounded: a wide, round display face; its circular bowls echo the discs.
+     Hanken Grotesk: a calm, open text face for everything people read. */
+  --font-display: 'Unbounded', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --font: 'Hanken Grotesk', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
 
-  /* ---- Type scale (fluid) ------------------------------------------------ */
-  --t-micro: 0.6875rem;
-  --t-xs: 0.75rem;
-  --t-sm: 0.8125rem;
-  --t-base: 0.9375rem;
-  --t-md: 1.0625rem;
-  --t-lg: 1.25rem;
-  --t-xl: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-  --t-2xl: clamp(2rem, 1.4rem + 2.2vw, 3.25rem);
-  --t-3xl: clamp(2.6rem, 1.4rem + 4.2vw, 5.25rem);
-  --t-4xl: clamp(3.2rem, 1rem + 7.6vw, 8.75rem);
-  --t-num: clamp(2.75rem, 1.6rem + 3.6vw, 5rem);
+  /* Scale: 12 14 16 18 21 24 32 40 56 72 96 */
+  --t-12: 0.75rem;
+  --t-14: 0.875rem;
+  --t-16: 1rem;
+  --t-18: 1.125rem;
+  --t-21: 1.3125rem;
+  --t-24: 1.5rem;
+  --t-32: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);
+  --t-40: clamp(1.75rem, 1.3rem + 1.7vw, 2.5rem);
+  --t-56: clamp(2.1rem, 1.4rem + 2.8vw, 3.5rem);
+  --t-72: clamp(2.4rem, 1.3rem + 4.4vw, 4.5rem);
+  --t-96: clamp(2.8rem, 1rem + 6.8vw, 6rem);
 
-  /* ---- Space (4px grid) --------------------------------------------------- */
-  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px;
-  --s7: 32px; --s8: 40px; --s9: 48px; --s10: 64px; --s11: 88px; --s12: 128px;
-  --gutter: clamp(16px, 3vw, 40px);
-  --wrap: 1320px;
-  --mast-h: 64px;
+  /* ---- Space (8px rhythm) ------------------------------------------------------ */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --s7: 40px; --s8: 48px; --s9: 64px; --s10: 88px; --s11: 128px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --wrap: 1280px;
+  --mast-h: 72px;
   --tabbar-h: 68px;
 
-  /* ---- Geometry ------------------------------------------------------------ */
-  --r-xs: 3px; --r-sm: 6px; --r: 10px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
-  --cut: 16px;            /* clipped corner on tags */
-  --eyelet: 7px;          /* punched hole radius */
-  --rule: 1px;
-  --control: 44px;
-  --control-sm: 34px;
+  /* ---- Geometry: radius follows hierarchy -------------------------------------
+     panels 28, cards and photos 18, controls 14, small labels 8, discs round */
+  --r-panel: 28px;
+  --r-card: 18px;
+  --r-ctrl: 14px;
+  --r-label: 8px;
+  --r-round: 999px;
+  --control: 48px;
+  --control-sm: 38px;
 
-  /* ---- Motion ------------------------------------------------------------- */
-  --ease: cubic-bezier(0.2, 0.75, 0.15, 1);
-  --ease-swing: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-io: cubic-bezier(0.7, 0, 0.3, 1);
-  --d1: 140ms; --d2: 240ms; --d3: 420ms; --d4: 700ms; --d5: 1100ms;
+  /* ---- Motion ------------------------------------------------------------------- */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --d1: 140ms; --d2: 240ms; --d3: 420ms; --d4: 900ms;
 
-  /* ---- Layers ---------------------------------------------------------------- */
-  --z-sticky: 30; --z-mast: 50; --z-menu: 70; --z-sheet: 80; --z-dialog: 90; --z-toast: 100;
+  /* ---- Layers --------------------------------------------------------------------- */
+  --z-sticky: 30; --z-mast: 50; --z-menu: 70; --z-dialog: 90; --z-toast: 100;
 
   /* ======================================================================
-     Semantic colours — PAPER (default)
+     Semantic colours: DAY
      ====================================================================== */
   color-scheme: light;
-  --paper:      oklch(0.962 var(--paper-c) var(--paper-h));
-  --paper-deep: oklch(0.935 calc(var(--paper-c) * 1.4) var(--paper-h));
-  --card:       oklch(0.992 calc(var(--paper-c) * 0.5) var(--paper-h));
-  --kraft:      oklch(0.905 calc(var(--paper-c) * 2.2) var(--paper-h));
-  --hover:      oklch(0.94 var(--paper-c) var(--paper-h));
-  --scrim:      oklch(0.2 var(--ink-c) var(--ink-h) / 0.45);
+  --blend: multiply;
+  --page: #FFFFFF;
+  --surface: #FFFFFF;
+  --mist: #F2F5F3;
+  --mist-2: #E5EBE7;
+  --rule: #E1E8E3;
+  --rule-2: #C7D2CB;
 
-  --ink:        oklch(0.19 var(--ink-c) var(--ink-h));
-  --ink-2:      oklch(0.4 var(--ink-c) var(--ink-h));
-  --ink-3:      oklch(0.55 var(--ink-c) var(--ink-h));
-  --ink-4:      oklch(0.72 var(--ink-c) var(--ink-h));
-  --on-ink:     oklch(0.975 var(--paper-c) var(--paper-h));
+  --text: var(--ink-c);
+  --text-2: #3F5449;
+  --text-3: #566A60;
 
-  --line:       oklch(0.86 calc(var(--paper-c) * 1.5) var(--paper-h));
-  --line-2:     oklch(0.76 calc(var(--paper-c) * 1.5) var(--paper-h));
-  --focus:      oklch(0.55 0.15 var(--info-h));
+  --primary: var(--ink-c);
+  --primary-text: #FFFFFF;
+  --primary-hover: #1E3A2D;
 
-  --thread:     oklch(var(--thread-l) var(--thread-c) var(--thread-h));
-  --thread-2:   oklch(calc(var(--thread-l) + 0.12) var(--thread-c) var(--thread-h));
-  --on-thread:  oklch(0.98 0 0);
-  --thread-soft:oklch(0.92 calc(var(--thread-c) * 0.6) var(--thread-h));
+  /* The main action and the overlap share the match colour */
+  --accent: var(--ink-match);
+  --accent-text: #FFFFFF;
+  --accent-hover: #226E1D;
+  --on-ink: var(--ink-c);          /* text on orange and cyan */
+  --overlap-label: #FFFFFF;        /* the score inside the green lens */
 
-  --lost:       oklch(0.55 var(--status-c) var(--lost-h));
-  --lost-soft:  oklch(0.93 calc(var(--status-c) * 0.35) var(--lost-h));
-  --lost-ink:   oklch(0.4 var(--status-c) var(--lost-h));
-  --found:      oklch(0.55 var(--status-c) var(--found-h));
-  --found-soft: oklch(0.93 calc(var(--status-c) * 0.35) var(--found-h));
-  --found-ink:  oklch(0.4 var(--status-c) var(--found-h));
+  --lost: var(--ink-lost);
+  --lost-text: #B54A00;
+  --lost-tint: #FFEEE1;
+  --found: var(--ink-found);
+  --found-text: #00728A;
+  --found-tint: #DDF4F9;
+  --match: var(--ink-match);
+  --match-tint: #E3F1E1;
 
-  --ok:         oklch(0.55 var(--status-c) var(--ok-h));
-  --ok-soft:    oklch(0.94 calc(var(--status-c) * 0.35) var(--ok-h));
-  --ok-ink:     oklch(0.38 var(--status-c) var(--ok-h));
-  --warn:       oklch(0.72 calc(var(--status-c) * 1.4) var(--warn-h));
-  --warn-soft:  oklch(0.95 calc(var(--status-c) * 0.45) var(--warn-h));
-  --warn-ink:   oklch(0.44 calc(var(--status-c) * 1.1) var(--warn-h));
-  --bad:        oklch(0.56 calc(var(--status-c) * 1.6) var(--bad-h));
-  --bad-soft:   oklch(0.94 calc(var(--status-c) * 0.4) var(--bad-h));
-  --bad-ink:    oklch(0.43 calc(var(--status-c) * 1.5) var(--bad-h));
-  --info:       oklch(0.55 var(--status-c) var(--info-h));
-  --info-soft:  oklch(0.94 calc(var(--status-c) * 0.35) var(--info-h));
-  --info-ink:   oklch(0.4 var(--status-c) var(--info-h));
+  --ok: #1E7A4C;  --ok-tint: #E2F2E8;  --ok-text: #17663F;
+  --warn: #9A6A00; --warn-tint: #FFF5CC; --warn-text: #6E4C00;
+  --bad: #C42B2B;  --bad-tint: #FCE6E4; --bad-text: #A82222;
+  --info: var(--found-text); --info-tint: var(--found-tint); --info-text: var(--found-text);
+  --muted-tint: var(--mist); --muted-text: var(--text-2);
 
-  /* Confidence = similarity evidence, never ownership */
-  --tier-high: var(--ok);    --tier-high-soft: var(--ok-soft);    --tier-high-ink: var(--ok-ink);
-  --tier-medium: var(--warn);--tier-medium-soft: var(--warn-soft);--tier-medium-ink: var(--warn-ink);
-  --tier-low: var(--ink-3);  --tier-low-soft: var(--paper-deep);  --tier-low-ink: var(--ink-2);
+  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px var(--ink-match);
+  --shadow-1: 0 1px 2px rgb(16 36 27 / 0.06), 0 2px 8px rgb(16 36 27 / 0.05);
+  --shadow-2: 0 2px 4px rgb(16 36 27 / 0.06), 0 18px 40px -12px rgb(16 36 27 / 0.22);
 
-  /* The six matching signals: one ink, six weights of line + a lightness ramp */
-  --sig-text:      oklch(0.22 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-image:     oklch(0.36 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-location:  oklch(0.5 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-category:  oklch(0.6 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-date:      oklch(0.7 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-attribute: oklch(0.78 calc(var(--thread-c) * 1.3) var(--thread-h));
-
-  --shadow-1: 0 1px 0 oklch(0.2 0.02 var(--ink-h) / 0.06), 0 1px 2px oklch(0.2 0.02 var(--ink-h) / 0.06);
-  --shadow-2: 0 1px 1px oklch(0.2 0.02 var(--ink-h) / 0.06), 0 10px 24px -14px oklch(0.2 0.03 var(--ink-h) / 0.28);
-  --shadow-3: 0 2px 4px oklch(0.2 0.02 var(--ink-h) / 0.06), 0 30px 60px -28px oklch(0.2 0.04 var(--ink-h) / 0.42);
-  --shadow-hang: 0 1px 0 oklch(0.2 0.02 var(--ink-h) / 0.05), 0 18px 28px -18px oklch(0.2 0.04 var(--ink-h) / 0.45);
-
-  /* Paper grain, dotted grid and perforation — texture without colour */
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  --dots: radial-gradient(circle at 1px 1px, var(--line-2) 1px, transparent 1.4px);
-  --hatch: repeating-linear-gradient(135deg, var(--line-2) 0 1.5px, transparent 1.5px 6px);
+  --sig-text: #0E8FB0;
+  --sig-image: #6D5BD0;
+  --sig-location: #FF7A1A;
+  --sig-category: #1F9E6E;
+  --sig-date: #D9A400;
+  --sig-attribute: #D1495B;
 }
 
+/* ======================================================================
+   Night: deep green-black page, brighter inks. The inks still multiply
+   inside each overlap, so the lens stays a readable green.
+   Applied only when chosen in the account menu.
+   ====================================================================== */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --paper:      oklch(0.2 var(--paper-c) var(--paper-h));
-  --paper-deep: oklch(0.17 var(--paper-c) var(--paper-h));
-  --card:       oklch(0.245 var(--paper-c) var(--paper-h));
-  --kraft:      oklch(0.3 calc(var(--paper-c) * 2) var(--paper-h));
-  --hover:      oklch(0.27 var(--paper-c) var(--paper-h));
-  --scrim:      oklch(0.05 0 0 / 0.6);
-  --ink:        oklch(0.95 var(--ink-c) var(--ink-h));
-  --ink-2:      oklch(0.78 var(--ink-c) var(--ink-h));
-  --ink-3:      oklch(0.62 var(--ink-c) var(--ink-h));
-  --ink-4:      oklch(0.46 var(--ink-c) var(--ink-h));
-  --on-ink:     oklch(0.18 var(--paper-c) var(--paper-h));
-  --line:       oklch(0.33 var(--paper-c) var(--paper-h));
-  --line-2:     oklch(0.42 var(--paper-c) var(--paper-h));
-  --focus:      oklch(0.75 0.13 var(--info-h));
-  --thread:     oklch(0.92 var(--thread-c) var(--thread-h));
-  --thread-2:   oklch(0.8 var(--thread-c) var(--thread-h));
-  --on-thread:  oklch(0.18 0 0);
-  --thread-soft:oklch(0.3 var(--thread-c) var(--thread-h));
-  --lost:       oklch(0.74 var(--status-c) var(--lost-h));
-  --lost-soft:  oklch(0.3 calc(var(--status-c) * 0.45) var(--lost-h));
-  --lost-ink:   oklch(0.85 var(--status-c) var(--lost-h));
-  --found:      oklch(0.74 var(--status-c) var(--found-h));
-  --found-soft: oklch(0.3 calc(var(--status-c) * 0.45) var(--found-h));
-  --found-ink:  oklch(0.85 var(--status-c) var(--found-h));
-  --ok:         oklch(0.74 var(--status-c) var(--ok-h));
-  --ok-soft:    oklch(0.3 calc(var(--status-c) * 0.45) var(--ok-h));
-  --ok-ink:     oklch(0.86 var(--status-c) var(--ok-h));
-  --warn:       oklch(0.8 calc(var(--status-c) * 1.3) var(--warn-h));
-  --warn-soft:  oklch(0.31 calc(var(--status-c) * 0.5) var(--warn-h));
-  --warn-ink:   oklch(0.88 calc(var(--status-c) * 1.1) var(--warn-h));
-  --bad:        oklch(0.72 calc(var(--status-c) * 1.5) var(--bad-h));
-  --bad-soft:   oklch(0.31 calc(var(--status-c) * 0.55) var(--bad-h));
-  --bad-ink:    oklch(0.85 calc(var(--status-c) * 1.2) var(--bad-h));
-  --info:       oklch(0.74 var(--status-c) var(--info-h));
-  --info-soft:  oklch(0.3 calc(var(--status-c) * 0.45) var(--info-h));
-  --info-ink:   oklch(0.86 var(--status-c) var(--info-h));
-  --sig-text:      oklch(0.95 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-image:     oklch(0.84 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-location:  oklch(0.72 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-category:  oklch(0.62 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-date:      oklch(0.53 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --sig-attribute: oklch(0.45 calc(var(--thread-c) * 1.3) var(--thread-h));
-  --shadow-1: 0 1px 2px oklch(0 0 0 / 0.4);
-  --shadow-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 12px 28px -14px oklch(0 0 0 / 0.7);
-  --shadow-3: 0 2px 6px oklch(0 0 0 / 0.5), 0 30px 60px -24px oklch(0 0 0 / 0.8);
-  --shadow-hang: 0 20px 30px -18px oklch(0 0 0 / 0.8);
-}
+  --ink-lost: #FF8A3D;
+  --ink-found: #3CC8E6;
+  --ink-match: #3C6C37;
+  --page: #0C1310;
+  --surface: #121C17;
+  --mist: #17231D;
+  --mist-2: #1F2E26;
+  --rule: #24352C;
+  --rule-2: #355043;
 
-/* Animatable custom properties */
-@property --p { syntax: '<number>'; inherits: true; initial-value: 0; }
-@property --draw { syntax: '<number>'; inherits: true; initial-value: 0; }
+  --text: #EEF5F0;
+  --text-2: #B9C9BF;
+  --text-3: #8BA195;
+
+  --primary: #EEF5F0;
+  --primary-text: #0C1310;
+  --primary-hover: #D3E2D8;
+
+  --accent: #7FD38A;
+  --accent-text: #0C1310;
+  --accent-hover: #9BE0A4;
+  --on-ink: #0C1310;
+  --overlap-label: #FFFFFF;
+
+  --lost-text: #FFA766; --lost-tint: #33200F;
+  --found-text: #6FD6EE; --found-tint: #0F2B33;
+  --match: #7FD38A; --match-tint: #1A3320;
+
+  --ok: #5BD08F; --ok-tint: #12301F; --ok-text: #7EDCA8;
+  --warn: #F2C54A; --warn-tint: #332A0E; --warn-text: #F5D371;
+  --bad: #FF7A72; --bad-tint: #3A1918; --bad-text: #FF9B95;
+  --muted-tint: var(--mist); --muted-text: var(--text-2);
+
+  --focus-ring: 0 0 0 2px var(--page), 0 0 0 4px #7FD38A;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 2px 4px rgb(0 0 0 / 0.4), 0 22px 48px -12px rgb(0 0 0 / 0.7);
+
+  --sig-text: #6FD6EE; --sig-image: #A99BF0; --sig-location: #FFA766;
+  --sig-category: #5BD08F; --sig-date: #F2C54A; --sig-attribute: #F08A97;
+}

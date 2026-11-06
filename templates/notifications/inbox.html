@@ -1,45 +1,41 @@
 {% extends 'shell.html' %}
 {% load humanize ui %}
-{% block title %}Dispatches{% endblock %}
+{% block title %}Notifications{% endblock %}
 
 {% block main %}
-<header class="phead">
-  <div class="phead__title">
-    <span class="kicker">Inbox</span>
-    <h1 class="title"><em>Dispatches</em></h1>
-    <p class="lede" data-unread-label>{% if unread_total %}{{ unread_total }} unread{% else %}All read{% endif %}</p>
-  </div>
-  <div class="phead__actions">
-    {% if unread_total %}<form method="post" action="{% url 'notifications:read_all' %}" data-ajax-read data-read-all>{% csrf_token %}<button class="btn btn-paper" type="submit">{% icon 'check' %}Mark all read</button></form>{% endif %}
+<header class="page-head page-head--tight">
+  <div class="page-head__row">
+    <div class="stack" style="--gap:var(--s3)">
+      <h1>Notifications</h1>
+      <p class="lede" data-unread-label>{% if unread_total %}{{ unread_total }} unread{% else %}All read{% endif %}</p>
+    </div>
+    {% if unread_total %}<form method="post" action="{% url 'notifications:read_all' %}" data-ajax-read data-read-all>{% csrf_token %}<button class="btn" type="submit">{% icon 'check' %}Mark all as read</button></form>{% endif %}
   </div>
 </header>
 
-<nav class="seg" aria-label="Filter dispatches" style="margin-bottom:var(--s7)">
-  <a href="{% url 'notifications:inbox' %}" {% if not sel_kind and not unread_only %}aria-current="page"{% endif %}>Everything</a>
-  <a href="?unread=1" {% if unread_only %}aria-current="page"{% endif %}>Unread{% if unread_total %} · {{ unread_total }}{% endif %}</a>
-  <a href="?kind=match" {% if sel_kind == 'match' %}aria-current="page"{% endif %}>{% icon 'link' %}Threads</a>
-  <a href="?kind=claim" {% if sel_kind == 'claim' %}aria-current="page"{% endif %}>{% icon 'key' %}Cases</a>
-  <a href="?kind=report" {% if sel_kind == 'report' %}aria-current="page"{% endif %}>{% icon 'file' %}Tags</a>
+<nav class="tabs" aria-label="Filter notifications">
+  <a href="{% url 'notifications:inbox' %}" {% if not sel_kind and not unread_only %}aria-current="page"{% endif %}>All</a>
+  <a href="?unread=1" {% if unread_only %}aria-current="page"{% endif %}>Unread{% if unread_total %} <span class="count">{{ unread_total }}</span>{% endif %}</a>
+  <a href="?kind=match" {% if sel_kind == 'match' %}aria-current="page"{% endif %}>Matches</a>
+  <a href="?kind=claim" {% if sel_kind == 'claim' %}aria-current="page"{% endif %}>Claims</a>
+  <a href="?kind=report" {% if sel_kind == 'report' %}aria-current="page"{% endif %}>Reports</a>
 </nav>
 
 {% if notes %}
   {% regroup notes by day as days %}
   {% for group in days %}
-  <section class="dispatch-day" aria-label="{{ group.grouper|naturalday:'l j F' }}">
-    <div class="dispatch-day__date"><span class="num">{{ group.grouper|date:"d" }}</span><span>{{ group.grouper|naturalday:"l"|capfirst }} · {{ group.grouper|date:"M Y" }}</span></div>
-    <ul role="list" style="margin:0">
+  <section class="mt-6" aria-labelledby="day-{{ forloop.counter }}">
+    <h2 class="h4" id="day-{{ forloop.counter }}" style="margin-bottom:var(--s3)">{{ group.grouper|naturalday:"l j F"|capfirst }}</h2>
+    <ul class="rows">
     {% for n in group.list %}
-      <li class="dispatch{% if not n.is_read %} is-unread{% endif %}" data-notification>
-        <span class="dispatch__icon notification-visual">
-          {% if n.item %}{% include 'partials/thumb.html' with item=n.item cls='thumb--lg' %}{% else %}<span class="thumb thumb--lg">{% icon n.icon_name %}</span>{% endif %}
-          <span class="kind" aria-hidden="true">{% icon n.icon_name %}</span>
-        </span>
-        <div style="min-width:0">
-          <a class="dispatch__title" href="{% url 'notifications:open' n.pk %}">{% if not n.is_read %}<span class="sr-only">Unread: </span>{% endif %}{{ n.title }}</a>
-          {% if n.body %}<p class="dispatch__body">{{ n.body }}</p>{% endif %}
-          <span class="dispatch__meta">{{ n.get_kind_display|upper }} · <time datetime="{{ n.created_at|date:'c' }}">{{ n.created_at|time:"H:i" }} · {{ n.created_at|naturaltime }}</time></span>
+      <li class="r{% if not n.is_read %} is-unread{% endif %}" data-notification>
+        <span class="notification-visual">{% if n.item %}{% include 'partials/thumb.html' with item=n.item %}{% else %}<span class="thumb">{% icon n.icon_name %}</span>{% endif %}</span>
+        <div class="r__main">
+          <a class="r__title quiet-link" href="{% url 'notifications:open' n.pk %}">{% if not n.is_read %}<span class="sr-only">Unread: </span>{% endif %}{{ n.title }}</a>
+          {% if n.body %}<p class="muted" style="max-width:70ch">{{ n.body }}</p>{% endif %}
+          <span class="r__meta"><span>{{ n.get_kind_display }}</span><time datetime="{{ n.created_at|date:'c' }}">{{ n.created_at|time:"H:i" }}, {{ n.created_at|naturaltime }}</time></span>
         </div>
-        <form method="post" action="{% url 'notifications:read' n.pk %}" data-ajax-read>
+        <form class="r__side r__side--keep" method="post" action="{% url 'notifications:read' n.pk %}" data-ajax-read>
           {% csrf_token %}<input type="hidden" name="unread" value="{% if n.is_read %}1{% endif %}">
           <button class="btn btn-plain btn-sm" type="submit">{% if n.is_read %}Mark unread{% else %}Mark read{% endif %}</button>
         </form>
@@ -49,9 +45,9 @@
   </section>
   {% endfor %}
 {% elif unread_only or sel_kind %}
-  <div class="sheet">{% include 'partials/empty.html' with icon='check' title='Nothing here' text='No dispatches match this filter.' action_url='/notifications/' action_label='Show everything' %}</div>
+  {% include 'partials/empty.html' with title='Nothing here' text='No notifications match this filter.' action_url='/notifications/' action_label='Show all' %}
 {% else %}
-  <div class="sheet">{% include 'partials/empty.html' with icon='bell' title='No dispatches yet' text="You'll hear about new threads, case updates and moderator decisions here." %}</div>
+  {% include 'partials/empty.html' with title='No notifications yet' text="You'll hear here about likely matches, claim updates and moderator decisions." %}
 {% endif %}
 {% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
 {% endblock %}

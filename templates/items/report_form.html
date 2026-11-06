@@ -1,45 +1,39 @@
 {% extends 'shell.html' %}
 {% load ui %}
-{% block title %}{% if editing %}Edit tag{% else %}New tag{% endif %}{% endblock %}
+{% block title %}{% if editing %}Edit report{% else %}Report an item{% endif %}{% endblock %}
 
 {% block main %}
-<header class="phead">
-  <div class="phead__top">
-    <nav class="crumbs" aria-label="Breadcrumb">{% if editing %}<a href="{% url 'items:mine' %}">My tags</a><span>/</span><a href="{{ item.get_absolute_url }}">{{ item.pk|report_id }}</a><span>/</span><span>Edit</span>{% else %}<a href="{% url 'items:dashboard' %}">Desk</a><span>/</span><span>New tag</span>{% endif %}</nav>
-    <span class="serial">{% if editing %}Editing {{ item.pk|report_id }}{% else %}About a minute{% endif %}</span>
-  </div>
-  <div class="phead__title">
-    <h1 class="title">{% if editing %}Rewrite <em>the tag</em>{% else %}Fill out <em>a tag</em>{% endif %}</h1>
-    <p class="lede">{% if editing %}Saving sends it back to a moderator. Old match scores are cleared and recalculated after approval.{% else %}Specific details make matching work. A moderator reads every tag before it goes on the wall.{% endif %}</p>
-  </div>
+<header class="page-head page-head--tight">
+  <nav class="crumbs" aria-label="Breadcrumb">{% if editing %}<a href="{% url 'items:mine' %}">My reports</a>{% icon 'chevron-right' %}<a href="{{ item.get_absolute_url }}">{{ item.pk|report_id }}</a>{% icon 'chevron-right' %}<span>Edit</span>{% else %}<a href="{% url 'items:dashboard' %}">Home</a>{% icon 'chevron-right' %}<span>Report an item</span>{% endif %}</nav>
+  <h1>{% if editing %}Edit your report{% else %}Report an item{% endif %}</h1>
+  <p class="lede">{% if editing %}Saving sends it back to a moderator. Its match scores are cleared and worked out again after approval.{% else %}It takes about a minute. Specific details make matching work, and a moderator reads every report before it's published.{% endif %}</p>
 </header>
 
-{% if form.errors %}<div class="note note--bad" role="alert" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div>{% if form.non_field_errors %}{{ form.non_field_errors|join:" " }}{% else %}<b>Please check the marked fields.</b> Nothing has been saved yet.{% endif %}</div></div>{% endif %}
+{% if form.errors %}<div class="notice notice--bad" role="alert" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div class="notice__body">{% if form.non_field_errors %}<span>{{ form.non_field_errors|join:" " }}</span>{% else %}<span class="notice__title">Check the highlighted fields</span><span>Nothing has been saved yet.</span>{% endif %}</div></div>{% endif %}
 
 <form method="post" enctype="multipart/form-data" novalidate data-report-form>
   {% csrf_token %}
-  <div class="form-layout">
-    <div class="form-steps">
-      <section class="form-step" aria-labelledby="s1">
-        <div class="form-step__intro"><h2 id="s1">What happened?</h2><p>Lost tags look for found ones, and found tags look for lost ones.</p></div>
-        <div class="stack stack-6">
-          <fieldset style="border:0;padding:0" class="field{% if form.report_type.errors %} has-error{% endif %}">
-            <legend class="label" style="margin-bottom:var(--s3)">This is a…</legend>
-            <div class="stamp-choice">
+  <div class="report">
+    <div>
+      <fieldset>
+        <legend>What happened?</legend>
+        <div class="stack" style="--gap:var(--s5)">
+          <div class="field{% if form.report_type.errors %} has-error{% endif %}" role="radiogroup" aria-label="Report type">
+            <div class="choice">
               {% for radio in form.report_type %}
               <label>
                 {{ radio.tag }}
-                {% if radio.data.value == 'lost' %}<span class="stamp stamp--lost stamp--lg">{% icon 'lost' %}Lost</span><span class="muted">I'm looking for something of mine.</span>
-                {% else %}<span class="stamp stamp--found stamp--lg">{% icon 'found' %}Found</span><span class="muted">I have, or handed in, someone else's item.</span>{% endif %}
+                {% if radio.data.value == 'lost' %}<i class="mk mk--lost" aria-hidden="true" style="width:18px;height:18px;border-width:4px"></i><span>I lost something<small>I'm looking for something of mine</small></span>
+                {% else %}<i class="mk mk--found" aria-hidden="true" style="width:18px;height:18px"></i><span>I found something<small>I have, or handed in, someone else's item</small></span>{% endif %}
               </label>
               {% endfor %}
             </div>
             {{ form.report_type.errors }}
-          </fieldset>
+          </div>
           <div class="field{% if form.title.errors %} has-error{% endif %}">
-            <label class="label" for="{{ form.title.id_for_label }}">Name the item</label>
+            <label class="label" for="{{ form.title.id_for_label }}">What is it?</label>
             {{ form.title }}
-            <span class="hint">Plain and short: “Black leather wallet”, “Blue Milton bottle”.</span>
+            <span class="hint">Short and plain, like “Black leather wallet” or “Blue Milton bottle”.</span>
             {{ form.title.errors }}
           </div>
           <div class="field{% if form.category.errors %} has-error{% endif %}">
@@ -47,77 +41,70 @@
             {{ form.category }}{{ form.category.errors }}
           </div>
         </div>
-      </section>
+      </fieldset>
 
-      <section class="form-step" aria-labelledby="s2">
-        <div class="form-step__intro"><h2 id="s2">Where and when?</h2><p>The campus zone and the day. A rough time is enough.</p></div>
-        <div class="stack">
-          <div class="field{% if form.location.errors %} has-error{% endif %}">
+      <fieldset>
+        <legend>Where and when?<small>The campus zone and the day. A rough time is enough.</small></legend>
+        <div class="form-grid form-grid--2">
+          <div class="field span-2{% if form.location.errors %} has-error{% endif %}">
             <label class="label" for="{{ form.location.id_for_label }}">Campus zone</label>
             {{ form.location }}
-            <span class="hint">Neighbouring zones still count as partial evidence.</span>
+            <span class="hint">Zones next door still count as partial evidence.</span>
             {{ form.location.errors }}
           </div>
-          <div class="field-row">
-            <div class="field{% if form.event_date.errors %} has-error{% endif %}"><label class="label" for="{{ form.event_date.id_for_label }}">Date</label>{{ form.event_date }}{{ form.event_date.errors }}</div>
-            <div class="field{% if form.event_time.errors %} has-error{% endif %}"><label class="label" for="{{ form.event_time.id_for_label }}">Approximate time <span class="opt">optional</span></label>{{ form.event_time }}{{ form.event_time.errors }}</div>
-          </div>
+          <div class="field{% if form.event_date.errors %} has-error{% endif %}"><label class="label" for="{{ form.event_date.id_for_label }}">Date</label>{{ form.event_date }}{{ form.event_date.errors }}</div>
+          <div class="field{% if form.event_time.errors %} has-error{% endif %}"><label class="label" for="{{ form.event_time.id_for_label }}">Approximate time <span class="opt">optional</span></label>{{ form.event_time }}{{ form.event_time.errors }}</div>
         </div>
-      </section>
+      </fieldset>
 
-      <section class="form-step" aria-labelledby="s3">
-        <div class="form-step__intro"><h2 id="s3">Describe it</h2><p>Colour, material, marks, stickers. Keep truly private details (what's inside) for the verification questions later.</p></div>
-        <div class="stack">
-          <div class="field{% if form.description.errors %} has-error{% endif %}">
-            <label class="label" for="{{ form.description.id_for_label }}">Description <span class="counter" id="desc-count"></span></label>
+      <fieldset>
+        <legend>Describe it<small>Colour, material, marks, stickers. Keep truly private details, like what's inside, for the verification questions later.</small></legend>
+        <div class="form-grid form-grid--2">
+          <div class="field span-2{% if form.description.errors %} has-error{% endif %}">
+            <label class="label" for="{{ form.description.id_for_label }}">Description <span class="opt num" id="desc-count"></span></label>
             {{ form.description }}{{ form.description.errors }}
           </div>
-          <div class="field-row">
-            <div class="field"><label class="label" for="{{ form.brand.id_for_label }}">Brand <span class="opt">optional</span></label>{{ form.brand }}{{ form.brand.errors }}</div>
-            <div class="field"><label class="label" for="{{ form.color.id_for_label }}">Main colour <span class="opt">optional</span></label>{{ form.color }}{{ form.color.errors }}</div>
-          </div>
+          <div class="field"><label class="label" for="{{ form.brand.id_for_label }}">Brand <span class="opt">optional</span></label>{{ form.brand }}{{ form.brand.errors }}</div>
+          <div class="field"><label class="label" for="{{ form.color.id_for_label }}">Main colour <span class="opt">optional</span></label>{{ form.color }}{{ form.color.errors }}</div>
         </div>
-      </section>
+      </fieldset>
 
-      <section class="form-step" aria-labelledby="s4">
-        <div class="form-step__intro"><h2 id="s4">Add a photo</h2><p>Optional, but it drives the visual part of the match. It stays private until approval.</p></div>
+      <fieldset>
+        <legend>Add a photo<small>Optional, but it drives the image part of matching. It stays private until the report is approved.</small></legend>
         <div class="field{% if form.image.errors %} has-error{% endif %}">
-          <span class="label" id="photo-label">Photo <span class="opt">JPG · PNG · WEBP · GIF · 5 MB</span></span>
           <div class="dropzone{% if editing and item.image %} has-file{% endif %}" data-dropzone data-max-mb="5">
-            <div class="dropzone__prompt">{% icon 'camera' %}<span><b>Choose a photo</b> or drop it here</span></div>
-            <div class="dropzone__preview" {% if not editing or not item.image %}hidden{% endif %}><img alt="Selected photo preview" {% if editing and item.image %}src="{{ item.image.url }}"{% endif %}></div>
-            <span class="hint" data-file-name style="position:relative">{% if editing and item.image %}Current photo is kept unless you choose another{% endif %}</span>
+            {% icon 'camera' %}
+            <span class="dropzone__title" id="photo-label">Choose a photo or drop it here</span>
+            <span class="hint">JPG, PNG, WEBP or GIF, up to 5 MB</span>
+            <div class="dropzone__preview" {% if not editing or not item.image %}hidden{% endif %}><div class="photo"><img alt="Selected photo preview" {% if editing and item.image %}src="{{ item.image.url }}"{% endif %}></div></div>
+            <span class="hint" data-file-name>{% if editing and item.image %}The current photo is kept unless you choose another.{% endif %}</span>
             <input type="file" name="{{ form.image.html_name }}" id="{{ form.image.id_for_label }}" accept="image/jpeg,image/png,image/webp,image/gif" aria-labelledby="photo-label">
           </div>
-          <span class="error-text" data-file-error role="alert"></span>
+          <span class="error" data-file-error role="alert"></span>
           {{ form.image.errors }}
         </div>
-      </section>
+      </fieldset>
 
-      <div class="form-bar">
-        <span class="hint">{% icon 'lock' %} Your contact details never appear on the tag.</span>
-        <div class="cluster">
-          <a class="btn btn-plain" href="{% if editing %}{{ item.get_absolute_url }}{% else %}{% url 'items:dashboard' %}{% endif %}">Cancel</a>
-          <button type="submit" class="btn btn-ink btn-lg">{% if editing %}Save and resubmit{% else %}Pin it for review{% endif %}{% icon 'arrow-right' 'icon-go' %}</button>
-        </div>
+      <div class="report__submit">
+        <button type="submit" class="btn btn-here btn-lg">{% if editing %}Save and send for review{% else %}Send for review{% endif %}</button>
+        <a class="btn btn-plain btn-lg" href="{% if editing %}{{ item.get_absolute_url }}{% else %}{% url 'items:dashboard' %}{% endif %}">Cancel</a>
+        <span class="hint" style="margin-left:auto">{% icon 'lock' %} Your contact details are never shown on a report.</span>
       </div>
     </div>
 
-    <aside class="preview sticky" aria-label="Preview of your tag" data-preview>
-      <span class="kicker">Your tag, as others will see it</span>
-      <div class="preview__rail" aria-hidden="true"></div>
-      <div class="tag tag--lost" aria-hidden="true" style="max-width:300px;margin:0 auto">
-        <div class="tag__paper">
-          <div class="tag__head"><span class="stamp stamp--lost" data-p="type"><svg class="icon" aria-hidden="true"><use href="#i-lost"></use></svg><span>Lost</span></span><span class="serial">{% if editing %}{{ item.pk|report_id }}{% else %}LL-····{% endif %}</span></div>
-          <div class="tag__media" data-p="media">{% if editing and item.image %}<img alt="" src="{{ item.image.url }}">{% else %}<div class="tag__placeholder">·</div>{% endif %}</div>
-          <div class="tag__perf"></div>
-          <div class="tag__body">
-            <div class="tag__title" data-p="title">Name your item</div>
-            <div class="tag__meta"><span data-p="category">Category</span><span data-p="location">Campus zone</span><span data-p="date">Date</span></div>
+    <aside class="report__aside stack" style="--gap:var(--s5)" aria-label="Preview of your report" data-preview>
+      <h2 class="h4">Preview</h2>
+      <div aria-hidden="true">
+        <article class="item">
+          <div class="item__photo"><div class="photo" data-p="media">{% if editing and item.image %}<img alt="" src="{{ item.image.url }}">{% else %}<span class="photo__none">?</span>{% endif %}</div></div>
+          <div class="stack" style="--gap:6px">
+            <h3 class="item__title" data-p="title">What is it?</h3>
+            <div class="item__where"><span class="type type--lost" data-p="type"><i class="mk mk--lost"></i><span>Lost</span></span><span data-p="location">Campus zone</span><span data-p="date">Date</span></div>
+            <p class="small faint" data-p="category">Category</p>
           </div>
-        </div>
+        </article>
       </div>
-      <div class="note mt-4">{% icon 'shield' %}<div><b>What happens next.</b> A moderator reads it. Once approved, LostLink compares it with opposite tags and tells both people about strong candidates. Nothing changes hands without verification.</div></div>
+      <div class="notice notice--info"><div class="notice__body"><span class="notice__title">What happens next</span><span class="small">A moderator reads it. Once approved, LostLink compares it with reports of the other type and tells both people about strong candidates. Nothing is handed over without a check.</span></div></div>
     </aside>
   </div>
 </form>
