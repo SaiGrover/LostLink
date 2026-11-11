@@ -46,7 +46,7 @@
     <h2 class="h3" id="trend-title">New reports each week</h2>
     <p>The last 12 weeks.</p>
     <div class="columns" role="img" aria-label="Weekly new reports for the last 12 weeks. Exact figures are in the table below.">
-      {% for w in trends %}<div class="columns__col" title="Week of {{ w.label }}: {{ w.lost }} lost, {{ w.found }} found, {{ w.returned }} returned"><div class="columns__bar" style="height:{{ w.found_pct }}%;background:var(--found)"></div><div class="columns__bar" style="height:{{ w.lost_pct }}%;background:var(--lost);border-radius:2px 2px 0 0"></div></div>{% endfor %}
+      {% for w in trends %}<div class="columns__col" title="Week of {{ w.label }}: {{ w.lost }} lost, {{ w.found }} found, {{ w.returned }} returned"><div class="columns__bar" style="height:{{ w.found_pct }}%;background:var(--found-dot)"></div><div class="columns__bar" style="height:{{ w.lost_pct }}%;background:var(--lost-dot);border-radius:2px 2px 0 0"></div></div>{% endfor %}
     </div>
     <div class="columns__axis">{% for w in trends %}<span>{% if forloop.first or forloop.last %}{{ w.label }}{% endif %}</span>{% endfor %}</div>
     <div class="cluster between mt-4">
