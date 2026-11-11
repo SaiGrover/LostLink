@@ -1,0 +1,2091 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+\usepackage[a4paper,top=19mm,bottom=20mm,left=19mm,right=19mm,headheight=15pt]{geometry}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.multipart,fit,calc,backgrounds}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{needspace}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{cite}
+\renewcommand{\citepunct}{], [}
+\renewcommand{\citedash}{]--[}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage[titles]{tocloft}
+\setlength{\cftbeforechapskip}{2.5pt}
+\setlength{\cftbeforesecskip}{0pt}
+\renewcommand{\cftchapfont}{\bfseries\color{teal}}
+\renewcommand{\cftchappagefont}{\bfseries}
+\setlength{\cftfigindent}{0pt}\setlength{\cfttabindent}{0pt}
+\setlength{\cftfignumwidth}{2.4em}\setlength{\cfttabnumwidth}{2.4em}
+\setlength{\cftbeforefigskip}{0pt}\setlength{\cftbeforetabskip}{0pt}
+\renewcommand{\cftdotsep}{2.5}
+
+\definecolor{ink}{HTML}{000000}
+\definecolor{teal}{HTML}{17365D}
+\definecolor{rust}{HTML}{365F91}
+\definecolor{paper}{HTML}{FFFFFF}
+\definecolor{pale}{HTML}{EDF3F8}
+\definecolor{line}{HTML}{7E8793}
+\definecolor{green}{HTML}{17365D}
+\definecolor{linkblue}{HTML}{1F5AA6}
+% LostLink interface palette (static/css/tokens.css, light theme)
+\definecolor{llpage}{HTML}{F5F3F0}
+\definecolor{lltext}{HTML}{211F1E}
+\definecolor{llaccent}{HTML}{D6533B}
+\definecolor{llaccentink}{HTML}{B83E2B}
+\definecolor{llfound}{HTML}{827B75}
+\definecolor{llsoft}{HTML}{FFF1ED}
+
+\hypersetup{colorlinks=true,linkcolor=linkblue,urlcolor=linkblue,citecolor=linkblue,pdfauthor={Saanvi Grover, Prankit Goel, Aditya Sharma, Aaradhya Kulashri},pdftitle={LostLink Project Report}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\setstretch{1.00}
+\renewcommand{\arraystretch}{1.18}
+\setlist[itemize]{leftmargin=5mm,itemsep=1pt,topsep=2pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=6mm,itemsep=1pt,topsep=2pt,parsep=0pt}
+\captionsetup{font=small,labelfont=bf,labelsep=period,skip=5pt}
+
+% Floats: let text fill the page around figures, and never ship a mostly empty float page.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+\setlength{\textfloatsep}{10pt plus 3pt minus 3pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
+\newif\ifcoverpage
+\coverpagetrue
+% Page frame on every page (single on the cover, double elsewhere).
+\AddToHook{shipout/foreground}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[ink,line width=0.55pt]
+      ($(current page.north west)+(9mm,-9mm)$) rectangle
+      ($(current page.south east)+(-9mm,9mm)$);
+    \ifcoverpage\else
+      \draw[ink!45,line width=0.25pt]
+        ($(current page.north west)+(11mm,-11mm)$) rectangle
+        ($(current page.south east)+(-11mm,11mm)$);
+    \fi
+  \end{tikzpicture}%
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\fontsize{9.5}{11}\selectfont\textsc{LostLink Project Report}}
+\fancyhead[R]{\fontsize{9.5}{11}\selectfont\nouppercase{\leftmark}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% Chapters continue on the same page (no half-empty chapter endings).
+\titleclass{\chapter}{straight}
+
+\titleformat{\chapter}[display]
+  {\normalfont\color{ink}}
+  {\fontsize{10}{12}\selectfont\sffamily\bfseries\color{teal}\MakeUppercase{Chapter \thechapter}}
+  {2pt}
+  {\fontsize{21}{25}\selectfont\bfseries}
+  [\vspace{1pt}{\color{teal}\rule{20mm}{0.6pt}}]
+\titlespacing*{\chapter}{0pt}{16pt}{6pt}
+\titleformat{\section}{\fontsize{14}{17}\selectfont\bfseries\color{teal}}{\thesection}{0.55em}{}
+\titlespacing*{\section}{0pt}{8pt}{3pt}
+\titleformat{\subsection}{\fontsize{12.5}{15}\selectfont\bfseries\color{ink}}{\thesubsection}{0.55em}{}
+\titlespacing*{\subsection}{0pt}{6pt}{2pt}
+\setcounter{tocdepth}{1}
+
+\newcommand{\status}[1]{\colorbox{pale}{\textcolor{teal}{\sffamily\bfseries #1}}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\assetroot}{assets}
+\newcommand{\shotdir}{\assetroot/shots}
+\newcommand{\shotframe}[2][\linewidth]{\fbox{\includegraphics[width=#1]{\shotdir/#2}}}
+\newcommand{\swatch}[1]{\tikz[baseline=-0.6ex]\draw[ink!40,fill=#1] (0,-0.12) rectangle (0.55,0.22);}
+\setlength{\fboxsep}{0pt}
+\setlength{\fboxrule}{0.3pt}
+
+% Numbered IEEE-style entries without the report class's duplicate bibliography heading.
+\makeatletter
+\renewenvironment{thebibliography}[1]
+  {\list{\@biblabel{\@arabic\c@enumiv}}%
+    {\settowidth\labelwidth{\@biblabel{#1}}%
+     \leftmargin\labelwidth
+     \advance\leftmargin\labelsep
+     \usecounter{enumiv}%
+     \let\p@enumiv\@empty
+     \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+   \sloppy\clubpenalty4000\widowpenalty4000\sfcode`\.\@m}
+  {\def\@noitemerr{\@latex@warning{Empty `thebibliography' environment}}\endlist}
+\makeatother
+
+\lstdefinestyle{lostlink}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{ink}\bfseries,
+  commentstyle=\color{ink!70},
+  stringstyle=\color{ink},
+  frame=single,
+  rulecolor=\color{line},
+  backgroundcolor=\color{paper},
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  xleftmargin=3mm,
+  framexleftmargin=2mm,
+  aboveskip=6pt,
+  belowskip=6pt
+}
+
+% Shared TikZ styles
+\tikzset{
+  box/.style={draw=ink,rounded corners=1.5mm,fill=paper,align=center,font=\small,inner sep=2.2mm},
+  pbox/.style={box,fill=pale},
+  dec/.style={diamond,draw=rust,fill=rust!8,aspect=2.4,align=center,font=\scriptsize,inner sep=1.2mm},
+  term/.style={draw=ink,rounded corners=4mm,fill=pale,align=center,font=\small\bfseries,inner sep=2mm},
+  arr/.style={-{Latex[length=2mm]},thick,color=teal},
+  lab/.style={font=\scriptsize,text=ink!80,fill=paper,inner sep=1pt},
+}
+\begin{document}
+
+% ---------------------------------------------------------------------------
+% Title page - follows the supplied Full Stack Development Lab synopsis cover.
+% ---------------------------------------------------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\begingroup
+\begin{center}
+\vspace*{2mm}
+{\fontsize{18}{22}\selectfont\bfseries PROJECT REPORT\par}
+\vspace{3mm}
+{\fontsize{12}{15}\selectfont on\par}
+\vspace{3mm}
+{\fontsize{18}{23}\selectfont\bfseries LOSTLINK\par}
+\vspace{2mm}
+{\fontsize{15}{19}\selectfont\bfseries AN AI-ENABLED FULL-STACK PLATFORM FOR\\INTELLIGENT LOST-AND-FOUND ITEM MATCHING\\AND RECOVERY\par}
+\vspace{6mm plus 1fill}
+\includegraphics[height=45mm]{\assetroot/synopsis-media/image1.jpg}\par
+\vspace{6mm plus 1fill}
+{\fontsize{12.5}{16}\selectfont\bfseries Full Stack Development Lab (24B15CS314)\par}
+\vspace{1mm}
+{\fontsize{11.5}{15}\selectfont Project Based Learning (PBL)\par}
+\vspace{1mm}
+{\fontsize{11.5}{15}\selectfont Odd Semester 2026, Academic Session 2026--27\par}
+\end{center}
+
+\vspace{6mm plus 1fill}
+\noindent
+\hspace*{7mm}\begin{minipage}[t]{0.42\textwidth}
+{\fontsize{12}{15}\selectfont\bfseries SUBMITTED TO}\par\vspace{3mm}
+{\fontsize{11}{16}\selectfont
+Dr. Sonal\\
+Dr. Shobhit Tyagi}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+{\fontsize{12}{15}\selectfont\bfseries SUBMITTED BY}\par\vspace{3mm}
+{\fontsize{10.5}{15}\selectfont
+\begin{tabular}{@{}p{34mm}l@{}}
+Saanvi Grover & 2408030010\\
+Prankit Goel & 2408030011\\
+Aditya Sharma & 2408030019\\
+Aaradhya Kulashri & 2408030026
+\end{tabular}}
+\end{minipage}\hspace*{4mm}
+
+\vspace{6mm plus 1fill}
+\begin{center}
+{\fontsize{12}{15}\selectfont\bfseries
+DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING\\
+JAYPEE INSTITUTE OF INFORMATION TECHNOLOGY,\\
+NOIDA (U.P.) NOVEMBER 2026\par}
+\end{center}
+\vspace{2mm}
+\endgroup
+\end{titlepage}
+\coverpagefalse
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% ---------------------------------------------------------------------------
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\markboth{Abstract}{Abstract}
+LostLink is a full-stack campus lost-and-found platform that replaces scattered messages and notice-board posts with a searchable, moderated and auditable recovery workflow. Students report lost or found objects with structured details and an optional photograph, and a moderator reviews every report before it is published. A hybrid matching engine compares approved lost and found reports on six signals and stores a per-signal explanation of every score. A similarity score proposes a lead; it never proves ownership. Recovery runs through a separate human-in-the-loop claim process with private verification questions, an independent moderator decision, controlled disclosure of contact details and a confirmed handover.
+
+\textbf{Key contributions}
+\begin{itemize}
+  \item \textbf{Explainable hybrid matching:} TF--IDF text, ResNet-50 image features, campus zone, category, date, and brand or colour, combined with the synopsis weights; every score shows how much each signal contributed.
+  \item \textbf{Calibrated image similarity:} engine \code{synopsis-v2} rescales image cosine above each model's measured chance level, so unrelated photographs no longer earn unearned points.
+  \item \textbf{Human-controlled recovery:} private questions, an independent moderator decision, contacts disclosed only after approval, and a confirmed handover that closes both sides of the case.
+  \item \textbf{Workflow integrity:} a logic audit fixed eight defects in claims, moderation and analytics, each covered by a regression test.
+  \item \textbf{Operations and privacy:} three roles, protected media, append-only decision log, analytics, CSV/PDF exports and score-drift monitoring.
+  \item \textbf{Polished interface:} Black + Vermilion design system with Light/Dark/System themes, disc-overlap match visualisation and a phone tab bar.
+\end{itemize}
+
+\textbf{Technology:} Django 6.1 on Python 3.13, server-rendered templates with progressive JavaScript, SQLite for development and PostgreSQL in production.
+
+\textbf{Verification:} on the merged repository (commit \code{4a710ee}), all 134 automated tests pass on SQLite in 210.9 seconds, with one optional pretrained-model test skipped by design. A 318-check browser sweep and a complete end-to-end recovery journey also pass.
+
+\textbf{Limitation:} matching accuracy has not yet been measured on independently photographed, human-reviewed campus reports; the bundled pilot set supports engineering checks only.
+
+\textbf{Keywords:} lost and found, Django, explainable matching, image-similarity calibration, role-based access control, TF--IDF, ResNet-50, human verification.
+
+% ---------------------------------------------------------------------------
+\clearpage
+\chapter*{Table of Contents}
+\markboth{Contents}{Contents}
+\begingroup
+\fontsize{9.6}{11}\selectfont
+\setlength{\columnsep}{7mm}
+\begin{multicols}{2}
+\makeatletter\@starttoc{toc}\makeatother
+\end{multicols}
+\endgroup
+
+% ---------------------------------------------------------------------------
+\clearpage
+\chapter*{List of Figures and Tables}
+\addcontentsline{toc}{chapter}{List of Figures and Tables}
+\markboth{List of Figures and Tables}{List of Figures and Tables}
+\begingroup
+\fontsize{8.4}{9.6}\selectfont
+\makeatletter
+\setlength{\columnsep}{6mm}
+\noindent\begin{minipage}[t]{0.505\textwidth}
+\textbf{\color{teal}Figures}\par\vspace{1pt}
+\@starttoc{lof}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.465\textwidth}
+\textbf{\color{teal}Tables}\par\vspace{1pt}
+\@starttoc{lot}
+\end{minipage}
+\makeatother
+\endgroup
+\vspace{3pt}
+{\color{teal}\bfseries Abbreviations}\par
+{\footnotesize\raggedright
+\textbf{AJAX} Asynchronous JavaScript and XML; \textbf{API} Application Programming Interface; \textbf{CLIP} Contrastive Language--Image Pre-training; \textbf{CNN} Convolutional Neural Network; \textbf{CRUD} Create, Read, Update, Delete; \textbf{CSRF} Cross-Site Request Forgery; \textbf{DFD} Data Flow Diagram; \textbf{ERD} Entity Relationship Diagram; \textbf{HSTS} HTTP Strict Transport Security; \textbf{MRR} Mean Reciprocal Rank; \textbf{MVT} Model--View--Template; \textbf{ORM} Object--Relational Mapping; \textbf{RBAC} Role-Based Access Control; \textbf{TF--IDF} Term Frequency--Inverse Document Frequency; \textbf{UI} User Interface.\par}
+
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ===========================================================================
+\chapter{Introduction}
+
+\section{Project Overview}
+LostLink gives the campus a single recovery desk.
+\begin{itemize}
+  \item A person files a \textbf{lost} or \textbf{found} report with a title, description, category, campus zone, date and an optional photograph.
+  \item A moderator reviews the report; only approved reports become searchable and eligible for matching.
+  \item The matching engine compares every eligible lost--found pair and ranks plausible connections, showing how much each signal contributed.
+  \item A person who believes an item is theirs opens a private \textbf{claim}; contact details are revealed only after a moderator approves it.
+  \item A moderator confirms the physical handover, which closes both reports and every dependent claim and match.
+\end{itemize}
+
+\section{Problem Statement}
+Campus recovery today depends on fragmented channels, and each has a gap:
+\begin{itemize}
+  \item \textbf{Scattered:} class groups, informal messages, security desks and paper notices never meet in one place.
+  \item \textbf{Unsearchable:} free-text posts are quickly buried and cannot be filtered by place, date or category.
+  \item \textbf{Inconsistent:} two people describe the same object in different words, and photographs are often missing.
+  \item \textbf{Unsafe:} posting phone numbers publicly exposes personal information, and anyone can claim an item.
+  \item \textbf{Unaccountable:} nobody records who handed what to whom, so disputes cannot be resolved.
+\end{itemize}
+A useful system must improve discovery without treating algorithmic similarity as proof of ownership.
+
+\begin{table}[H]
+\centering\small
+\caption[Existing channels compared with LostLink]{Existing recovery channels compared with LostLink}
+\begin{tabularx}{\textwidth}{X cccc}
+\toprule
+Capability & Chat groups & Notice board & Security desk & LostLink\\
+\midrule
+Single searchable record & -- & -- & Partial & Yes\\
+Filter by zone, date and category & -- & -- & -- & Yes\\
+Automatic ranking of likely pairs & -- & -- & -- & Yes\\
+Contact details kept private & -- & -- & Yes & Yes\\
+Ownership verified before handover & -- & -- & Partial & Yes\\
+Audit trail of decisions & -- & -- & Partial & Yes\\
+Available from a phone at any time & Yes & -- & -- & Yes\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Objectives}
+\begin{enumerate}
+  \item Centralise lost and found reports in a structured, searchable database.
+  \item Rank likely pairs using explainable text, visual, location, date and metadata signals.
+  \item Require moderation before a report becomes public or eligible for matching.
+  \item Verify ownership with private questions and an independent staff decision.
+  \item Protect contact details, private answers and non-public photographs.
+  \item Give administrators auditable analytics, exports and decision history.
+\end{enumerate}
+
+\section{Scope of the Project}
+\textbf{In scope}
+\begin{itemize}
+  \item Accounts and three roles: Student, Moderator, Administrator.
+  \item Reports with one photograph, moderation, search and hybrid matching.
+  \item Claims, verification questions, disputes and handover confirmation.
+  \item In-app notifications, analytics, CSV and PDF exports.
+\end{itemize}
+\textbf{Out of scope}
+\begin{itemize}
+  \item Native mobile apps, payments and GPS tracking.
+  \item Email or SMS delivery, and any automatic ownership approval.
+\end{itemize}
+
+\section{Motivation}
+The project answers a practical campus need and an engineering question: can multimodal similarity narrow a noisy search while keeping people in control of the consequential decision? LostLink separates \emph{discovery} from \emph{verification}:
+\begin{itemize}
+  \item the \textbf{machine proposes} a ranked, explained lead;
+  \item a \textbf{moderator verifies} ownership from private evidence;
+  \item the \textbf{two people confirm} the physical handover.
+\end{itemize}
+
+\section{Organisation of the Report}
+\begin{itemize}
+  \item \textbf{Chapters 2--3:} requirements and technology stack.
+  \item \textbf{Chapter 4:} architecture, deployment, data model, state machines and sequence diagrams.
+  \item \textbf{Chapter 5:} implementation, including the matching engine, its calibration, security and workflow rules.
+  \item \textbf{Chapters 6--7:} modules and a screenshot walkthrough of the interface.
+  \item \textbf{Chapters 8--10:} testing, results with a worked example, and conclusions.
+\end{itemize}
+
+% ===========================================================================
+\chapter{Requirement Analysis}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item who uses LostLink and what each stakeholder needs;
+  \item functional and non-functional requirements, with their status;
+  \item use cases, platform requirements, role capabilities and acceptance evidence.
+\end{itemize}
+
+\section{Stakeholders}
+\begin{table}[H]
+\centering\small
+\caption{Stakeholders and their needs}
+\begin{tabularx}{\textwidth}{p{30mm}X X}
+\toprule
+Stakeholder & Need & How LostLink serves it\\
+\midrule
+Student who lost an item & Find it quickly without trawling every channel & One search wall, ranked matches and notifications\\
+Student who found an item & Hand it back safely to the real owner & Private claims and moderator-verified ownership\\
+Moderator (staff) & Review reports and decide claims fairly & Review queue, evidence view and decision log\\
+Administrator & Run the service and understand its use & User and taxonomy management, analytics, exports\\
+Institution & Protect student data and resolve disputes & RBAC, protected media and an append-only audit trail\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Functional Requirements}
+\begin{table}[H]
+\centering\small
+\caption{Functional requirements and implemented response}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{13mm}X p{27mm}}
+\toprule
+ID & Requirement & Status\\
+\midrule
+FR-01 & Register and authenticate a student account; maintain a profile. & \status{Implemented}\\
+FR-02 & Create, edit, view, withdraw and flag lost/found reports. & \status{Implemented}\\
+FR-03 & Review reports and publish only approved, active records. & \status{Implemented}\\
+FR-04 & Search by keyword, type, category, zone, status, date and sort order. & \status{Implemented}\\
+FR-05 & Compute explainable lost--found similarity and confidence tiers. & \status{Implemented}\\
+FR-06 & Start, question, answer, decide, dispute and complete a claim. & \status{Implemented}\\
+FR-07 & Notify relevant users without duplicating unread events. & \status{Implemented}\\
+FR-08 & Administer users, taxonomy, analytics and filtered exports. & \status{Implemented}\\
+FR-09 & Close every dependent claim, match and report when a case ends. & \status{Implemented}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Use Case Specifications}
+\begin{itemize}
+  \item Eight use cases cover the whole recovery journey, from filing a report to running the service.
+  \item Each one names its actor and the outcome stored in the database.
+\end{itemize}
+\begin{table}[H]
+\centering\small
+\caption{Principal use cases}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{11mm}p{29mm}p{20mm}X}
+\toprule
+ID & Use case & Actor & Main flow and outcome\\
+\midrule
+UC-01 & File a report & Student & Fill the form; report saved as \emph{pending} and queued for review\\
+UC-02 & Review a report & Moderator & Approve (publish and match) or reject with a reason; reporter notified\\
+UC-03 & Inspect a match & Student & Open a report; see candidates with per-signal scores\\
+UC-04 & Claim an item & Student & Submit a statement; finder notified; questions follow\\
+UC-05 & Decide a claim & Moderator & Approve after answers (contacts shared) or reject; rivals closed\\
+UC-06 & Confirm handover & Moderator & Mark returned; both reports, matches and claims closed\\
+UC-07 & Raise a dispute & Participant & Claim moves to the dispute queue for staff resolution\\
+UC-08 & Manage the service & Administrator & Roles, taxonomy, analytics and CSV/PDF exports\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Non-Functional Requirements}
+\begin{table}[H]
+\centering\small
+\caption{Quality requirements}
+\begin{tabularx}{\textwidth}{p{27mm}X}
+\toprule
+Quality & Requirement\\
+\midrule
+Security & Session authentication, CSRF protection, server-side roles, object ownership checks, protected media and safe exports.\\
+Privacy & Verification answers and contact details are never public; contacts are disclosed only after approval.\\
+Integrity & No staff member decides a claim on a report they filed; a completed handover closes both sides of the case.\\
+Usability & Responsive interface, keyboard access, no-JavaScript fallbacks, reduced-motion support and clear empty and error states.\\
+Reliability & Database constraints, idempotent re-matching, graceful feature-extraction failure and tolerant input parsing.\\
+Maintainability & Modular Django apps, migrations, shared templates, design tokens, tests and documented configuration.\\
+Performance & Cached image and text features, pagination, indexed relations and production PostgreSQL support.\\
+Explainability & Every match stores its component scores, missing evidence, model manifest, weights and engine version.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Hardware and Software Requirements}
+\begin{table}[H]
+\centering\small
+\caption{Hardware and software requirements}
+\begin{tabularx}{\textwidth}{p{34mm}X}
+\toprule
+Item & Requirement\\
+\midrule
+Processor and memory & Dual-core CPU and 8 GB RAM (TF--IDF + histogram profile); 16 GB recommended for ResNet-50; GPU optional\\
+Storage & About 2 GB free, plus space for uploaded photographs and model weights\\
+Runtime & Python 3.11 or later (developed on 3.13) and Django 6.x \cite{python,django}\\
+Libraries & Pillow, NumPy, scikit-learn \cite{pillow,sklearn,sklearnpaper}; ReportLab for PDF \cite{reportlab}\\
+Optional ML profile & PyTorch, TorchVision, Sentence Transformers and CLIP \cite{pytorch,pytorchpaper}\\
+Database & PostgreSQL 17 in production; SQLite for local development \cite{postgres}\\
+Client & Any standards-compliant desktop or mobile browser\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{User Requirements}
+\begin{table}[H]
+\centering\small
+\caption{Role-to-capability matrix}
+\begin{tabularx}{\textwidth}{p{34mm}XXX}
+\toprule
+Capability & Student & Moderator & Administrator\\
+\midrule
+Report and search & Yes & Yes & Yes\\
+Claim and answer & Yes & Yes, if a participant & Yes, if a participant\\
+Review reports and claims & No & Yes, except own reports & Yes, except own reports\\
+Resolve flags and disputes & No & Yes & Yes\\
+Manage users and taxonomy & No & No & Yes\\
+Analytics and exports & No & Limited review context & Yes\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering\small
+\caption{User acceptance evidence}
+\begin{tabularx}{\textwidth}{p{28mm}X p{33mm}}
+\toprule
+Area & Acceptance criterion & Verification evidence\\
+\midrule
+Student access & A student can manage only their own reports and their own claims. & Ownership and role tests\\
+Moderation & Unapproved reports stay non-public and are never matched. & Workflow integration tests\\
+Matching & Every proposed pair shows its component scores and missing evidence. & Scoring and persistence tests\\
+Recovery & Contact details appear only after staff approval and answered questions. & End-to-end claim test\\
+Case closure & A confirmed return closes the claimant's own report, its matches and its claims. & Regression tests\\
+Administration & Exports omit private answers and neutralise formula-like CSV values. & Export security tests\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===========================================================================
+\chapter{Technology Stack}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item the six-layer stack from browser to server;
+  \item frontend, backend and database choices and why they were made;
+  \item the tools and custom management commands used to build and run the project.
+\end{itemize}
+
+\section{Overview}
+\begin{itemize}
+  \item Six layers, each with a single responsibility, from the browser down to the server.
+  \item No frontend build step and no external API dependency in the core workflow.
+  \item Machine-learning models are optional and swappable through \code{matching/profile.json}.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[layer/.style={draw=ink,rounded corners=1.2mm,minimum width=158mm,minimum height=8.5mm,align=left,font=\footnotesize,anchor=north west,inner xsep=3mm,text width=152mm},
+  tag/.style={font=\small\bfseries,text=teal,anchor=west}]
+\node[layer,fill=pale] (l1) at (0,0) {\hspace{36mm}Django templates; 5 CSS files with design tokens; 3 JS files};
+\node[layer] (l2) at (0,-1.05) {\hspace{36mm}Django 6.1: routing, forms, sessions, CSRF, role decorators};
+\node[layer,fill=pale] (l3) at (0,-2.1) {\hspace{36mm}accounts, items, matching, claims, notifications, dashboard};
+\node[layer] (l4) at (0,-3.15) {\hspace{36mm}TF--IDF, ResNet-50 (PyTorch), optional CLIP and Sentence-BERT};
+\node[layer,fill=pale] (l5) at (0,-4.2) {\hspace{36mm}Django ORM; SQLite (dev); PostgreSQL 17 (prod); protected media};
+\node[layer] (l6) at (0,-5.25) {\hspace{36mm}Gunicorn; WhiteNoise; Render web service with a persistent disk};
+\foreach \n/\t in {l1/Presentation,l2/Web framework,l3/Domain apps,l4/Machine learning,l5/Data,l6/Serving}
+  \node[tag] at ($(\n.west)+(1.5mm,0)$) {\t};
+\end{tikzpicture}
+\caption{LostLink technology stack, from browser to server}
+\end{figure}
+
+\section{Frontend Technologies}
+\begin{itemize}
+  \item \textbf{Templates:} semantic HTML rendered by Django, with a shared shell and reusable partials.
+  \item \textbf{Styles:} five modular CSS files (tokens, base, components, layout, landing); custom properties define the palette, both themes, type, spacing and motion.
+  \item \textbf{Scripts:} three JavaScript files add debounced AJAX search, notification polling, live previews, confirmation dialogs, match-overlap animation and theme synchronisation \cite{mdn}.
+  \item \textbf{Progressive enhancement:} every core workflow still works with JavaScript disabled.
+\end{itemize}
+
+\section{Backend and Database Technologies}
+\begin{itemize}
+  \item \textbf{Django} supplies routing, forms, authentication, the ORM, templates, CSRF protection and test utilities \cite{django}.
+  \item \textbf{Six apps} hold the business rules: \code{accounts}, \code{items}, \code{matching}, \code{claims}, \code{notifications} and \code{dashboard}.
+  \item \textbf{Gunicorn and WhiteNoise} serve the application and its static files in production \cite{whitenoise}.
+  \item \textbf{SQLite} is the zero-configuration development database; \textbf{PostgreSQL} is the deployment target with stronger concurrency \cite{postgres}.
+  \item \textbf{Migrations, foreign keys, indexes and a partial unique constraint} keep both schemas aligned and enforce recovery invariants.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\caption{Technology stack summary}
+\begin{tabularx}{\textwidth}{p{28mm}p{48mm}X}
+\toprule
+Layer & Technology & Purpose\\
+\midrule
+Presentation & HTML, CSS, JavaScript & Responsive Black + Vermilion interface and AJAX search\\
+Application & Django 6.1, Python 3.13 & Request handling, authentication, forms and ORM\\
+Data & SQLite / PostgreSQL 17 & Development and production persistence\\
+Text similarity & scikit-learn TF--IDF \cite{tfidf} & Normalised descriptions and cosine similarity\\
+Image similarity & ResNet-50 \cite{resnet}; CLIP \cite{clip} optional & Versioned, calibrated visual feature vectors\\
+Media & Pillow & Validation, decoding and image handling\\
+Exports & ReportLab, CSV & Administrative summaries and privacy-safe records\\
+Serving & Gunicorn, WhiteNoise & Production WSGI server and static files\\
+Testing & Django TestCase, Playwright & Unit and integration tests, browser workflows\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Development Tools and Commands}
+\begin{itemize}
+  \item \textbf{Git and GitHub} for version control and pull-request review \cite{lostlinkrepo}.
+  \item \textbf{Docker Compose} provisions a local PostgreSQL server for compatibility testing.
+  \item \textbf{No frontend build step:} the project runs directly from \code{manage.py}.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\caption{Custom management commands}
+\begin{tabularx}{\textwidth}{p{50mm}X}
+\toprule
+Command & Purpose\\
+\midrule
+\code{seed\_demo} & Create demo users, categories, zones, reports and matches\\
+\code{upgrade\_demo\_photos} & Replace demo placeholders with credited real photographs\\
+\code{rebuild\_matches} & Recompute every match after an engine or model change\\
+\code{build\_pilot} & Build the 180-pair pilot evaluation set\\
+\code{evaluate\_matches} & Evaluate text matching on a labelled CSV split\\
+\code{evaluate\_hybrid} & Compare text and image model combinations on the pilot set\\
+\code{retune} & Search weights and thresholds (gated by research-readiness checks)\\
+\code{validate\_research\_dataset} & Check a dataset meets the research-readiness gate\\
+\code{monitor\_matching} & Store a score-distribution snapshot and flag drift\\
+\code{export\_confirmed\_pairs} & Export moderator-confirmed handovers for review\\
+\code{run\_maintenance\_scheduler} & Host process for daily snapshots and exports\\
+\code{evaluate\_discovery\_study} & Analyse the AJAX-versus-manual usability study\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===========================================================================
+\chapter{System Design}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item architecture, request lifecycle and deployment design;
+  \item use case, data flow, entity relationship and activity diagrams;
+  \item state machines, sequence diagrams, the database schema and the URL map.
+\end{itemize}
+
+\section{System Architecture}
+\begin{itemize}
+  \item \textbf{Layered and server-rendered:} requests pass through Django middleware and role checks before views call forms, domain services and ORM queries.
+  \item \textbf{Separated matching:} feature extraction, calibration and scoring live in their own service layer and can run without HTTP.
+  \item \textbf{Protected media:} photographs are served through a permission-aware view, never from a public folder.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.66,every node/.append style={transform shape},node distance=6mm]
+\node[pbox,minimum width=150mm,minimum height=9mm] (browser) {Responsive browser UI\\Django templates + CSS tokens + progressive JavaScript};
+\node[box,below=of browser,minimum width=150mm,minimum height=9mm] (web) {Django request layer: URLs, middleware, sessions, CSRF, decorators, forms and views};
+\node[box,below=8mm of web,minimum width=46mm,minimum height=11mm] (match) {Matching services\\features, calibration, scoring};
+\node[box,left=8mm of match,minimum width=46mm,minimum height=11mm] (domain) {Domain modules\\accounts, items, claims};
+\node[box,right=8mm of match,minimum width=46mm,minimum height=11mm] (admin) {Operations\\notifications, moderation, analytics};
+\node[box,below=12mm of match,minimum width=60mm,minimum height=11mm] (db) {Django ORM\\SQLite / PostgreSQL};
+\node[box,right=10mm of db,minimum width=50mm,minimum height=11mm] (media) {Protected media storage\\validated photographs};
+\draw[arr] (browser) -- (web);
+\draw[arr] (web.south -| domain) -- (domain);
+\draw[arr] (web) -- (match);
+\draw[arr] (web.south -| admin) -- (admin);
+\draw[arr] (domain.south) -- (db.north west);
+\draw[arr] (match) -- (db);
+\draw[arr] (admin.south) -- (db.north east);
+\draw[arr] (match.south east) -- (media.north west);
+\end{tikzpicture}
+\caption{Layered architecture of LostLink}
+\end{figure}
+
+\section{Request Lifecycle}
+Every page follows Django's Model--View--Template flow, with security checks before any data is read.
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[node distance=5mm and 6mm]
+\node[term] (req) {HTTP request};
+\node[box,right=of req] (mw) {Middleware\\session, CSRF,\\security headers};
+\node[box,right=of mw] (url) {URL\\resolver};
+\node[dec,right=of url] (auth) {Role and\\ownership OK?};
+\node[box,right=of auth] (view) {View\\form + service};
+\node[box,below=12mm of view] (orm) {ORM\\query / save};
+\node[box,left=of orm] (tpl) {Template\\render};
+\node[term,left=of tpl] (resp) {HTML or JSON\\response};
+\node[box,above=7mm of auth,fill=rust!8] (deny) {403 page or sign-in redirect (keeps \code{?next=})};
+\draw[arr] (req) -- (mw); \draw[arr] (mw) -- (url); \draw[arr] (url) -- (auth);
+\draw[arr] (auth) -- node[lab,above]{yes} (view);
+\draw[arr] (auth) -- node[lab,right]{no} (deny);
+\draw[arr] (view) -- (orm); \draw[arr] (orm) -- (tpl); \draw[arr] (tpl) -- (resp);
+\end{tikzpicture}
+\caption{Request lifecycle through Django's Model--View--Template layers}
+\end{figure}
+
+\section{Deployment Architecture}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[node distance=6mm and 10mm]
+\node[pbox,minimum width=30mm,minimum height=12mm] (client) {Browser\\(phone or laptop)};
+\node[draw=teal,dashed,rounded corners=2mm,minimum width=78mm,minimum height=46mm,right=14mm of client,yshift=-8mm] (svc) {};
+\node[font=\scriptsize\bfseries,text=teal,anchor=north west] at (svc.north west) {\,Render web service};
+\node[box,minimum width=62mm] (gun) at ($(svc.center)+(0,10mm)$) {Gunicorn (WSGI) $\rightarrow$ Django app};
+\node[box,minimum width=29mm,below left=6mm and -31mm of gun] (wn) {WhiteNoise\\static files};
+\node[box,minimum width=29mm,below right=6mm and -31mm of gun] (ml) {Matching engine\\ResNet-50, TF--IDF};
+\node[box,minimum width=36mm,right=16mm of svc.north east,anchor=north west] (pg) {PostgreSQL\\(managed database)};
+\node[box,minimum width=36mm,below=10mm of pg] (disk) {Persistent disk\\\code{/var/data/media}\\model cache};
+\draw[arr,<->] (client) -- node[lab,above]{HTTPS} (svc.west |- client);
+\draw[arr] (gun.east) -- node[lab,above,pos=0.3]{\code{DATABASE\_URL}} (pg.west);
+\draw[arr] (ml.east) -- (disk.west);
+\draw[arr] (gun) -- (wn); \draw[arr] (gun) -- (ml);
+\end{tikzpicture}
+\caption{Production deployment design (documented for Render; not yet launched)}
+\end{figure}
+\begin{itemize}
+  \item \textbf{Build:} \code{build.sh} installs requirements and runs \code{collectstatic}; \code{migrate} runs before each deploy.
+  \item \textbf{Configuration:} \code{DJANGO\_DEBUG=false}, a private secret key, \code{DATABASE\_URL}, allowed hosts and trusted CSRF origins.
+  \item \textbf{Storage:} photographs need a persistent disk, which is why the free tier (no disk) is unsuitable.
+  \item \textbf{After an engine upgrade:} run \code{rebuild\_matches} once.
+\end{itemize}
+
+\section{Use Case Diagram}
+\begin{itemize}
+  \item \textbf{Three actors:} Student, Moderator and Administrator; the Administrator inherits every Moderator use case.
+  \item \textbf{Students} report, search, claim and receive notifications.
+  \item \textbf{Moderators} review reports, decide claims and confirm handovers.
+  \item \textbf{Administrators} also manage users, taxonomy, analytics and exports.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.78,every node/.append style={transform shape},
+  actor/.style={draw=ink,circle,minimum size=9mm,font=\small\bfseries,fill=paper},
+  role/.style={font=\small\bfseries,anchor=east},
+  use/.style={draw=ink,ellipse,minimum width=44mm,minimum height=9mm,inner sep=0.5mm,align=center,font=\small,fill=pale},
+  link/.style={draw=ink!70},
+  inherit/.style={-{Triangle[open,length=3mm,width=3mm]},draw=ink,thick}
+]
+\draw[ink,rounded corners=2mm] (2.4,5.0) rectangle (15.4,-4.6);
+\node[font=\scriptsize\bfseries,anchor=north west] at (2.6,4.85) {LostLink System};
+\node[actor] (student) at (0,3.0) {S};
+\node[role] at (-0.7,3.0) {Student};
+\node[actor] (mod) at (0,0.0) {M};
+\node[role] at (-0.7,0.0) {Moderator};
+\node[actor] (admin) at (0,-3.0) {A};
+\node[role] at (-0.7,-3.0) {Administrator};
+\node[use] (report) at (6.0,3.9) {Report or edit item};
+\node[use] (search) at (12.0,3.9) {Search and inspect};
+\node[use] (claim) at (6.0,2.3) {Claim and answer};
+\node[use] (notify) at (12.0,2.3) {Receive notifications};
+\node[use] (review) at (6.0,0.7) {Review reports};
+\node[use] (verify) at (12.0,0.7) {Decide claims};
+\node[use] (handover) at (9.0,-0.9) {Confirm handover};
+\node[use] (users) at (6.0,-3.0) {Manage users and taxonomy};
+\node[use] (analytics) at (12.0,-3.0) {Analytics and exports};
+\draw[link] (student.east) -- (9.0,3.0);
+\draw[link] (2.9,3.0) |- (report.west);
+\draw[link] (2.9,3.0) |- (claim.west);
+\draw[link] (9.0,3.0) |- (search.west);
+\draw[link] (9.0,3.0) |- (notify.west);
+\draw[link] (mod.east) -- (9.0,0.0);
+\draw[link] (2.9,0.0) |- (review.west);
+\draw[link] (9.0,0.0) |- (verify.west);
+\draw[link] (9.0,0.0) -- (handover.north);
+\draw[link] (admin.south) -- (0,-4.1) -- (12.0,-4.1);
+\draw[link] (6.0,-4.1) -- (users.south);
+\draw[link] (12.0,-4.1) -- (analytics.south);
+\draw[inherit] (admin.north) -- node[right,font=\scriptsize]{inherits role} (mod.south);
+\end{tikzpicture}
+\caption{Principal use cases by role}
+\end{figure}
+
+\section{Data Flow Diagram}
+\begin{itemize}
+  \item \textbf{Four processes:} report and search, match and explain, verify and recover, moderate and analyse.
+  \item \textbf{One data store} (D1) holds reports, matches, claims, notifications and decisions.
+  \item \textbf{Two external entities:} campus users and staff; only approved reports flow into matching.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  ext/.style={draw=ink,rectangle,minimum width=27mm,minimum height=11mm,fill=paper,align=center,font=\small},
+  proc/.style={draw=teal,rectangle,rounded corners=2mm,minimum width=28mm,minimum height=12mm,fill=pale,align=center,font=\small},
+  store/.style={draw=rust,double,rectangle,minimum width=42mm,minimum height=10mm,fill=paper,align=center,font=\small},
+  flow/.style={-{Latex[length=2mm]},thick,color=ink!72},
+]
+\node[ext] (user) at (-7.4,2.4) {Campus user};
+\node[proc] (reports) at (-2.9,2.4) {1.0 Report\\and search};
+\node[proc] (matching) at (1.6,2.4) {2.0 Match\\and explain};
+\node[proc] (claims) at (6.1,2.4) {3.0 Verify\\and recover};
+\node[store] (data) at (1.6,-0.2) {D1 Application data};
+\node[proc] (ops) at (-2.9,-2.8) {4.0 Moderate\\and analyse};
+\node[ext] (staff) at (6.1,-2.8) {Moderator / Admin};
+\draw[flow] (user) -- node[lab,above=1pt]{query} (reports);
+\draw[flow] (reports) -- node[lab,above=1pt]{approved} (matching);
+\draw[flow] (matching) -- node[lab,above=1pt]{ranked lead} (claims);
+\draw[flow] (claims) -- node[lab,right]{claim status} (staff);
+\draw[flow] (staff) -- node[lab,above]{decision} (ops);
+\draw[flow] (ops) -- node[lab,left]{review state} (reports);
+\draw[flow] (reports.south) |- node[lab,pos=0.75,above]{write} (data.west);
+\draw[flow] (matching.south) -- node[lab,right]{read / write} (data.north);
+\draw[flow] (claims.south) |- node[lab,pos=0.75,above]{case data} (data.east);
+\end{tikzpicture}
+\caption{Level-0 data flow diagram}
+\end{figure}
+
+\section{Entity Relationship Diagram}
+\begin{itemize}
+  \item \textbf{Item} is the hub: it belongs to a User, a Category and a Location.
+  \item \textbf{Match} links one lost and one found Item per engine version.
+  \item \textbf{Claim} links a claimant to an Item and owns its questions, decisions and notifications.
+  \item \textbf{ReportFlag} and \textbf{ModerationDecision} provide the moderation and audit trail.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.84,every node/.append style={transform shape},
+  entity/.style={draw=ink,rounded corners=1mm,fill=paper,minimum width=28mm,minimum height=11mm,align=center,font=\small\bfseries},
+  wideentity/.style={entity,minimum width=38mm},
+  rel/.style={draw=teal,thick},
+  rlabel/.style={fill=paper,inner sep=1.2pt,font=\scriptsize,align=center,text=ink!78}
+]
+\node[font=\small\bfseries,text=teal] at (-2.0,6.0) {Reporting and matching};
+\node[font=\small\bfseries,text=teal] at (7.0,6.0) {Recovery and audit};
+\node[entity] (user) at (-6.5,2) {User};
+\node[entity] (item) at (-2,2) {Item};
+\node[entity] (cat) at (2.4,3.8) {Category};
+\node[entity] (loc) at (2.4,0.2) {Location};
+\node[entity] (match) at (-2,-1.8) {Match};
+\node[entity] (flag) at (-6.5,-1.8) {ReportFlag};
+\node[entity] (claim) at (7,2) {Claim};
+\node[wideentity] (question) at (11.4,3.8) {VerificationQuestion};
+\node[wideentity] (decision) at (11.4,0.2) {ModerationDecision};
+\node[entity] (note) at (7,-1.8) {Notification};
+\draw[rel] (user) -- node[rlabel,above=1pt]{1 : N} (item);
+\draw[rel] (item.north east) -- node[rlabel,above left]{N : 1} (cat.west);
+\draw[rel] (item.south east) -- node[rlabel,below left]{N : 1} (loc.west);
+\draw[rel] (item) -- node[rlabel,right]{lost / found pair} (match);
+\draw[rel] (item.south west) -- node[rlabel,above left]{1 : N} (flag.north east);
+\draw[rel] (item.east) ++(0,0.25) -- node[rlabel,above,pos=0.62]{1 : N claims} ($(claim.west)+(0,0.25)$);
+\draw[rel] (user.north) -- ++(0,2.6) -| node[rlabel,pos=0.4,above]{1 : N claimants} (claim.north);
+\draw[rel] (claim.north east) -- node[rlabel,above left]{1 : N} (question.west);
+\draw[rel] (claim.south east) -- node[rlabel,below left]{1 : N} (decision.west);
+\draw[rel] (claim) -- node[rlabel,right]{events} (note);
+\end{tikzpicture}
+\caption{Simplified entity relationship model}
+\end{figure}
+
+\section{Activity Flow}
+\begin{itemize}
+  \item Two decision points: moderator approval and whether a plausible pair exists.
+  \item Rejected reports are returned with a reason; unmatched reports stay searchable.
+  \item The flow ends only when the handover closes every dependent record.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.8,every node/.append style={transform shape},node distance=5mm,
+  flowstep/.style={box,minimum width=52mm,minimum height=8mm}]
+\node[term] (start) {Start};
+\node[flowstep,below=of start] (file) {Student files report};
+\node[flowstep,below=of file] (validate) {Form and image validation};
+\node[dec,below=of validate] (review) {Approved?};
+\node[flowstep,below left=8mm and 10mm of review] (reject) {Reject with reason;\\reporter notified};
+\node[flowstep,below right=8mm and 10mm of review] (publish) {Publish and run matching};
+\node[dec,below=of publish] (candidate) {Plausible pair?};
+\node[flowstep,below left=8mm and 2mm of candidate] (search) {Remain searchable};
+\node[flowstep,below right=8mm and -14mm of candidate] (case) {Owner opens private claim};
+\node[flowstep,below=of case] (questions) {Questions, answers, staff decision};
+\node[flowstep,below=of questions] (return) {Reveal contacts, confirm handover};
+\node[flowstep,below=of return] (close) {Close both reports, matches and claims};
+\node[term,below=of close] (stop) {End};
+\draw[arr] (start)--(file); \draw[arr] (file)--(validate); \draw[arr] (validate)--(review);
+\draw[arr] (review)-|node[lab,above,pos=0.25]{No}(reject); \draw[arr] (review)-|node[lab,above,pos=0.25]{Yes}(publish);
+\draw[arr] (publish)--(candidate); \draw[arr] (candidate)-|node[lab,above,pos=0.25]{No}(search); \draw[arr] (candidate)--node[lab,right]{Yes}(case);
+\draw[arr] (case)--(questions); \draw[arr] (questions)--(return); \draw[arr] (return)--(close); \draw[arr] (close)--(stop);
+\end{tikzpicture}
+\caption{Report-to-recovery activity flow}
+\end{figure}
+
+\section{State Machines}
+Reports and claims move through explicit states. Views re-read the current row before every transition, so a repeated or stale request cannot skip a step.
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  st/.style={draw=ink,rounded corners=2mm,fill=pale,minimum width=24mm,minimum height=8mm,font=\small\bfseries},
+  end/.style={st,fill=paper,double}]
+\node[st] (p) at (0,0) {Pending};
+\node[st] (a) at (4.8,0) {Approved};
+\node[st] (c) at (9.6,0) {Claimed};
+\node[end] (r) at (14.4,0) {Returned};
+\node[end] (x) at (2.4,-2.6) {Rejected};
+\node[end] (w) at (7.2,-2.6) {Withdrawn};
+\draw[arr] (p) -- node[lab,above,align=center]{moderator\\approves} (a);
+\draw[arr] (a) -- node[lab,below,align=center]{claim\\approved} (c);
+\draw[arr] (c) -- node[lab,above,align=center]{handover\\confirmed} (r);
+\draw[arr] (p.south) -- node[lab,left]{rejected} (x.north west);
+\draw[arr] (a.south) ++(-0.4,0) -- node[lab,right]{flag upheld} (x.north east);
+\draw[arr] (a.south) ++(0.4,0) -- node[lab,right]{withdrawn} (w.north);
+\draw[arr] (c.north) to[bend right=30] node[lab,above]{claim rejected} (a.north);
+\end{tikzpicture}
+\caption{Report (item) lifecycle}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  st/.style={draw=ink,rounded corners=2mm,fill=pale,minimum width=21mm,minimum height=8mm,font=\small\bfseries},
+  end/.style={st,fill=paper,double}]
+\node[st] (s) at (0,0) {Submitted};
+\node[st] (q) at (3.7,0) {Questions};
+\node[st] (n) at (7.4,0) {Answered};
+\node[st] (ap) at (11.1,0) {Approved};
+\node[end] (rt) at (14.8,0) {Returned};
+\node[end] (rj) at (7.4,-2.6) {Rejected};
+\node[st] (d) at (11.1,-2.6) {Disputed};
+\draw[arr] (s) -- node[lab,above]{asked} (q);
+\draw[arr] (q) -- node[lab,below]{answered} (n);
+\draw[arr] (n) -- node[lab,below]{approved} (ap);
+\draw[arr] (ap) -- node[lab,below]{handover} (rt);
+\draw[arr] (n) -- node[lab,left]{rejected} (rj);
+\draw[arr] (n.north) to[bend right=35] node[lab,above]{follow-up question} (q.north);
+\draw[arr] (ap) -- node[lab,right]{concern raised} (d);
+\draw[arr] (rj) -- node[lab,above]{concern} (d);
+\end{tikzpicture}
+\caption[Claim lifecycle]{Claim lifecycle. Approving one claim rejects rival open claims on the same item.}
+\end{figure}
+
+\section{Sequence Diagrams}
+\begin{itemize}
+  \item \textbf{Figure~\ref{fig:seqreport}} follows a report from submission to the first match notification.
+  \item \textbf{Figure~\ref{fig:seqclaim}} follows a claim from the first statement to the confirmed handover.
+  \item Solid arrows are requests or notifications; dashed arrows are responses or disclosures.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[x=1cm,y=-0.62cm,
+  hd/.style={draw=ink,fill=pale,rounded corners=1mm,minimum width=25mm,minimum height=7mm,font=\small\bfseries},
+  msg/.style={-{Latex[length=2mm]},thick,color=teal},
+  ret/.style={-{Latex[length=2mm]},dashed,color=ink!60},
+  ml/.style={font=\scriptsize,fill=paper,inner sep=1pt,above=0pt}]
+\foreach \x/\n in {0/Student A,3.6/Django app,7.2/Moderator,10.8/Matching engine,14.4/Student B}{
+  \node[hd] at (\x,0) {\n}; \draw[ink!40,dashed] (\x,0.6) -- (\x,13.4);}
+\draw[msg] (0,1.5) -- node[ml]{submit lost report} (3.6,1.5);
+\draw[ret] (3.6,2.5) -- node[ml]{saved as pending} (0,2.5);
+\draw[msg] (3.6,3.5) -- node[ml]{appears in review queue} (7.2,3.5);
+\draw[msg] (7.2,4.7) -- node[ml]{approve} (3.6,4.7);
+\draw[msg] (3.6,5.9) -- node[ml]{run\_matching(item)} (10.8,5.9);
+\draw[ret] (10.8,7.1) -- node[ml]{scored pairs + components} (3.6,7.1);
+\draw[msg] (3.6,7.9) -- ++(0.7,0) -- ++(0,0.8) -- (3.6,8.7); \node[font=\scriptsize,anchor=west] at (4.4,8.3) {store Match};
+\draw[msg] (3.6,9.5) -- node[ml]{``Report approved'' + match summary} (0,9.5);
+\draw[msg] (3.6,10.7) -- node[ml,pos=0.62]{``Likely match'' (high/medium only)} (14.4,10.7);
+\draw[msg] (14.4,12.0) -- node[ml,pos=0.38]{open report: see score breakdown} (3.6,12.0);
+\end{tikzpicture}
+\caption{Sequence: report submission, moderation, matching and notification}\label{fig:seqreport}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[x=1cm,y=-0.62cm,
+  hd/.style={draw=ink,fill=pale,rounded corners=1mm,minimum width=25mm,minimum height=7mm,font=\small\bfseries},
+  msg/.style={-{Latex[length=2mm]},thick,color=teal},
+  ret/.style={-{Latex[length=2mm]},dashed,color=ink!60},
+  ml/.style={font=\scriptsize,fill=paper,inner sep=1pt,above=0pt}]
+\foreach \x/\n in {0/Claimant,4.8/LostLink,9.6/Moderator,14.4/Finder}{
+  \node[hd] at (\x,0) {\n}; \draw[ink!40,dashed] (\x,0.6) -- (\x,14.6);}
+\draw[msg] (0,1.5) -- node[ml]{start claim + statement} (4.8,1.5);
+\draw[msg] (4.8,2.6) -- node[ml]{``Someone claimed your item''} (14.4,2.6);
+\draw[msg] (9.6,3.8) -- node[ml]{ask private question} (4.8,3.8);
+\draw[msg] (4.8,5.0) -- node[ml]{question waiting} (0,5.0);
+\draw[msg] (0,6.2) -- node[ml]{answer} (4.8,6.2);
+\draw[msg] (4.8,7.4) -- node[ml]{answered, ready for review} (9.6,7.4);
+\draw[msg] (9.6,8.6) -- node[ml]{approve (not own report)} (4.8,8.6);
+\draw[ret] (4.8,9.8) -- node[ml]{contacts shared} (0,9.8);
+\draw[ret] (4.8,9.8) -- node[ml]{contacts shared} (14.4,9.8);
+\node[draw=ink!50,fill=llsoft,rounded corners=1mm,font=\scriptsize,minimum width=150mm] at (7.2,11.1) {people meet and hand the item over};
+\draw[msg] (9.6,12.4) -- node[ml]{confirm handover} (4.8,12.4);
+\draw[ret] (4.8,13.6) -- node[ml]{both reports returned; rival claims closed} (0,13.6);
+\end{tikzpicture}
+\caption{Sequence: ownership verification and handover}\label{fig:seqclaim}
+\end{figure}
+
+\section{Database Schema}
+\begin{itemize}
+  \item Ten models across six apps; status fields use enumerated choices.
+  \item JSON fields store score breakdowns, missing components and model manifests.
+\end{itemize}
+\begin{table}[H]
+\centering\scriptsize
+\caption{Core database schema}
+\begin{tabularx}{\textwidth}{p{28mm}p{50mm}X}
+\toprule
+Model & Representative fields & Key relationships and constraints\\
+\midrule
+User & username, email, role, enrolment\_no, phone & Extends Django's user; role is student, moderator or admin; email unique (case-insensitive)\\
+Category / Location & name, icon, related or adjacent entries & Controlled vocabulary (10 of each in the demo); related categories and adjacent zones earn partial credit\\
+Item & type, title, description, image, status, event date, brand, colour, active & Reporter, Category and Location foreign keys; cached image vector and feature version\\
+Match & lost\_item, found\_item, score, tier, six component scores, engine\_version & Unique pair per engine version; stores missing components and model configuration\\
+Claim & item, claimant, contact, statement, status, decision note & At most one approved or returned claim per item (partial unique constraint)\\
+VerificationQuestion & text, answer, asked\_by, timestamps & Many per claim; answers visible only to participants and staff\\
+Notification & user, item, kind, title, url, read state & Recipient-private; duplicate unread events are reused\\
+ReportFlag & item, reporter, reason, status, resolved\_at & Enters the moderation queue; resolved when the report is withdrawn or decided\\
+ModerationDecision & actor, action, item, claim, subject, note & Append-only audit record of consequential staff actions\\
+ScoreSnapshot & histogram, mean, tier counts, manifest & Score-distribution monitoring between engine versions\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{URL Map}
+\begin{itemize}
+  \item Every staff and administrator route is guarded by a role decorator on the server.
+  \item Search and browse are public; everything that reveals people or private evidence requires sign-in.
+\end{itemize}
+\begin{table}[H]
+\centering\small
+\caption{Principal routes and who can open them}
+\begin{tabularx}{\textwidth}{p{56mm}X p{24mm}}
+\toprule
+Route & Page or action & Access\\
+\midrule
+\code{/} & Landing page (redirects signed-in users home) & Public\\
+\code{/accounts/login/}, \code{/register/} & Sign-in and registration & Public\\
+\code{/dashboard/} & Student home: matches, claims, alerts & Signed in\\
+\code{/report/}, \code{/item/<id>/edit/} & File or edit a report & Owner\\
+\code{/search/}, \code{/lost/}, \code{/found/} & Search and browse approved reports (JSON at \code{/search/api/}) & Public\\
+\code{/item/<id>/} & Report detail with match explanations & Signed in\\
+\code{/claims/start/<id>/}, \code{/claims/<id>/} & Start and follow a claim & Participants, staff\\
+\code{/claims/<id>/decide/<decision>/} & Approve or reject a claim & Staff (not finder)\\
+\code{/notifications/} & Notification inbox & Signed in\\
+\code{/manage/moderation/} & Review queue and decision log & Staff\\
+\code{/manage/analytics/}, \code{/export/csv|pdf/} & Analytics and exports & Administrator\\
+\code{/manage/users/}, \code{/taxonomy/} & People, roles and vocabulary & Administrator\\
+\code{/media/<path>} & Permission-checked photographs & Authorised users\\
+\bottomrule
+\end{tabularx}
+\end{table}
+% ===========================================================================
+\chapter{Implementation}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item how the frontend, backend, authentication and validation are built;
+  \item the matching engine: scoring model, image calibration and attribute normalisation;
+  \item notifications, security controls and the workflow rules fixed in the logic audit.
+\end{itemize}
+
+\section{Frontend Implementation}
+\begin{itemize}
+  \item \textbf{Shared shell and partials} for branding, icons, report cards, overlap diagrams, match rows, status markers and pagination.
+  \item \textbf{Layered CSS:} design tokens $\rightarrow$ base rules $\rightarrow$ components $\rightarrow$ page layouts; the landing page adds its own stylesheet and script.
+  \item \textbf{Live search:} filters are serialised into shareable URLs, JSON fragments are fetched with skeleton states, and the plain form still works without JavaScript.
+  \item \textbf{Theme controller:} stores Light, Dark or System in local storage and applies it before first paint, so pages never flash the wrong theme.
+  \item \textbf{Cache busting:} the \code{\{\% asset \%\}} template tag appends a file version during development.
+\end{itemize}
+
+\section{Backend Implementation}
+\begin{itemize}
+  \item Each bounded context has its own URL module and views.
+  \item Views combine role decorators, object-level checks, forms and service functions.
+  \item Matching is split into feature extraction, calibration, scoring and persistence, so it can be tested without HTTP.
+  \item Management commands expose maintenance and evaluation without coupling them to web requests.
+  \item Status fields use enumerated choices; JSON fields store score breakdowns and model manifests.
+  \item PostgreSQL is selected through \code{DATABASE\_URL}; otherwise a local SQLite file is used.
+\end{itemize}
+
+\section{Authentication and Authorization}
+\begin{itemize}
+  \item \textbf{Sessions} backed by a custom user model; self-registration always creates a Student.
+  \item \textbf{Role gates:} \code{@moderator\_required} for staff pages and \code{@admin\_required} for administration.
+  \item \textbf{Object checks:} only the owner edits a report; only participants and staff open a claim; a role alone never reveals another person's answers or contacts.
+  \item \textbf{Return path:} a signed-out visitor sent to sign-in keeps the original address in \code{?next=}.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\caption{Claim actions by participant}
+\begin{tabularx}{\textwidth}{X cccc}
+\toprule
+Action on a claim & Claimant & Finder (reporter) & Moderator & Administrator\\
+\midrule
+View statement and progress & Yes & Yes & Yes & Yes\\
+Ask a verification question & -- & Yes & Yes & Yes\\
+Answer a question & Yes & -- & -- & --\\
+Approve or reject & -- & -- & Yes$^{*}$ & Yes$^{*}$\\
+See contact details & After approval & After approval & Yes & Yes\\
+Raise a concern (dispute) & Yes & Yes & Yes & Yes\\
+Confirm the handover & -- & -- & Yes & Yes\\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize $^{*}$ Never on a report they filed themselves.}
+\end{tabularx}
+\end{table}
+
+\section{CRUD Operations and Validation}
+\begin{itemize}
+  \item Students create and update their own reports; withdrawal is a lifecycle transition, not a deletion, so the audit trail survives.
+  \item Administrators create, edit and delete categories and zones; staff approve or reject reports and claims.
+  \item Every state-changing request is a CSRF-protected POST; redirects are limited to the same host.
+  \item Server-side validation is authoritative even when the browser gives instant feedback.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\caption{Form validation rules}
+\begin{tabularx}{\textwidth}{p{30mm}X}
+\toprule
+Field & Rule\\
+\midrule
+Title & At least 3 characters\\
+Description & At least 10 characters\\
+Event date & Cannot be in the future\\
+Photograph & JPG, PNG, WEBP or GIF, checked by decoding the file (not its name); under 5 MB; at most 40 megapixels to block decompression bombs\\
+Email & Lower-cased and unique across accounts (also on profile edits)\\
+Password & Django validators: length, similarity, common-password and numeric checks\\
+Role & Never accepted from the registration form; only administrators change it\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Matching Engine}
+\subsection{Scoring Model}
+\begin{itemize}
+  \item \textbf{Trigger:} runs when a report is approved, edited or rebuilt.
+  \item \textbf{Candidates:} active, approved reports of the opposite type; a found report may not predate the loss by more than one day.
+  \item \textbf{Six signals} $s_i \in [0,1]$ with synopsis weights $w_i$; signals without evidence are dropped and the weights renormalised:
+\end{itemize}
+\begin{equation}
+S \;=\; \frac{\sum_{i \in A} w_i\, s_i}{\sum_{i \in A} w_i}, \qquad A = \{\, i : \text{evidence for } i \text{ exists on both reports} \,\}.
+\end{equation}
+
+\begin{table}[H]
+\centering\small
+\caption{Signal definitions and weights}
+\begin{tabularx}{\textwidth}{p{30mm}c X}
+\toprule
+Signal & Weight & How $s_i$ is computed\\
+\midrule
+Description text & 0.30 & Cosine of TF--IDF vectors of the two descriptions \cite{tfidf}\\
+Photograph & 0.30 & Calibrated cosine of ResNet-50 feature vectors (Section~\ref{sec:calib})\\
+Campus zone & 0.15 & 1 same zone; 0.5 adjacent zone; 0 otherwise\\
+Category & 0.10 & 1 same category; 0.5 related category; 0 otherwise\\
+Date & 0.10 & $0.5^{|\Delta d|/10}$: halves every ten days apart\\
+Brand / colour & 0.05 & Normalised brand and colour comparison (Section~\ref{sec:attr})\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{Storage:} pairs scoring at least 0.40 are stored with all six components and the engine version.
+  \item \textbf{Tiers:} high above 0.85, medium 0.70--0.85, low below 0.70.
+  \item \textbf{Notifications:} only high and medium leads notify the reporters.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.84,every node/.append style={transform shape},node distance=5mm and 8mm,
+  st/.style={box,minimum width=46mm,minimum height=8mm}]
+\node[term] (s) {Report approved};
+\node[st,below=of s] (cand) {Load opposite-type, active,\\approved reports};
+\node[dec,below=of cand] (date) {Found date $\geq$\\lost date $-$ 1 day?};
+\node[st,right=14mm of date] (skip) {Skip pair\\(physically impossible)};
+\node[st,below=of date] (feat) {Extract or reuse cached\\TF--IDF and ResNet-50 vectors};
+\node[st,below=of feat] (comp) {Compute six signals;\\calibrate image cosine};
+\node[st,below=of comp] (norm) {Drop missing signals,\\renormalise weights};
+\node[dec,below=of norm] (min) {Score $\geq$ 0.40?};
+\node[st,right=14mm of min] (drop) {Discard (no lead)};
+\node[st,below=of min] (store) {Store Match with tier,\\components, engine version};
+\node[dec,below=of store] (tier) {High or\\medium?};
+\node[st,right=14mm of tier] (quiet) {Visible on report page,\\no notification};
+\node[st,below=of tier] (notify) {Notify both reporters\\(de-duplicated)};
+\draw[arr] (s)--(cand); \draw[arr] (cand)--(date);
+\draw[arr] (date)--node[lab,above]{no}(skip); \draw[arr] (date)--node[lab,right]{yes}(feat);
+\draw[arr] (feat)--(comp); \draw[arr] (comp)--(norm); \draw[arr] (norm)--(min);
+\draw[arr] (min)--node[lab,above]{no}(drop); \draw[arr] (min)--node[lab,right]{yes}(store);
+\draw[arr] (store)--(tier);
+\draw[arr] (tier)--node[lab,above]{low}(quiet); \draw[arr] (tier)--node[lab,right]{yes}(notify);
+\end{tikzpicture}
+\caption{Matching algorithm flowchart}
+\end{figure}
+
+\subsection{Image Similarity Calibration}\label{sec:calib}
+\begin{itemize}
+  \item \textbf{Problem:} pretrained image features never place unrelated photographs at zero. ResNet-50's pooled features \cite{resnet} are all non-negative and CLIP's embeddings \cite{clip} share a large common component.
+  \item \textbf{Effect before the fix:} with ResNet-50, two unrelated photographs typically added about $0.275 \times 0.30 \approx 0.08$ to the total score.
+  \item \textbf{Fix in engine \code{synopsis-v2}:} rescale the cosine above each model's measured chance level $c$ and clamp to $[0,1]$:
+\end{itemize}
+\begin{equation}
+s_{\text{image}} \;=\; \min\!\left(1,\ \max\!\left(0,\ \frac{\cos(\mathbf{v}_a,\mathbf{v}_b) - c}{1 - c}\right)\right).
+\end{equation}
+\begin{itemize}
+  \item \textbf{Result:} unrelated photos score about 0, identical photos still score 1, and candidate order is unchanged because the mapping is monotonic.
+  \item \textbf{Chance levels:} the median cosine between photographs of \emph{different} items on the 120 negative pilot pairs, stored in \code{matching/profile.json}.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\begin{minipage}[c]{0.52\textwidth}
+\centering
+\begin{tikzpicture}[x=6.2cm,y=4.2cm]
+\draw[ink!30] (0,0) grid[xstep=0.25,ystep=0.25] (1,1);
+\draw[-{Latex[length=2mm]}] (0,0) -- (1.06,0) node[right,font=\scriptsize]{raw};
+\draw[-{Latex[length=2mm]}] (0,0) -- (0,1.08) node[above,font=\scriptsize]{calibrated};
+\foreach \v in {0,0.25,0.5,0.75,1} {\node[font=\tiny,below] at (\v,0) {\v}; \node[font=\tiny,left] at (0,\v) {\v};}
+\draw[ink!50,dashed] (0,0) -- (1,1);
+\draw[llaccent,very thick] (0,0) -- (0.275,0) -- (1,1);
+\draw[teal,very thick] (0,0) -- (0.568,0) -- (1,1);
+\draw[llfound,very thick,densely dotted] (0,0) -- (0.574,0) -- (1,1);
+\fill[llaccentink] (0.857,0.803) circle (0.9mm);
+\draw[llaccentink,thin] (0.857,0.803) -- (0.66,0.93); \node[font=\tiny,anchor=east,fill=paper,inner sep=1pt] at (0.66,0.93) {ID-card pair: 0.857 $\rightarrow$ 0.803};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.44\textwidth}
+\small
+\begin{tabular}{@{}llc@{}}
+\toprule
+& Model & Chance $c$\\
+\midrule
+\tikz\draw[llaccent,very thick] (0,0)--(0.5,0); & ResNet-50 (deployed) & 0.275\\
+\tikz\draw[teal,very thick] (0,0)--(0.5,0); & CLIP (optional) & 0.568\\
+\tikz\draw[llfound,very thick,densely dotted] (0,0)--(0.5,0); & Colour histogram & 0.574\\
+\tikz\draw[ink!50,dashed] (0,0)--(0.5,0); & No calibration & --\\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\caption{Calibration maps each model's raw cosine to a 0--1 score above its chance level}
+\end{figure}
+
+\begin{lstlisting}[style=lostlink,caption={Calibrated image similarity (\code{matching/engine.py}, abridged)}]
+def calibrated_image_similarity(vec_a, vec_b, kind=None):
+    raw = vector_similarity(vec_a, vec_b)          # cosine of feature vectors
+    kind = kind or configuration()['image']        # resnet | clip | histogram
+    chance = settings.MATCHING['IMAGE_CHANCE'].get(kind, 0.0)
+    return min(1.0, max(0.0, (raw - chance) / (1.0 - chance)))
+\end{lstlisting}
+
+\subsection{Brand and Colour Normalisation}\label{sec:attr}
+\begin{itemize}
+  \item \textbf{Before:} exact text equality, so ``Hydro Flask'' vs ``hydroflask'', ``grey'' vs ``gray'' and ``navy blue'' vs ``blue'' were mismatches.
+  \item \textbf{Brands:} compared on letters and digits only.
+  \item \textbf{Colours:} split into words; variants and shades mapped to a base colour (gray $\rightarrow$ grey, maroon $\rightarrow$ red, bluish $\rightarrow$ blue); modifiers such as ``dark'', ``light'' or ``metallic'' removed.
+  \item \textbf{Match rule:} two colours match when their word sets intersect, so ``navy blue'' and ``blue'' share ``blue''; red vs blue still scores 0.
+\end{itemize}
+
+\subsection{Operational Traceability}
+\begin{table}[H]
+\centering\small
+\caption{Matching pipeline controls and recorded evidence}
+\begin{tabularx}{\textwidth}{p{28mm}X X}
+\toprule
+Stage & Control & Recorded evidence\\
+\midrule
+Input validation & Reject invalid formats, oversized images and impossible dates & Form errors; database unchanged\\
+Feature extraction & Cache vectors against a content fingerprint and model version & Fingerprint, extractor name and version\\
+Score calculation & Calibrate image cosine, drop missing signals, renormalise & Component scores, weights, missing list\\
+Publication & Match only approved, active, plausible opposite-type reports & Eligibility and engine version\\
+Live view & Show and count only current-version matches between open reports & Engine version and both report states\\
+Claim review & Keep similarity separate from ownership approval & Questions, answers, decision, handover\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Notifications}
+\begin{table}[H]
+\centering\small
+\caption{Notification events and recipients}
+\begin{tabularx}{\textwidth}{X p{38mm} p{18mm}}
+\toprule
+Event & Recipient(s) & Kind\\
+\midrule
+Report approved (with number of candidates found) & Reporter & Report\\
+Report rejected, or removed after a flag & Reporter & Report\\
+New high or medium match & Both reporters (one summary each) & Match\\
+Someone claims or offers to return an item & Reporter of the item & Claim\\
+Verification question asked & Claimant & Claim\\
+Question answered & Reporter of the item & Claim\\
+Claim approved (contacts now shared) & Claimant and reporter & Claim\\
+Claim rejected or closed (rival approved, report removed) & Claimant & Claim\\
+Handover completed & Claimant and reporter & Claim\\
+Dispute raised & The other participant & Claim\\
+Role changed by an administrator & That user & System\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\begin{itemize}
+  \item Notifications are private to their recipient and de-duplicated: a repeated unread event is reused, not duplicated.
+  \item The masthead badge polls an unread-count endpoint; the inbox can mark one or all as read.
+\end{itemize}
+
+\section{Security Controls}
+\begin{table}[H]
+\centering\small
+\caption{Threats and the controls that address them}
+\begin{tabularx}{\textwidth}{p{38mm}X}
+\toprule
+Threat & Control in LostLink\\
+\midrule
+Cross-site request forgery & CSRF token on every POST; \code{SameSite=Lax} cookies\\
+Session theft & \code{HttpOnly} session cookie; \code{Secure} cookies, HTTPS redirect and one-year HSTS in production\\
+Clickjacking & \code{X-Frame-Options: DENY}\\
+MIME sniffing and referrer leaks & \code{nosniff}; \code{Referrer-Policy: same-origin}\\
+Privilege escalation & Role never accepted from forms; server-side role decorators on every staff route\\
+Insecure direct object access & Ownership and participation checks on reports, claims and answers\\
+Private photo exposure & Media served only through a permission-checked view\\
+Malicious uploads & Decoded-format check, 5 MB size and 40-megapixel limits\\
+CSV formula injection & Cells starting with \code{=}, \code{+}, \code{-} or \code{@} are escaped in exports\\
+Open redirects & Redirect targets restricted to the same host\\
+Conflict of interest & A moderator cannot decide a claim on their own report\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Workflow Integrity Rules}
+A logic audit of the full recovery journey found eight defects where the stored state could disagree with reality. Each was fixed and is guarded by a regression test.
+\begin{table}[H]
+\centering\small
+\caption{Workflow defects found in the logic audit and the rule now enforced}
+\begin{tabularx}{\textwidth}{p{4mm}X X}
+\toprule
+\# & Defect before the audit & Rule now enforced\\
+\midrule
+1 & A moderator could decide a claim on an item they had reported. & The finder can never decide the claim (HTTP 403).\\
+2 & A confirmed return left the claimant's own lost report open and matching. & Claimant's report marked returned; its matches and claims closed.\\
+3 & Removing a flagged report left its claims open. & Rejecting the report closes unfinished claims and notifies claimants.\\
+4 & Withdrawing a report left its flags in the queue. & Withdrawal resolves the report's open flags.\\
+5 & An impossible analytics date (30 February) crashed the page. & Invalid dates are ignored; the full period is shown.\\
+6 & A non-numeric user ID caused a server error. & The ID is validated before any lookup.\\
+7 & Protected pages dropped the requested address at sign-in. & The original path is kept in \code{?next=}.\\
+8 & Two accounts could share an email differing only in case. & Emails are lower-cased and checked for uniqueness.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\begin{itemize}
+  \item \textbf{Live-only statistics:} analytics had counted 14 stale matches out of 20 because they pointed at already-returned reports; dashboards now count only live matches.
+  \item \textbf{Evidence kept:} historic match rows remain stored for closed claims.
+  \item \textbf{Chart fix:} the weekly-reports chart used two undefined colour tokens and drew invisible bars; it now uses the theme's lost and found colours (commit \code{62334a7}).
+\end{itemize}
+
+\section{API Integration}
+\begin{itemize}
+  \item No public third-party API is needed for the core workflow.
+  \item Internal JSON endpoints serve search results, unread counts and read-state updates.
+  \item Pretrained weights are an optional download at setup; if inference fails, the error is logged and matching continues with the remaining evidence instead of silently switching models.
+\end{itemize}
+
+% ===========================================================================
+\chapter{Module Description}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item how the six Django apps depend on each other;
+  \item what each module is responsible for;
+  \item the size and test coverage of every module.
+\end{itemize}
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[
+  app/.style={draw=ink,rounded corners=1.5mm,fill=pale,minimum width=30mm,minimum height=9mm,font=\small\ttfamily},
+  dep/.style={-{Latex[length=2mm]},thick,color=ink!60}]
+\node[app] (dash) at (5,0) {dashboard};
+\node[app] (claims) at (1.2,-1.7) {claims};
+\node[app] (match) at (8.8,-1.7) {matching};
+\node[app] (items) at (5,-3.4) {items};
+\node[app] (acc) at (0.6,-3.4) {accounts};
+\node[app] (notes) at (5,-5.1) {notifications};
+\draw[dep] (dash) -- (claims);
+\draw[dep] (dash) -- (match);
+\draw[dep] (claims) -- (match);
+\draw[dep] (claims) -- (items);
+\draw[dep] (match) -- (items);
+\draw[dep] (items) -- (acc);
+\draw[dep] (claims.south) .. controls +(0,-2.4) and +(-2.2,0) .. (notes.west);
+\draw[dep] (match.south) .. controls +(0,-2.4) and +(2.2,0) .. (notes.east);
+\end{tikzpicture}
+\caption[Module dependencies]{Module dependencies (arrow = ``uses''); \code{items} also triggers \code{matching} when a report changes.}
+\end{figure}
+
+\section{Module 1: User Management (\code{accounts})}
+\begin{itemize}
+  \item Registration, sign-in, sign-out, profile editing and the custom role model.
+  \item Reusable role decorators that preserve the requested page across sign-in.
+  \item Initials and display names give a consistent identity without profile photographs.
+\end{itemize}
+
+\section{Module 2: Core Functionality (\code{items}, \code{matching}, \code{claims})}
+\begin{itemize}
+  \item \code{items}: report lifecycle, search, browse and the landing page.
+  \item \code{matching}: feature extraction, calibration, scoring, persistence and evaluation commands.
+  \item \code{claims}: private verification, decision, dispute and handover, closing every dependent record when a case ends.
+\end{itemize}
+
+\section{Module 3: Data Management}
+\begin{itemize}
+  \item Feature vectors are cached against content fingerprints; matches carry their engine version.
+  \item Editing or withdrawing a report clears stale derived rows.
+  \item \code{rebuild\_matches} recomputes every pair after an engine change without touching reports or claims.
+  \item Pagination and filters keep every list operation bounded.
+\end{itemize}
+
+\section{Module 4: Admin Functionality (\code{dashboard})}
+\begin{itemize}
+  \item Moderators: review queue for reports, claims, disputes, handovers and flags; decision log.
+  \item Administrators: roles and account status, categories and zones, analytics, CSV and PDF exports.
+\end{itemize}
+
+\section{Module 5: Additional Features (\code{notifications} and UI)}
+\begin{itemize}
+  \item Persistent, de-duplicated in-app notifications with an unread badge.
+  \item Light/Dark/System themes, a floating phone tab bar and reduced-motion handling.
+  \item Shareable search URLs, development cache busting, CSV formula-injection protection, PDF summaries and score-drift snapshots.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\renewcommand{\arraystretch}{1.05}
+\caption{Module responsibilities, size and test coverage}
+\begin{tabularx}{\textwidth}{p{23mm}p{36mm}X rr}
+\toprule
+Module & Responsibility & Principal output & Python lines & Tests\\
+\midrule
+accounts & Identity and access & Authenticated user, role predicates & 439 & 10\\
+items & Report lifecycle and discovery & Approved, searchable reports & 1{,}392 & 21\\
+matching & Features, calibration, scoring & Versioned, explained match & 1{,}621 & 41\\
+claims & Ownership verification & Auditable case and handover & 1{,}368 & 41\\
+notifications & User attention & Private, de-duplicated events & 314 & 6\\
+dashboard & Governance and insights & Decisions, analytics, exports & 1{,}058 & 15\\
+\midrule
+\multicolumn{3}{l}{Total (plus 42 templates, 1{,}402 lines of CSS and 549 of JavaScript)} & 6{,}192 & 134\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===========================================================================
+\chapter{User Interface}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item the site map and the design tokens behind every page;
+  \item a walkthrough of each screen, from the landing page to analytics;
+  \item dark theme and phone layouts.
+\end{itemize}
+\begin{itemize}
+  \item Screenshots were captured from the running application (commit \code{4a710ee} plus the analytics chart fix \code{62334a7}) on a local demonstration database.
+  \item Desktop captures use a 1440-pixel width; phone captures use 390 pixels.
+  \item Demo reports use representative photographs; the ID-card pair uses sample photographs prepared for this report.
+\end{itemize}
+
+\section{Navigation and Design System}
+\begin{itemize}
+  \item \textbf{Role-based navigation:} each role sees its own menu; higher roles include the pages of lower ones.
+  \item \textbf{Design tokens:} one set of CSS custom properties drives colours, type, spacing and motion in both themes.
+  \item \textbf{Consistent markers:} vermilion always means \emph{lost}, warm grey always means \emph{found}.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=0.8,every node/.append style={transform shape},
+  pg/.style={draw=ink,rounded corners=1mm,fill=paper,font=\scriptsize,minimum width=29mm,minimum height=6.2mm,anchor=west},
+  grp/.style={draw=ink,rounded corners=1mm,fill=pale,font=\scriptsize\bfseries,minimum width=30mm,minimum height=7mm},
+  e/.style={draw=ink!60}]
+\node[grp] (root) at (9.3,0) {Landing page};
+\foreach \g/\x/\t in {pub/2/Public,stu/7.1/Student,mod/12.2/Moderator,adm/17.3/Administrator}
+  \node[grp] (\g) at (\x,-1.5) {\t};
+\foreach \g in {pub,stu,mod,adm} \draw[e] (root.south) -- ++(0,-0.4) -| (\g.north);
+\foreach \i/\t in {1/Sign in,2/Register,3/Search,4/Browse lost and found}
+  {\node[pg] (p\i) at (0.9,-1.65-0.8*\i) {\t}; \draw[e] (0.6,-1.85) |- (p\i.west);}
+\foreach \i/\t in {1/Home,2/Report an item,3/Report detail,4/My reports,5/Claims,6/Notifications,7/Profile}
+  {\node[pg] (s\i) at (6.0,-1.65-0.8*\i) {\t}; \draw[e] (5.7,-1.85) |- (s\i.west);}
+\foreach \i/\t in {1/Review queue,2/Claim decisions,3/Disputes and flags,4/Decision log}
+  {\node[pg] (m\i) at (11.1,-1.65-0.8*\i) {\t}; \draw[e] (10.8,-1.85) |- (m\i.west);}
+\foreach \i/\t in {1/Analytics,2/CSV and PDF exports,3/People and roles,4/Taxonomy}
+  {\node[pg] (a\i) at (16.2,-1.65-0.8*\i) {\t}; \draw[e] (15.9,-1.85) |- (a\i.west);}
+\end{tikzpicture}
+\caption[Site map]{Site map. Moderators also see student pages; administrators also see moderator pages.}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption{Core design tokens of the Black + Vermilion theme (light mode)}
+\begin{tabularx}{\textwidth}{p{8mm}p{30mm}p{20mm}X}
+\toprule
+& Token & Value & Used for\\
+\midrule
+\swatch{llpage} & \code{--page} & \#F5F3F0 & Warm off-white page background\\
+\swatch{white} & \code{--surface} & \#FFFFFF & Cards and panels\\
+\swatch{lltext} & \code{--text} & \#211F1E & Body text and headings\\
+\swatch{llaccent} & \code{--accent}, \code{--lost-dot} & \#D6533B & Brand, focus rings and lost markers\\
+\swatch{llaccentink} & \code{--accent-ink} & \#B83E2B & Accent-coloured text (meets contrast)\\
+\swatch{llfound} & \code{--found-dot} & \#827B75 & Found markers and neutral chart bars\\
+\swatch{llsoft} & \code{--accent-soft} & \#FFF1ED & Action banners and tints\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Landing Page}
+\begin{itemize}
+  \item Typed headline and an orbit of belongings circling the brand mark.
+  \item The two photo cards show the \textbf{strongest real match on campus}, here the lost and found student ID cards, linked by their engine score of 89\%.
+  \item Calls to action lead to reporting or browsing; live counts show open reports, zones and likely matches.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\shotframe[0.97\textwidth]{landing.jpg}
+\caption[Landing page]{Landing page. The Lost and Found cards in the orbit are the strongest live pair, joined by its real 89\% score.}
+\end{figure}
+
+\section{Sign-in and Registration}
+\begin{itemize}
+  \item Two-panel layout: the form, and a four-step summary of how recovery works.
+  \item Registration always creates a Student; the password checklist updates while typing.
+  \item Demo credentials appear only in development mode.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{login.jpg}
+\caption{Sign-in (development mode)}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{register.jpg}
+\caption{Account registration}
+\end{subfigure}
+\caption{Public entry points}
+\end{figure}
+
+\section{Student Home}
+\begin{itemize}
+  \item Leads with the number of likely matches and the strongest one, drawn as two discs whose overlap equals the score.
+  \item Pending actions (here, a verification question) appear as a banner.
+  \item Ranked likely matches, claims with a five-step tracker, and recent notifications follow.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\shotframe[0.97\textwidth]{student-home.jpg}
+\caption{Student home with the strongest match, a pending action and ranked matches}
+\end{figure}
+
+\section{Reporting and Search}
+\begin{itemize}
+  \item \textbf{Report form:} what happened, what the item is, where and when, optional brand, colour and photo, with a live preview card.
+  \item \textbf{Search:} keyword, type, category and zone in one panel; dates, status and order in a disclosure.
+  \item Results update through debounced AJAX, and the URL always reflects the filters.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{report-form.jpg}
+\caption{Report form with live preview}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{search.jpg}
+\caption{Search with combined filters}
+\end{subfigure}
+\caption{Reporting and discovery}
+\end{figure}
+
+\section{Report Detail and Match Explanation}
+\begin{itemize}
+  \item Photograph, description and structured facts, including which neighbouring zones earn partial credit.
+  \item Each candidate shows its score, tier and the reminder ``Similarity, not proof of ownership''.
+  \item \emph{Why this score} lists all six signals with similarity, weight and points; the points add up to the total.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\shotframe[0.97\textwidth]{item-detail.jpg}
+\caption{Lost report for the JIIT student ID card}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\shotframe[0.97\textwidth]{match-explain.jpg}
+\caption[Per-signal explanation of the ID-card match]{Per-signal explanation of the 89\% ID-card match (worked through in Section~\ref{sec:worked})}
+\label{fig:explain}
+\end{figure}
+
+\section{Claims and Verification}
+\begin{itemize}
+  \item Statement, private questions and answers, and a progress rail from submission to return.
+  \item Contacts stay ``Hidden until approval''.
+  \item The claimant, the finder or staff can raise a concern, moving the claim to the dispute queue.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{claim-detail.jpg}
+\caption{Claim awaiting the owner's answer}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{my-reports.jpg}
+\caption{My reports, filterable by state and type}
+\end{subfigure}
+\caption{Private recovery case and personal report management}
+\end{figure}
+
+\section{Staff Pages}
+\begin{itemize}
+  \item Review queue grouped into new reports, claims, disputes, handovers and flags, oldest first.
+  \item One-action approve or reject; every decision goes to the append-only decision log.
+  \item Administrators manage people and roles; only they can grant staff access.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{moderation.jpg}
+\caption{Moderator review queue}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{users.jpg}
+\caption{People and roles (administrator)}
+\end{subfigure}
+\caption{Moderation and administration}
+\end{figure}
+
+\section{Analytics}
+\begin{itemize}
+  \item Five headline figures and a weekly chart of new lost and found reports.
+  \item Breakdowns by status, claim outcome, match-score band, zone and category.
+  \item An \emph{Operational data quality} panel that states plainly it does not measure accuracy.
+  \item Date filters and CSV or PDF export.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{analytics.jpg}
+\caption{Headline figures and weekly reports}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{analytics-quality.jpg}
+\caption{Score bands, zones, categories, data quality}
+\end{subfigure}
+\caption{Administrator analytics (engine \code{synopsis-v2})}
+\end{figure}
+
+\section{Dark Theme and Phone Layout}
+\begin{itemize}
+  \item Every page supports Light, Dark and System themes from the same tokens.
+  \item On phones the masthead collapses and a floating tab bar offers Home, Search, Report, Claims and Alerts.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{landing-dark.jpg}
+\caption{Landing page, dark theme}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+\shotframe{home-dark.jpg}
+\caption{Student home, dark theme}
+\end{subfigure}
+\\[3mm]
+\begin{subfigure}[t]{0.25\textwidth}
+\shotframe{mobile-home.jpg}
+\caption{Phone home}
+\end{subfigure}\hspace{6mm}
+\begin{subfigure}[t]{0.25\textwidth}
+\shotframe{mobile-item.jpg}
+\caption{Phone report}
+\end{subfigure}\hspace{6mm}
+\begin{subfigure}[t]{0.25\textwidth}
+\shotframe{mobile-search-dark.jpg}
+\caption{Phone search, dark}
+\end{subfigure}
+\caption{Theme and responsive layouts}
+\end{figure}
+
+% ===========================================================================
+\chapter{Testing}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item the testing strategy, levels and tools;
+  \item twenty representative test cases with their results;
+  \item error handling and the verification evidence for this release.
+\end{itemize}
+
+\section{Testing Strategy}
+\begin{itemize}
+  \item \textbf{Risk-based:} permissions, state transitions and privacy get both positive and negative cases.
+  \item \textbf{Layered:} many fast unit tests, fewer integration tests, and browser checks at the top.
+  \item \textbf{Regression-first:} every audit defect was reproduced by a failing test before it was fixed.
+\end{itemize}
+\begin{figure}[!htbp]
+\centering
+\begin{minipage}[c]{0.46\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.95]
+\fill[pale,draw=ink] (0,0) -- (7,0) -- (5.85,1.35) -- (1.15,1.35) -- cycle;
+\fill[pale!60!white,draw=ink] (1.15,1.35) -- (5.85,1.35) -- (4.7,2.7) -- (2.3,2.7) -- cycle;
+\fill[llsoft,draw=ink] (2.3,2.7) -- (4.7,2.7) -- (3.5,4.1) -- cycle;
+\node[font=\scriptsize,align=center] at (3.5,0.66) {\textbf{Unit tests}\\scoring, calibration, forms, roles};
+\node[font=\scriptsize,align=center] at (3.5,2.0) {\textbf{Integration}\\workflows, privacy};
+\node[font=\scriptsize\bfseries] at (3.5,3.15) {UI};
+\node[font=\scriptsize,align=center] at (3.5,4.6) {browser sweep and end-to-end journey (Playwright)};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.5\textwidth}
+\centering
+\begin{tikzpicture}[x=0.085cm,y=0.62cm]
+\foreach \n/\v/\i in {accounts/10/0,items/21/1,matching/41/2,claims/41/3,notifications/6/4,dashboard/15/5}{
+  \node[font=\scriptsize\ttfamily,anchor=east] at (-1,-\i) {\n};
+  \fill[llaccent] (0,-\i-0.3) rectangle (\v,-\i+0.3);
+  \node[font=\scriptsize,anchor=west] at (\v+0.8,-\i) {\v};}
+\draw[ink!40] (0,0.5) -- (0,-5.5);
+\node[font=\scriptsize\bfseries] at (24,0.95) {Automated tests per app (134)};
+\end{tikzpicture}
+\end{minipage}
+\caption{Test pyramid and the distribution of the 134 automated tests}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption{Test levels, tools and scope}
+\begin{tabularx}{\textwidth}{p{26mm}p{38mm}X}
+\toprule
+Level & Tool & Scope\\
+\midrule
+Unit & \code{SimpleTestCase} & Score normalisation, calibration, brand/colour rules, dates, partial credit, tiers, form rules\\
+Integration & \code{TestCase} & Moderation-triggered matching, notifications, claims, privacy, analytics, exports\\
+Concurrency & \code{TransactionTestCase} & Database prevents two approved claimants for one item\\
+Regression & \code{test\_regressions.py} & 11 tests pinning the eight audit defects (in \code{claims})\\
+Browser sweep & Playwright \cite{playwright} & 4 roles $\times$ 24 routes $\times$ 3 widths, light and dark (318 checks)\\
+End to end & Playwright script & Report $\rightarrow$ approve $\rightarrow$ match $\rightarrow$ claim $\rightarrow$ handover through the real UI\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Unit and Integration Testing}
+\begin{itemize}
+  \item \textbf{Unit:} isolated scoring logic with no database, plus model defaults and constraints.
+  \item \textbf{Integration:} each workflow test runs against an isolated database and checks both the response and the stored state.
+  \item \textbf{Regression:} every defect from the logic audit has a test that failed before its fix.
+\end{itemize}
+
+\section{Functional Testing}
+\begin{itemize}
+  \item \textbf{Browser sweep:} fails on HTTP errors, JavaScript errors, horizontal overflow and heading-structure faults.
+  \item \textbf{End-to-end journey:} files a lost and a found report, approves both, checks the match, runs the private question flow, approves the claim, confirms the handover and verifies that both reports are closed.
+\end{itemize}
+
+\section{Test Cases and Results}
+\begin{itemize}
+  \item Twenty representative cases: TC-01 to TC-12 cover the core workflow, TC-13 to TC-20 the calibration and audit fixes.
+  \item Every case passes on the current code; each maps to at least one automated test.
+\end{itemize}
+\begin{longtable}{>{\bfseries}p{14mm}p{56mm}p{60mm}p{12mm}}
+\caption{Representative test cases and results}\\
+\toprule
+ID & Scenario & Expected outcome & Result\\
+\midrule
+\endfirsthead
+\toprule
+ID & Scenario & Expected outcome & Result\\
+\midrule
+\endhead
+TC-01 & Register with valid details & Student account created and signed in & Pass\\
+TC-02 & Student opens a staff route & Access denied or redirected & Pass\\
+TC-03 & Future-dated report or invalid image & Validation error; nothing saved & Pass\\
+TC-04 & Approve a pending report & Published, matching runs, audit row stored & Pass\\
+TC-05 & Search with combined filters & Only approved records matching every filter & Pass\\
+TC-06 & Match a report without a photograph & Image dropped; weights renormalised & Pass\\
+TC-07 & Found report predates the loss beyond tolerance & Pair rejected as impossible & Pass\\
+TC-08 & Claim without an eligible relationship & Request rejected & Pass\\
+TC-09 & Approve a claim before questions are answered & Approval blocked & Pass\\
+TC-10 & Approve two rival claims & Only one approved claim allowed & Pass\\
+TC-11 & Export CSV with formula-like content & Cell escaped; private data omitted & Pass\\
+TC-12 & Open private media as an unrelated user & Access denied & Pass\\
+TC-13 & Compare photos of two different objects & Calibrated image score near zero & Pass\\
+TC-14 & ``Hydro Flask''/``hydroflask'', ``navy blue''/``blue'' & Attributes match; red vs blue does not & Pass\\
+TC-15 & Moderator decides a claim on own report & HTTP 403; claim unchanged & Pass\\
+TC-16 & Confirm a handover & Both reports returned; matches and claims closed & Pass\\
+TC-17 & Reject a flagged report with open claims & Claims closed; claimants notified & Pass\\
+TC-18 & Withdraw a report with an open flag & Flag resolved & Pass\\
+TC-19 & Analytics with a date of 30 February & Full period shown, no error & Pass\\
+TC-20 & Open a protected page while signed out & Sign-in keeps \code{?next=} & Pass\\
+\bottomrule
+\end{longtable}
+
+\section{Error Handling}
+\begin{itemize}
+  \item Invalid filter parameters and impossible dates are ignored instead of causing server errors.
+  \item Model inference failures are logged; the match uses the remaining signals.
+  \item Custom 403, 404 and 500 pages give consistent recovery paths.
+  \item Every state transition re-reads the current row, so stale or repeated requests cannot corrupt a workflow.
+\end{itemize}
+
+\begin{table}[H]
+\centering\small
+\caption{Repository verification evidence}
+\begin{tabularx}{\textwidth}{p{46mm}X}
+\toprule
+Check & Recorded outcome\\
+\midrule
+\code{python manage.py check} & No issues detected\\
+Automated suite & 134 passed on SQLite in 210.9 s (commit \code{4a710ee}); 1 opt-in pretrained test skipped; PostgreSQL pass documented\\
+Dashboard tests after chart fix & 15 passed (commit \code{62334a7})\\
+Browser sweep & 318 page checks; no HTTP, overflow, JavaScript or heading faults\\
+End-to-end workflow & Full report-to-handover journey passes and closes both reports\\
+Migration checks & Empty PostgreSQL and populated SQLite paths documented as successful\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering\small
+\caption{Testing concerns and assurance level}
+\begin{tabularx}{\textwidth}{p{30mm}X p{26mm}}
+\toprule
+Concern & Representative assurance & Level\\
+\midrule
+Access control & Role gates, ownership, self-decision and unrelated-user denial & High\\
+State integrity & Report, claim, dispute and handover transitions, including closure & High\\
+Privacy & Protected media, private answers, controlled contact disclosure & High\\
+Compatibility & SQLite run, documented PostgreSQL pass and migrations & Medium--High\\
+Usability & Multi-viewport sweep, keyboard flow, reduced motion & Medium--High\\
+Model quality & Deterministic component and calibration tests; real benchmark pending & Preliminary\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===========================================================================
+\chapter{Results and Discussion}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item what was delivered against the synopsis;
+  \item a worked matching example and the results on the demonstration data;
+  \item pilot evaluation, performance observations and limitations.
+\end{itemize}
+
+\section{Application Output}
+\begin{itemize}
+  \item A moderated public wall and a personal home page.
+  \item Explainable match views and private claim timelines.
+  \item Notifications, staff review queues and administrator analytics.
+  \item All screenshots come from the running server and a populated database, not wireframes.
+\end{itemize}
+
+\section{Features Successfully Implemented}
+\begin{itemize}
+  \item \textbf{Synopsis scope:} roles, report lifecycle, AJAX discovery, hybrid matching, explanations, claims, notifications, analytics, exports and responsive UI.
+  \item \textbf{Added since the synopsis:} calibrated image similarity, brand and colour normalisation, live-only statistics, eight workflow-integrity rules, three-way themes, disc-overlap visualisation, the animated landing page and phone navigation.
+  \item \textbf{Security:} protected media, safe redirects, CSV formula-injection handling and a database-level single-approved-claim rule.
+\end{itemize}
+
+\section{Worked Matching Example}\label{sec:worked}
+\begin{itemize}
+  \item Pair: ``JIIT student ID card'' (lost) and ``Student ID card found on a desk'' (found), shown in Figure~\ref{fig:explain}.
+  \item The photographs show the same card, one clean and one worn; ResNet-50 gives a raw cosine of about 0.857, which calibration maps to $(0.857-0.275)/(1-0.275) \approx 0.80$.
+\end{itemize}
+\begin{table}[H]
+\centering\small
+\caption[Score breakdown for the ID-card pair]{Score breakdown for the ID-card pair}
+\label{tab:worked}
+\begin{tabularx}{\textwidth}{lccc X}
+\toprule
+Signal & $s_i$ & $w_i$ & $w_i s_i$ & Evidence\\
+\midrule
+Description (TF--IDF) & 0.819 & 0.30 & 0.246 & Shared terms: JIIT, blue, white, B.Tech CSE, 2029\\
+Photograph (ResNet-50) & 0.803 & 0.30 & 0.241 & Calibrated from raw cosine 0.857\\
+Campus zone & 1.000 & 0.15 & 0.150 & Both Academic Block A\\
+Category & 1.000 & 0.10 & 0.100 & Both ID \& Cards\\
+Date & 1.000 & 0.10 & 0.100 & Same day (4 Nov)\\
+Brand / colour & 1.000 & 0.05 & 0.050 & Both blue\\
+\midrule
+\textbf{Total} & & 1.00 & \textbf{0.887} & \textbf{High} ($>0.85$)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Matching on the Demonstration Data}
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[x=13.2cm,y=0.72cm]
+\def\pairs{{"JIIT ID card","Water bottle","Leather wallet","Keys, red tag","iPhone 13","Navy backpack"}}
+\foreach \i/\t/\im/\l/\c/\d/\a in {0/0.2457/0.2409/0.15/0.1/0.1/0.05, 1/0.2622/0.1794/0.15/0.1/0.0933/0.05, 2/0.2532/0.1608/0.15/0.1/0.0933/0.05, 3/0.1869/0.3/0.075/0.1/0.0933/0.05, 4/0.1557/0.1191/0.15/0.1/0.1/0.05, 5/0.1989/0.0621/0.15/0.1/0.0933/0.05}{
+  \pgfmathsetmacro{\xa}{\t}\pgfmathsetmacro{\xb}{\xa+\im}\pgfmathsetmacro{\xc}{\xb+\l}\pgfmathsetmacro{\xd}{\xc+\c}\pgfmathsetmacro{\xe}{\xd+\d}\pgfmathsetmacro{\xf}{\xe+\a}
+  \fill[llaccent] (0,-\i-0.32) rectangle (\xa,-\i+0.32);
+  \fill[llaccentink!55] (\xa,-\i-0.32) rectangle (\xb,-\i+0.32);
+  \fill[teal!70] (\xb,-\i-0.32) rectangle (\xc,-\i+0.32);
+  \fill[teal!35] (\xc,-\i-0.32) rectangle (\xd,-\i+0.32);
+  \fill[llfound] (\xd,-\i-0.32) rectangle (\xe,-\i+0.32);
+  \fill[llfound!45] (\xe,-\i-0.32) rectangle (\xf,-\i+0.32);
+  \pgfmathsetmacro{\name}{\pairs[\i]}
+  \node[font=\scriptsize,anchor=east] at (-0.01,-\i) {\name};
+  \node[font=\scriptsize\bfseries,anchor=west] at (1.02,-\i) {\pgfmathprintnumber[fixed,precision=3]{\xf}};}
+\node[font=\scriptsize\bfseries,anchor=west] at (1.02,0.75) {Score};
+\foreach \x/\t in {0.70/medium,0.85/high} {\draw[ink,dashed,thick] (\x,0.55) -- (\x,-5.55); \node[font=\tiny,above] at (\x,0.55) {\t\ $\geq$ \x};}
+\draw[ink!40] (0,0.55) -- (0,-5.55);
+\foreach \x in {0,0.2,0.4,0.6,0.8,1.0} \node[font=\tiny,below] at (\x,-5.55) {\x};
+\foreach \c/\t/\k in {llaccent/Text/0,llaccentink!55/Image/1,teal!70/Zone/2,teal!35/Category/3,llfound/Date/4,llfound!45/Attributes/5}
+  {\fill[\c] (0.02+0.16*\k,-6.5) rectangle ++(0.025,0.36); \node[font=\scriptsize,anchor=west] at (0.05+0.16*\k,-6.32) {\t};}
+\end{tikzpicture}
+\caption[Score contributions of the live matches]{Contribution of each signal to the six live matches (engine \code{synopsis-v2}); dashed lines are the tier thresholds}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption[Live matches on the demonstration database]{Live matches on the demonstration database (engine synopsis-v2)}
+\label{tab:live}
+\begin{tabularx}{\textwidth}{X X ccc}
+\toprule
+Lost report & Found report & Text & Image & Score (tier)\\
+\midrule
+JIIT student ID card & Student ID card found on a desk & 0.82 & 0.80 & 0.887 (high)\\
+Silver steel water bottle & Metal water bottle, steel colour & 0.87 & 0.60 & 0.835 (medium)\\
+Black leather wallet & Black wallet made of leather with silver logo & 0.84 & 0.54 & 0.807 (medium)\\
+Bunch of keys with red tag & Keys with a red keychain & 0.62 & 1.00 & 0.805 (medium)\\
+iPhone 13 with blue case & Blue Apple phone found on table & 0.52 & 0.40 & 0.675 (low)\\
+Navy blue backpack & Dark blue bag left in classroom & 0.66 & 0.21 & 0.654 (low)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{All six live matches are true pairs}, and no wrong pairing reaches the 0.40 storage threshold.
+  \item \textbf{The two low-tier pairs} are true matches whose representative photos show different objects, exactly where the image signal should not vouch for them; they stay visible but do not notify.
+  \item \textbf{The keys pair} reuses one demo photograph for both reports, so its perfect image score is an artefact of the demo data.
+  \item \textbf{Effect of calibration:} every score fell and the ranking was unchanged. The iPhone (0.73) and backpack (0.72) pairs had sat in the medium tier only because unrelated photos earned points. The gap between the weakest true and strongest false pair stayed at 0.38--0.39.
+  \item \textbf{Thresholds unchanged:} the synopsis tiers were not retuned, because the available evaluation data cannot justify new ones.
+\end{itemize}
+
+\section{Pilot Evaluation}
+\begin{itemize}
+  \item 180 pairs from 60 Wikimedia Commons images in six categories, with a source-disjoint validation and test split.
+  \item Results below predate calibration and come from an optimistic benchmark: positives reuse the same photo with brightness or compression changes, and descriptions come from source titles.
+  \item They show the pipeline works end to end; they are \textbf{not} evidence of real-world accuracy, and the set intentionally fails the project's research-readiness gate.
+\end{itemize}
+\begin{table}[H]
+\centering\small
+\caption[Pilot test-split results]{Pilot test-split results (90 pairs; engineering sanity check only)}
+\label{tab:pilot}
+\begin{tabular}{llccccc}
+\toprule
+Text & Image & Threshold & Precision & Recall & F1 & MRR\\
+\midrule
+TF--IDF & ResNet-50 & 0.80 & 1.000 & 1.000 & 1.000 & 1.000\\
+TF--IDF & CLIP & 0.80 & 0.968 & 1.000 & 0.984 & 1.000\\
+Sentence-BERT \cite{sbert} & ResNet-50 & 0.85 & 1.000 & 1.000 & 1.000 & 1.000\\
+Sentence-BERT & CLIP & 0.85 & 0.968 & 1.000 & 0.984 & 1.000\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Performance and Observations}
+\begin{itemize}
+  \item Feature caching avoids recomputing vectors for unchanged reports.
+  \item Pagination bounds every list; TF--IDF stays inexpensive at campus scale.
+  \item ResNet-50 on a CPU adds noticeable latency at approval, because matching runs synchronously in the request.
+  \item The interface shows the score components immediately once the request completes.
+\end{itemize}
+\begin{table}[H]
+\centering\small
+\caption{Observed strengths and evidence}
+\begin{tabularx}{\textwidth}{p{32mm}X}
+\toprule
+Strength & Evidence\\
+\midrule
+Traceability & Components, missing evidence, models, weights, chance levels and versions are stored\\
+Honest scoring & Calibration removes unearned image points; unrelated photos score about zero\\
+Human control & Similarity never approves ownership; an independent moderator decides\\
+Privacy & Contacts and answers are scoped to participants and shared only after approval\\
+Case integrity & A handover closes both reports, their matches and any rival claims\\
+Design coherence & Tokens, overlapping match discs and status dots form one visual language\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Limitations}
+\begin{itemize}
+  \item Real-world accuracy is unmeasured; the pilot set reuses source photographs, and the chance levels were measured on that same set.
+  \item One photograph per report; matching runs synchronously.
+  \item No native mobile client and no email or SMS notifications.
+  \item The Render deployment is documented but not yet launched.
+\end{itemize}
+
+% ===========================================================================
+\chapter{Conclusion and Future Scope}
+\textbf{In this chapter:}
+\begin{itemize}
+  \item the main conclusions of the project;
+  \item a prioritised roadmap of future enhancements;
+  \item smaller improvements for operation in production.
+\end{itemize}
+
+\section{Conclusion}
+\begin{itemize}
+  \item LostLink delivers a complete, responsible campus recovery workflow: structured reports, explainable multimodal ranking and human-controlled verification.
+  \item Its central design decision, separating a \emph{probable match} from an \emph{approved owner}, allows useful automation without giving up privacy or accountability.
+  \item The latest work made the system more honest: calibration removed unearned image points, normalisation removed false brand and colour mismatches, and live-only counts made analytics truthful.
+  \item The workflow audit closed eight gaps where stored state could contradict reality, each now guarded by a test.
+  \item The codebase is modular, tested (134 tests) and deployment-ready, and it states its evidence limitations openly.
+\end{itemize}
+
+\section{Future Enhancements}
+\begin{table}[H]
+\centering\small
+\caption{Future work roadmap}
+\begin{tabularx}{\textwidth}{p{6mm}X p{18mm}p{30mm}}
+\toprule
+\# & Enhancement & Priority & Benefit\\
+\midrule
+1 & Manually reviewed dataset of independently photographed campus items; re-measure chance levels; report precision, recall, F1, MRR and recall@K before retuning thresholds & High & Real accuracy evidence\\
+2 & Launch the PostgreSQL deployment and run \code{rebuild\_matches} with every engine upgrade & High & Live service\\
+3 & Background queue for matching and feature extraction, with progress and retries & High & Faster approvals\\
+4 & Multiple photographs per report, with perceptual-hash duplicate detection & Medium & Better image evidence\\
+5 & Optional email or SMS notifications with verified preferences and rate limits & Medium & Faster response\\
+6 & Object storage, antivirus scanning and image-retention policies & Medium & Safer media\\
+7 & Run the documented AJAX-versus-manual usability study with consenting participants & Medium & Usability evidence\\
+8 & Progressive web app or native client once the workflow stabilises & Low & Offline, app-like use\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Possible Improvements}
+\begin{itemize}
+  \item Query profiling and asynchronous exports.
+  \item A full accessibility audit.
+  \item An administrator view comparing engine versions side by side.
+  \item Monitoring that pairs score-drift snapshots with periodically reviewed ground truth, since drift alone cannot measure correctness.
+  \item Production operations: backups, structured logs, error tracking, HTTPS and an incident process.
+\end{itemize}
+
+% ===========================================================================
+\chapter{References}
+\begingroup
+\fontsize{9.5}{11.4}\selectfont
+\begin{thebibliography}{99}
+\setlength{\itemsep}{0.5pt}
+\setlength{\parskip}{0pt}
+
+\bibitem{python}
+Python Software Foundation, ``Python 3 documentation,'' Python.org. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://docs.python.org/3/}
+
+\bibitem{django}
+Django Software Foundation, ``Django documentation,'' DjangoProject.com. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://docs.djangoproject.com/}
+
+\bibitem{pillow}
+A. Clark and contributors, ``Pillow (PIL Fork) documentation,'' Read the Docs. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://pillow.readthedocs.io/}
+
+\bibitem{sklearn}
+scikit-learn developers, ``scikit-learn user guide: Feature extraction and pairwise metrics,'' scikit-learn.org. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://scikit-learn.org/stable/}
+
+\bibitem{sklearnpaper}
+F. Pedregosa \emph{et al.}, ``Scikit-learn: Machine learning in Python,'' \emph{J. Mach. Learn. Res.}, vol. 12, pp. 2825--2830, 2011.
+
+\bibitem{reportlab}
+ReportLab Inc., ``ReportLab PDF library user guide,'' ReportLab.com. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://docs.reportlab.com/}
+
+\bibitem{pytorch}
+PyTorch Foundation, ``PyTorch documentation,'' PyTorch.org. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://pytorch.org/docs/stable/}
+
+\bibitem{pytorchpaper}
+A. Paszke \emph{et al.}, ``PyTorch: An imperative style, high-performance deep learning library,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, vol. 32, 2019, pp. 8024--8035.
+
+\bibitem{postgres}
+PostgreSQL Global Development Group, ``PostgreSQL 17 documentation,'' PostgreSQL.org. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://www.postgresql.org/docs/17/}
+
+\bibitem{mdn}
+Mozilla Developer Network, ``MDN Web Docs: HTML, CSS and JavaScript,'' developer.mozilla.org. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://developer.mozilla.org/}
+
+\bibitem{whitenoise}
+D. Evans, ``WhiteNoise documentation,'' Read the Docs. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://whitenoise.readthedocs.io/}
+
+\bibitem{tfidf}
+G. Salton and C. Buckley, ``Term-weighting approaches in automatic text retrieval,'' \emph{Inf. Process. Manage.}, vol. 24, no. 5, pp. 513--523, 1988, doi: 10.1016/0306-4573(88)90021-0.
+
+\bibitem{resnet}
+K. He, X. Zhang, S. Ren, and J. Sun, ``Deep residual learning for image recognition,'' in \emph{Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR)}, Las Vegas, NV, USA, 2016, pp. 770--778, doi: 10.1109/CVPR.2016.90.
+
+\bibitem{clip}
+A. Radford \emph{et al.}, ``Learning transferable visual models from natural language supervision,'' in \emph{Proc. 38th Int. Conf. Mach. Learn. (ICML)}, 2021, pp. 8748--8763.
+
+\bibitem{lostlinkrepo}
+S. Grover, P. Goel, A. Sharma, and A. Kulashri, ``LostLink: An AI-enabled lost-and-found matching platform,'' GitHub repository, 2026. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://github.com/SaiGrover/LostLink}
+
+\bibitem{playwright}
+Microsoft, ``Playwright for Python documentation,'' Playwright.dev. Accessed: Nov. 11, 2026. [Online]. Available: \url{https://playwright.dev/python/}
+
+\bibitem{sbert}
+N. Reimers and I. Gurevych, ``Sentence-BERT: Sentence embeddings using Siamese BERT-networks,'' in \emph{Proc. Conf. Empirical Methods Natural Lang. Process. (EMNLP-IJCNLP)}, Hong Kong, China, 2019, pp. 3982--3992, doi: 10.18653/v1/D19-1410.
+
+\end{thebibliography}
+\endgroup
+
+% ===========================================================================
+\chapter*{Appendix A: Setup and Commands}
+\addcontentsline{toc}{chapter}{Appendix A: Setup and Commands}
+\markboth{Appendix A}{Appendix A}
+\textbf{Run LostLink locally (demo data)}
+\begin{lstlisting}[style=lostlink,language=bash]
+python -m venv .venv
+.venv\Scripts\activate            # macOS/Linux: source .venv/bin/activate
+pip install -r requirements-ml.txt
+python manage.py migrate
+python manage.py seed_demo --fresh
+python manage.py upgrade_demo_photos  # credited demo photos; skip offline
+python manage.py rebuild_matches      # downloads pinned ResNet-50 weights once
+python manage.py runserver            # open http://127.0.0.1:8000/
+\end{lstlisting}
+\textbf{Verify the build}
+\begin{lstlisting}[style=lostlink,language=bash]
+python manage.py check
+python manage.py test                 # 134 tests; TF-IDF + histogram, no downloads
+python scripts/browser_check.py --base http://127.0.0.1:8000
+python scripts/e2e_workflow.py --base http://127.0.0.1:8000
+\end{lstlisting}
+\textbf{Notes}
+\begin{itemize}
+  \item Demo accounts are created by \code{seed\_demo} and listed on the sign-in page only while \code{DEBUG} is on; never seed a production database.
+  \item After changing the engine version or image model, run \code{rebuild\_matches} once; reports and claims are not touched.
+  \item Production uses PostgreSQL via \code{DATABASE\_URL}, \code{DJANGO\_DEBUG=false} and a private secret key (see \code{docs/DEPLOY\_RENDER.md}).
+\end{itemize}
+
+\end{document}
+
