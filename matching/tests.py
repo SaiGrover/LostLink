@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from unittest import skipUnless
 from unittest.mock import patch
 
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import SimpleTestCase, TestCase, override_settings
@@ -139,7 +140,7 @@ class MatchingPipelineTests(TestCase):
         self.assertEqual(m.tier, 'high')
         self.assertEqual(m.missing_components, [])
         self.assertAlmostEqual(m.image_score, 1.0, places=4)
-        self.assertEqual(m.engine_version, 'synopsis-v1')
+        self.assertEqual(m.engine_version, settings.MATCHING['VERSION'])
         self.assertEqual(m.configuration['image'], 'histogram')
         self.assertTrue(Notification.objects.filter(user=self.users['finder'], kind='match').exists())
         self.assertTrue(Notification.objects.filter(user=self.users['owner'], kind='match').exists())
@@ -264,13 +265,13 @@ class MatchingPipelineTests(TestCase):
         self.client.force_login(self.users['owner'])
         self.assertEqual(len(self.client.get(lost.get_absolute_url()).context['match_rows']), 1)
         from django.conf import settings
-        new = dict(settings.MATCHING, VERSION='synopsis-v2')
+        new = dict(settings.MATCHING, VERSION='next-engine-version')
         with override_settings(MATCHING=new):
             self.assertEqual(len(self.client.get(lost.get_absolute_url()).context['match_rows']), 0)
             self.assertEqual(len(self.client.get(reverse('items:dashboard')).context['top_matches']), 0)
             call_command('rebuild_matches', verbosity=0)
             self.assertEqual(len(self.client.get(lost.get_absolute_url()).context['match_rows']), 1)
-            self.assertEqual(Match.objects.get().engine_version, 'synopsis-v2')
+            self.assertEqual(Match.objects.get().engine_version, 'next-engine-version')
 
     def test_inference_failure_degrades_gracefully(self):
         lost = self.report('owner', 'lost', 'Wallet', 'Black leather wallet with silver logo',
@@ -359,3 +360,68 @@ class PretrainedSmokeTests(SimpleTestCase):
         self.assertEqual(len(text_vectors(['black wallet'])[0]), 384)
         a, b = text_vectors(['black leather wallet', 'wallet made of black leather'])
         self.assertGreater(engine.vector_similarity(a, b), 0.7)
+
+
+class CalibrationAndAttributeTests(SimpleTestCase):
+    """Image similarity is measured above each model's chance level, and
+    brand/colour comparison tolerates spelling and modifiers."""
+
+    @staticmethod
+    def vec_with_cosine(c):
+        import math
+        return [1.0, 0.0], [c, math.sqrt(1 - c * c)]
+
+    def test_unrelated_photos_at_chance_score_zero_and_identical_photos_score_one(self):
+        from matching import engine
+        chance = settings.MATCHING['IMAGE_CHANCE']['resnet']
+        a, b = self.vec_with_cosine(chance)
+        self.assertAlmostEqual(engine.calibrated_image_similarity(a, b, 'resnet'), 0.0, places=6)
+        self.assertAlmostEqual(engine.calibrated_image_similarity(a, a, 'resnet'), 1.0, places=6)
+        a, b = self.vec_with_cosine(0.1)   # below chance never goes negative
+        self.assertEqual(engine.calibrated_image_similarity(a, b, 'resnet'), 0.0)
+
+    def test_calibration_is_linear_above_chance_and_keeps_the_order(self):
+        from matching import engine
+        with override_settings(MATCHING=dict(settings.MATCHING, IMAGE_CHANCE={'resnet': 0.3})):
+            a, b = self.vec_with_cosine(0.65)
+            self.assertAlmostEqual(engine.calibrated_image_similarity(a, b, 'resnet'), 0.5, places=6)
+            low = engine.calibrated_image_similarity(*self.vec_with_cosine(0.5), 'resnet')
+            high = engine.calibrated_image_similarity(*self.vec_with_cosine(0.8), 'resnet')
+            self.assertLess(low, high)
+
+    def test_every_vision_model_has_a_measured_chance_level(self):
+        for kind in ('resnet', 'clip', 'histogram'):
+            self.assertGreater(settings.MATCHING['IMAGE_CHANCE'][kind], 0)
+            self.assertLess(settings.MATCHING['IMAGE_CHANCE'][kind], 1)
+
+    def test_colour_and_brand_comparison_is_normalised(self):
+        from matching.engine import attribute_score
+        self.assertEqual(attribute_score('', 'Navy blue', '', 'blue'), 1.0)
+        self.assertEqual(attribute_score('', 'grey', '', 'Gray'), 1.0)
+        self.assertEqual(attribute_score('', 'dark red', '', 'Maroon'), 1.0)
+        self.assertEqual(attribute_score('', 'red', '', 'blue'), 0.0)
+        self.assertEqual(attribute_score('Hydro Flask', '', 'hydroflask', ''), 1.0)
+        self.assertEqual(attribute_score('Milton', 'silver', 'Cello', 'Silver'), 0.5)
+        self.assertIsNone(attribute_score('', '', 'Apple', ''))
+        self.assertIsNone(attribute_score('', 'dark', '', 'light'))   # modifiers alone are not a colour
+
+
+@lightweight_models
+class CalibratedScoringTests(TestCase):
+    def setUp(self):
+        self.tax = make_taxonomy()
+        self.users = make_users()
+
+    def test_photo_at_chance_level_adds_no_image_points(self):
+        from items.models import Item
+        from matching.services import score_pair
+        a, b = CalibrationAndAttributeTests.vec_with_cosine(settings.MATCHING['IMAGE_CHANCE']['histogram'])
+        lost = Item.objects.create(reporter=self.users['owner'], report_type='lost', title='Wallet',
+                                   description='Black leather wallet', category=self.tax['bags'],
+                                   location=self.tax['library'], status='approved', image_vector=a)
+        found = Item.objects.create(reporter=self.users['finder'], report_type='found', title='Wallet',
+                                    description='Black leather wallet', category=self.tax['bags'],
+                                    location=self.tax['library'], status='approved', image_vector=b)
+        result = score_pair(lost, found)
+        self.assertNotIn('image', result['missing'])
+        self.assertAlmostEqual(result['components']['image'], 0.0, places=6)

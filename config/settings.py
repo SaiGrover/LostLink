@@ -251,3 +251,5 @@ MATCHING['WEIGHTS'] = MATCHING_PROFILE['weights']
 MATCHING['VERSION'] = MATCHING_PROFILE['version']
 MATCHING['TIER_MEDIUM'] = MATCHING_PROFILE['medium']
 MATCHING['TIER_HIGH'] = MATCHING_PROFILE['high']
+# Chance-level image similarity per vision model (see matching/profile.json).
+MATCHING['IMAGE_CHANCE'] = MATCHING_PROFILE.get('image_chance', {})

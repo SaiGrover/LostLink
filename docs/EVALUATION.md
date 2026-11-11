@@ -84,3 +84,16 @@ blank consent-compatible CSV schema, not fabricated participant results.
 Before deployment, configure PostgreSQL through DATABASE_URL, a private secret
 key, DEBUG=false, allowed hosts and trusted CSRF origins. Configure WSGI serving,
 static files and protected media storage in the hosting environment.
+
+## Image calibration (engine synopsis-v2)
+
+Image similarity is now rescaled above each vision model's chance level (the
+median cosine between photos of different items on the 120 label-0 pilot
+pairs: ResNet-50 0.275, CLIP 0.568, histogram 0.574). `evaluation/results.json`
+was produced before this change and has not been regenerated; rerun
+`python manage.py evaluate_hybrid evaluation/pilot/dataset.json` to refresh it.
+On the local demo reports the calibration kept the gap between the weakest true
+pair and the strongest false pair (0.38 before, 0.39 after) while lowering all
+scores; two true pairs whose photos show different objects moved from medium to
+low (0.73 to 0.68 and 0.72 to 0.65). The synopsis thresholds were not retuned,
+because the pilot set fails the research-readiness gate.

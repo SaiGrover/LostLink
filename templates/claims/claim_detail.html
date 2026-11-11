@@ -108,6 +108,8 @@
       <h2 id="decide-title">Decision</h2>
       {% if is_claimant %}
         <p class="muted">You submitted this claim, so another moderator has to decide it.</p>
+      {% elif is_finder %}
+        <p class="muted">You reported this item, so another moderator has to decide this claim. You can still ask private questions.</p>
       {% else %}
         {% if not claim.all_answered %}<div class="notice notice--warn" style="margin-bottom:var(--s4)">{% icon 'alert' %}<div class="notice__body"><span>Approval needs at least one private question, with every question answered.</span></div></div>{% endif %}
         <div class="cluster">

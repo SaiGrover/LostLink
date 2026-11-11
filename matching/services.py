@@ -61,7 +61,7 @@ def score_pair(item: Item, candidate: Item, text_sim: float | None = None,
     missing: list[str] = []
     has_image_pair = bool(item.image_vector) and bool(candidate.image_vector)
     if has_image_pair:
-        image = engine.vector_similarity(item.image_vector, candidate.image_vector)
+        image = engine.calibrated_image_similarity(item.image_vector, candidate.image_vector)
     else:
         image, missing = 0.0, missing + ['image']
 

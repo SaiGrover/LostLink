@@ -74,3 +74,10 @@ class ProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'field-input')
+
+    def clean_email(self):
+        # Same rule as registration: one account per email, compared without case.
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if email and User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError('Another account already uses this email.')
+        return email

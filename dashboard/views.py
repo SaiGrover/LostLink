@@ -39,7 +39,13 @@ OPEN_CLAIMS = [Claim.Status.SUBMITTED, Claim.Status.QUESTIONS, Claim.Status.ANSW
 
 
 def _current_matches():
-    return Match.objects.filter(engine_version=settings.MATCHING['VERSION'])
+    """Live potential matches: current engine version, both reports still
+    active and public. Pairs whose report was returned, withdrawn or removed
+    stay stored as claim evidence but are not counted as open matches."""
+    live = [Item.Status.APPROVED, Item.Status.CLAIMED]
+    return Match.objects.filter(engine_version=settings.MATCHING['VERSION'],
+                                lost_item__is_active=True, lost_item__status__in=live,
+                                found_item__is_active=True, found_item__status__in=live)
 
 
 def _safe_next(request, default):
@@ -135,10 +141,14 @@ def resolve_flag(request, pk, decision):
         messages.info(request, 'No open flags on this report.')
         return redirect('dashboard:moderation')
     if decision == 'reject':
+        from claims.views import close_claims
         item.status = Item.Status.REJECTED
         item.is_active = False
         item.save(update_fields=['status', 'is_active'])
         clear_matches(item)
+        # Claims on a removed report could never be decided; close them and
+        # tell each claimant, instead of leaving them stuck in the queue.
+        close_claims(item, request.user, 'This report was removed by a moderator, so the claim is closed.')
         record_decision(request.user, ModerationDecision.Action.REPORT_REJECTED, item=item,
                         note=note or 'Removed after user flags.')
         notify_user(item.reporter, kind='report', title=f'Report removed — “{item.title}”',
@@ -172,10 +182,19 @@ def decision_history(request):
 # ---------------------------------------------------------------------------
 # Administrator — analytics dashboard (synopsis Sections 4.3, 4.11, 7.4)
 # ---------------------------------------------------------------------------
+def _safe_date(value):
+    """A date from YYYY-MM-DD, or None for anything malformed or impossible
+    (``parse_date`` raises on well-formed but invalid dates like 2026-02-30)."""
+    try:
+        return parse_date((value or '').strip())
+    except ValueError:
+        return None
+
+
 def _period(request):
     """Optional ``from`` / ``to`` dates (inclusive) from the query string."""
-    start = parse_date(request.GET.get('from', '') or '') if request.GET.get('from') else None
-    end = parse_date(request.GET.get('to', '') or '') if request.GET.get('to') else None
+    start = _safe_date(request.GET.get('from'))
+    end = _safe_date(request.GET.get('to'))
     if start and end and start > end:
         start, end = end, start
     return start, end
@@ -325,7 +344,11 @@ def analytics(request):
 @admin_required
 def manage_users(request):
     if request.method == 'POST':
-        user = get_object_or_404(User, pk=request.POST.get('user_id'))
+        user_id = request.POST.get('user_id', '')
+        if not user_id.isdecimal():
+            messages.error(request, 'Choose a person to update.')
+            return redirect('dashboard:users')
+        user = get_object_or_404(User, pk=user_id)
         new_role = request.POST.get('role')
         if user.pk == request.user.pk or user.is_superuser:
             messages.error(request, 'Your own role and superuser roles cannot be changed here.')

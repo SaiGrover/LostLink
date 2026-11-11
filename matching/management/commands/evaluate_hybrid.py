@@ -96,7 +96,7 @@ class Command(BaseCommand):
                     for row in pairs:
                         a,b = row['query'],row['candidate']
                         ts = engine.image_similarity(text_cache[a['description']],text_cache[b['description']]) if txt=='sbert' else engine.text_similarity(a['description'],[b['description']])[0]
-                        components.append([ts,engine.image_similarity(vector(a,img),vector(b,img)),
+                        components.append([ts,engine.calibrated_image_similarity(vector(a,img),vector(b,img),img),
                             float(a['location']==b['location']),float(a['category']==b['category']),
                             engine.date_score(date.fromisoformat(a['date']),date.fromisoformat(b['date'])),
                             engine.attribute_score(a['brand'],a['color'],b['brand'],b['color'])])
