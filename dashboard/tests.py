@@ -2,6 +2,7 @@ import csv
 import io
 from datetime import date, timedelta
 
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -113,9 +114,9 @@ class AnalyticsAndExportTests(TestCase):
         self.items[0].created_at = timezone.now() - timedelta(days=100)
         self.items[0].save(update_fields=['created_at'])
         Match.objects.create(lost_item=self.items[0], found_item=self.items[2], score=.9, tier='high',
-                             engine_version='synopsis-v1', text_score=.8)
+                             engine_version=settings.MATCHING['VERSION'], text_score=.8)
         Match.objects.create(lost_item=self.items[1], found_item=self.items[2], score=.72, tier='medium',
-                             engine_version='synopsis-v1', text_score=.6)
+                             engine_version=settings.MATCHING['VERSION'], text_score=.6)
         Match.objects.create(lost_item=self.items[4], found_item=self.items[2], score=.5, tier='low',
                              engine_version='old-version')
         Claim.objects.create(item=self.items[2], claimant=self.u['owner'], statement='x', status='approved')
@@ -128,12 +129,14 @@ class AnalyticsAndExportTests(TestCase):
         self.assertEqual(page.status_code, 200)
         k = page.context['kpis']
         self.assertEqual((k['users'], k['reports'], k['lost'], k['found'], k['pending']), (5, 5, 3, 2, 1))
-        self.assertEqual((k['matches'], k['high'], k['medium'], k['low']), (2, 1, 1, 0))
+        # Only live pairs count: the medium match involves a returned report, so
+        # it stays stored as evidence but is no longer an open match.
+        self.assertEqual((k['matches'], k['high'], k['medium'], k['low']), (1, 1, 0, 0))
         self.assertEqual((k['claims'], k['claims_pending'], k['claims_approved'], k['claims_rejected']), (3, 1, 1, 1))
         self.assertEqual(k['returned'], 1)
         self.assertEqual(page.context['by_category'][0]['category__name'], 'Bags & Wallets')
         self.assertEqual(page.context['by_location'][0]['location__name'], 'Central Library')
-        self.assertEqual(sum(b['n'] for b in page.context['histogram']), 2)
+        self.assertEqual(sum(b['n'] for b in page.context['histogram']), 1)
         self.assertEqual(len(page.context['trends']), 12)
         self.assertEqual(sum(r['total'] for r in page.context['trends']), 4)  # one report is older than 12 weeks
         self.assertContains(page, 'Operational data quality')

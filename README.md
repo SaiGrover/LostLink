@@ -24,7 +24,7 @@ Built with Django for the JIIT Full Stack Development Lab (project-based learnin
 | Discovery | AJAX search with keyword, type, category, zone, status, date range, sort and pagination; shareable URLs; a no-JavaScript fallback and a `?study=manual` baseline for the usability study. Only approved, active reports are public. |
 | Matching | TF-IDF or Sentence-BERT text, ResNet-50 or CLIP image embeddings, zone adjacency, compatible categories, date decay, brand/colour. Synopsis weights 0.30/0.30/0.15/0.10/0.10/0.05; tiers above 85% high, 70–85% medium, below 70% low. |
 | Explanations | Every match stores its component scores, the components that had no evidence, the model manifest and weight version. The UI shows each signal's similarity, effective weight and points. |
-| Claims | Owners claim found items; finders offer to return lost items. Private questions and answers, moderator approval (never by the claimant), contact details revealed only after approval, disputes, and handover confirmation. A database constraint allows one verified claimant per item. |
+| Claims | Owners claim found items; finders offer to return lost items. Private questions and answers, moderator approval (never by the claimant or the person who reported the item), contact details revealed only after approval, disputes, and handover confirmation. A confirmed handover also closes the claimant's own matching report. Removing a report closes its open claims and tells each claimant. A database constraint allows one verified claimant per item. |
 | Notifications | Persistent in-app notifications for matches, claims, questions, answers, decisions, disputes and handovers; de-duplicated across matching runs; mark read/unread without reload; live unread badge. |
 | Analytics | Users, lost/found counts, pending moderation, match tiers and score histogram, claim outcomes, returns and recovery rate, categories, zones, weekly trends, photo coverage, lost-to-found day gaps, wording variation, monitoring snapshots. Optional date range. |
 | Exports | CSV of reports (no usernames, contacts or answers; formula-injection safe) and PDF summaries for a month or a date range. |
@@ -110,6 +110,17 @@ score = Σ weight_c × similarity_c   over components with evidence, weights ren
   on the match and shown as “Not compared”.
 - **Temporal rule.** A found report dated more than one day before the lost
   report is impossible; it is never stored as a match.
+- **Image calibration.** Pretrained image features never put unrelated photos
+  at zero: on the pilot set, photos of different items have a median cosine of
+  0.275 (ResNet-50), 0.568 (CLIP) and 0.574 (histogram). Image similarity is
+  rescaled above that chance level, `(cos - chance) / (1 - chance)`, so
+  unrelated photos add no points and identical photos still score 1. The
+  baselines and their provenance are in `matching/profile.json`.
+- **Brand and colour.** Brands compare without case, spaces or punctuation;
+  colours agree when they share a colour word after normalising spellings and
+  dropping modifiers ("Navy blue" matches "blue", "grey" matches "gray").
+- **Live matches only.** Pairs whose report was returned, withdrawn or removed
+  stay stored as claim evidence but are not counted as open matches.
 - **Partial credit.** Adjacent zones score 0.5; compatible categories (set by an
   administrator) score 0.5.
 - **Eligibility.** Only active, moderator-approved reports of the opposite type

@@ -48,6 +48,11 @@ secret out of GitHub. For a custom domain, add its hostname to
 
 ## First launch
 
+After any deploy that changes `matching/profile.json` (the engine version is
+currently `synopsis-v2`), run `python manage.py rebuild_matches` in the Render
+Shell. Until then, matches from the previous version are hidden rather than
+shown with outdated scores.
+
 1. Wait for the build, migration and start commands to succeed.
 2. Use Render Shell to run `python manage.py createsuperuser` with a strong,
    unique password. The Django admin URL is `/django-admin/`.

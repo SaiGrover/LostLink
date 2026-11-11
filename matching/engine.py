@@ -25,6 +25,10 @@ Design notes
   report dated more than ``TEMPORAL_TOLERANCE_DAYS`` before the lost report
   is treated as impossible and receives a date score of zero; the
   orchestration layer also refuses to store such pairs.
+* Image calibration: pretrained image features never put unrelated photos
+  at zero (ResNet-50 0.275, CLIP 0.568 median cosine for different items on
+  the pilot set), so image similarity is rescaled above each model's chance
+  level before weighting (``calibrated_image_similarity``).
 * Confidence tiers follow the synopsis table exactly: ``> 85%`` high,
   ``70%–85%`` (inclusive) medium, ``< 70%`` low.
 """
@@ -205,6 +209,28 @@ def vector_similarity(vec_a, vec_b) -> float:
 image_similarity = vector_similarity
 
 
+def calibrated_image_similarity(vec_a, vec_b, kind: str | None = None) -> float:
+    """Image similarity rescaled above the vision model's chance level.
+
+    Pretrained image features do not put unrelated photos at zero: ResNet's
+    pooled features are all non-negative and CLIP's share a large common
+    component, so two photos of different objects still have a cosine of
+    0.25 to 0.57 (see ``image_chance`` in ``matching/profile.json``). Used raw,
+    that gives every pair unearned image points. The cosine is therefore
+    mapped to ``(cos - chance) / (1 - chance)``, clamped to [0, 1]: unrelated
+    photos score about zero, identical photos still score one, and the order
+    of candidates is unchanged.
+    """
+    raw = vector_similarity(vec_a, vec_b)
+    if kind is None:
+        from .embeddings import configuration
+        kind = configuration()['image']
+    chance = float(settings.MATCHING.get('IMAGE_CHANCE', {}).get(kind, 0.0))
+    if chance <= 0 or chance >= 1:
+        return raw
+    return float(max(0.0, min(1.0, (raw - chance) / (1.0 - chance))))
+
+
 # ---------------------------------------------------------------------------
 # Metadata
 # ---------------------------------------------------------------------------
@@ -269,19 +295,48 @@ def date_score(lost_date, found_date) -> float:
     return float(0.5 ** (abs(gap) / half_life))
 
 
+_COLOUR_SYNONYMS = {
+    'gray': 'grey', 'greyish': 'grey', 'grayish': 'grey', 'golden': 'gold', 'silvery': 'silver',
+    'blueish': 'blue', 'bluish': 'blue', 'reddish': 'red', 'greenish': 'green', 'blackish': 'black',
+    'whitish': 'white', 'offwhite': 'white', 'cream': 'beige', 'maroon': 'red', 'burgundy': 'red',
+    'crimson': 'red', 'scarlet': 'red', 'violet': 'purple', 'lilac': 'purple', 'turquoise': 'teal',
+    'aqua': 'teal', 'tan': 'brown', 'khaki': 'beige', 'transparent': 'clear',
+}
+_COLOUR_MODIFIERS = {'dark', 'light', 'pale', 'bright', 'deep', 'matte', 'matt', 'glossy', 'metallic', 'colour',
+                     'color', 'coloured', 'colored', 'shade', 'and', 'with', 'mixed'}
+
+
+def _brand_key(value: str) -> str:
+    """'Hydro Flask', 'hydro-flask' and 'HydroFlask' compare equal."""
+    return re.sub(r'[^a-z0-9]', '', (value or '').lower())
+
+
+def _colour_words(value: str) -> set[str]:
+    """Normalised colour words, ignoring modifiers: 'Dark Navy-Blue' -> {'navy', 'blue'}."""
+    words = _WORD_RE.findall((value or '').lower())
+    return {_COLOUR_SYNONYMS.get(w, w) for w in words if w not in _COLOUR_MODIFIERS}
+
+
 def attribute_score(brand_a, color_a, brand_b, color_b) -> float | None:
     """Fraction of comparable brand/colour attributes that agree.
+
+    Brands are compared without case, spaces or punctuation. Colours agree
+    when they share a colour word after normalising spelling variants and
+    dropping modifiers, so 'Navy blue' matches 'blue' and 'grey' matches
+    'gray', while 'red' and 'blue' do not.
 
     Returns ``None`` when neither attribute is present on both sides, so the
     caller can treat the component as *missing* rather than as a mismatch.
     """
     checks, hits = 0, 0
-    if brand_a and brand_b:
+    key_a, key_b = _brand_key(brand_a), _brand_key(brand_b)
+    if key_a and key_b:
         checks += 1
-        hits += 1 if brand_a.strip().lower() == brand_b.strip().lower() else 0
-    if color_a and color_b:
+        hits += 1 if key_a == key_b else 0
+    words_a, words_b = _colour_words(color_a), _colour_words(color_b)
+    if words_a and words_b:
         checks += 1
-        hits += 1 if color_a.strip().lower() == color_b.strip().lower() else 0
+        hits += 1 if words_a & words_b else 0
     if checks == 0:
         return None
     return hits / checks

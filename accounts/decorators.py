@@ -6,14 +6,14 @@ undifferentiated ``is_authenticated`` check.
 from functools import wraps
 
 from django.contrib import messages
+from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect
 
 
 def _check(request, predicate):
     user = request.user
     if not user.is_authenticated:
-        return False, redirect('accounts:login')
+        return False, redirect_to_login(request.get_full_path())
     if not predicate(user):
         raise PermissionDenied('You do not have access to this area.')
     return True, None
@@ -30,7 +30,7 @@ def role_required(*roles):
             user = request.user
             if not user.is_authenticated:
                 messages.info(request, 'Please sign in to continue.')
-                return redirect('accounts:login')
+                return redirect_to_login(request.get_full_path())
             allowed = user.is_administrator or user.role in roles
             if not allowed:
                 raise PermissionDenied('You do not have access to this area.')
@@ -46,7 +46,7 @@ def moderator_required(view_func):
         user = request.user
         if not user.is_authenticated:
             messages.info(request, 'Please sign in to continue.')
-            return redirect('accounts:login')
+            return redirect_to_login(request.get_full_path())
         if not user.is_staff_role:
             raise PermissionDenied('Moderator access required.')
         return view_func(request, *args, **kwargs)
@@ -60,7 +60,7 @@ def admin_required(view_func):
         user = request.user
         if not user.is_authenticated:
             messages.info(request, 'Please sign in to continue.')
-            return redirect('accounts:login')
+            return redirect_to_login(request.get_full_path())
         if not user.is_administrator:
             raise PermissionDenied('Administrator access required.')
         return view_func(request, *args, **kwargs)

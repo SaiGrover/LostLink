@@ -266,6 +266,8 @@ def withdraw_item(request, pk):
     item.is_active = False
     item.save(update_fields=['is_active'])
     clear_matches(item)
+    # A withdrawn report is no longer public, so its open flags need no review.
+    item.flags.filter(resolved_at__isnull=True).update(resolved_at=timezone.now())
     messages.info(request, f'“{item.title}” has been withdrawn.')
     return redirect('items:mine')
 

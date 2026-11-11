@@ -25,12 +25,61 @@ from accounts.decorators import moderator_required
 from dashboard.models import ModerationDecision, record_decision
 from items.models import Item
 from matching.models import Match
+from matching.services import clear_matches
 from notifications.utils import notify_user
 
 from .forms import AnswerForm, ClaimForm, DecisionForm, QuestionForm
 from .models import Claim, VerificationQuestion
 
 OPEN = list(Claim.OPEN_STATUSES)
+
+
+def close_claims(item, actor, note, statuses=None):
+    """Reject every unfinished claim on ``item`` and tell each claimant why.
+
+    Used when a report leaves the platform (removed by a moderator) or is
+    resolved another way, so no claim is left open on a report nobody can act
+    on any more. Returns the number of claims closed.
+    """
+    statuses = statuses or OPEN + [Claim.Status.APPROVED]
+    closed = 0
+    for claim in item.claims.filter(status__in=statuses).select_related('claimant'):
+        claim.status = Claim.Status.REJECTED
+        claim.reviewed_by = actor
+        claim.decision_note = note[:280]
+        claim.save(update_fields=['status', 'reviewed_by', 'decision_note', 'updated_at'])
+        record_decision(actor, ModerationDecision.Action.CLAIM_REJECTED, item=item, claim=claim, note=note)
+        notify_user(claim.claimant, kind='claim', title=f'Claim closed — “{item.title}”',
+                    body=note, url=claim.get_absolute_url(), item=item)
+        closed += 1
+    return closed
+
+
+def _claimants_own_report(claim):
+    """The claimant's own report of the same item, if it can be identified.
+
+    A claim started from a match names it directly; otherwise the claimant's
+    report is used only when exactly one current match links it to this item,
+    so an unrelated report is never closed by guesswork.
+    """
+    item = claim.item
+    if claim.match_id:
+        match = claim.match
+    else:
+        if item.is_found:
+            candidates = Match.objects.filter(found_item=item, lost_item__reporter=claim.claimant,
+                                              engine_version=settings.MATCHING['VERSION'])
+        else:
+            candidates = Match.objects.filter(lost_item=item, found_item__reporter=claim.claimant,
+                                              engine_version=settings.MATCHING['VERSION'])
+        candidates = list(candidates[:2])
+        match = candidates[0] if len(candidates) == 1 else None
+    if match is None:
+        return None
+    own = match.lost_item if item.is_found else match.found_item
+    if own.reporter_id != claim.claimant_id or own.pk == item.pk:
+        return None
+    return own
 
 
 @login_required
@@ -218,6 +267,9 @@ def decide_claim(request, pk, decision):
         raise PermissionDenied('This report is no longer available for claims.')
     if claim.claimant_id == request.user.id:
         raise PermissionDenied('You cannot decide your own claim.')
+    if item.reporter_id == request.user.id:
+        # The reporter is a party to the claim; an independent moderator decides.
+        raise PermissionDenied('You reported this item, so another moderator has to decide the claim.')
 
     form = DecisionForm(request.POST)
     note = form.cleaned_data.get('note', '') if form.is_valid() else ''
@@ -310,6 +362,21 @@ def confirm_return(request, pk):
     item.save(update_fields=['status', 'is_active'])
     record_decision(request.user, ModerationDecision.Action.HANDOVER_CONFIRMED,
                     item=item, claim=claim, note=note)
+
+    # The claimant's own report of the same item (their lost report when a
+    # found item is returned, or their found report when they returned a lost
+    # one) is resolved too, so it stops appearing in search and matching.
+    own = _claimants_own_report(claim)
+    if own is not None and own.is_active and own.status != Item.Status.RETURNED:
+        own = Item.objects.select_for_update().get(pk=own.pk)
+        own.status = Item.Status.RETURNED
+        own.is_active = False
+        own.save(update_fields=['status', 'is_active'])
+        clear_matches(own)
+        close_claims(own, request.user,
+                     'This item has been returned through another report, so this claim is closed.')
+        record_decision(request.user, ModerationDecision.Action.HANDOVER_CONFIRMED,
+                        item=own, claim=claim, note=f'Resolved with report #{item.pk}.')
     for user in (claim.claimant, item.reporter):
         notify_user(user, kind='claim', title=f'Handover completed — “{item.title}”',
                     body='The item is recorded as returned. Thank you for using LostLink.',
