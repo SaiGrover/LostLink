@@ -106,8 +106,8 @@
 \renewcommand{\footrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
 
-% Chapters continue on the same page (no half-empty chapter endings).
-\titleclass{\chapter}{straight}
+% Every chapter starts on a new page.
+\setlength{\emergencystretch}{2em}
 
 \titleformat{\chapter}[display]
   {\normalfont\color{ink}}
@@ -115,7 +115,7 @@
   {2pt}
   {\fontsize{21}{25}\selectfont\bfseries}
   [\vspace{1pt}{\color{teal}\rule{20mm}{0.6pt}}]
-\titlespacing*{\chapter}{0pt}{16pt}{6pt}
+\titlespacing*{\chapter}{0pt}{0pt}{10pt}
 \titleformat{\section}{\fontsize{14}{17}\selectfont\bfseries\color{teal}}{\thesection}{0.55em}{}
 \titlespacing*{\section}{0pt}{8pt}{3pt}
 \titleformat{\subsection}{\fontsize{12.5}{15}\selectfont\bfseries\color{ink}}{\thesubsection}{0.55em}{}
@@ -200,23 +200,21 @@
 \end{center}
 
 \vspace{6mm plus 1fill}
-\noindent
-\hspace*{7mm}\begin{minipage}[t]{0.42\textwidth}
-{\fontsize{12}{15}\selectfont\bfseries SUBMITTED TO}\par\vspace{3mm}
-{\fontsize{11}{16}\selectfont
+\noindent\hspace*{10mm}%
+{\fontsize{11}{17}\selectfont
+\begin{tabular}[t]{@{}l@{}}
+{\fontsize{12}{15}\selectfont\bfseries SUBMITTED TO}\\[2mm]
 Dr. Sonal\\
-Dr. Shobhit Tyagi}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.48\textwidth}
-{\fontsize{12}{15}\selectfont\bfseries SUBMITTED BY}\par\vspace{3mm}
-{\fontsize{10.5}{15}\selectfont
-\begin{tabular}{@{}P{34mm}l@{}}
+Dr. Shobhit Tyagi
+\end{tabular}}\hfill
+{\fontsize{11}{17}\selectfont
+\begin{tabular}[t]{@{}l@{\hspace{8mm}}r@{}}
+\multicolumn{2}{@{}l}{\fontsize{12}{15}\selectfont\bfseries SUBMITTED BY}\\[2mm]
 Saanvi Grover & 2408030010\\
 Prankit Goel & 2408030011\\
 Aditya Sharma & 2408030019\\
 Aaradhya Kulashri & 2408030026
-\end{tabular}}
-\end{minipage}\hspace*{4mm}
+\end{tabular}}\hspace*{10mm}
 
 \vspace{6mm plus 1fill}
 \begin{center}
@@ -374,10 +372,9 @@ The project answers a practical campus need and an engineering question: can mul
 \section{Organisation of the Report}
 \begin{itemize}
   \item \textbf{Chapters 2--3:} requirements and technology stack.
-  \item \textbf{Chapter 4:} architecture, deployment, data model, state machines and sequence diagrams.
-  \item \textbf{Chapter 5:} implementation, including the matching engine, its calibration, security and workflow rules.
-  \item \textbf{Chapters 6--7:} modules and a screenshot walkthrough of the interface.
-  \item \textbf{Chapters 8--10:} testing, results with a worked example, and conclusions.
+  \item \textbf{Chapter 4:} architecture, deployment, data model and UML diagrams.
+  \item \textbf{Chapter 5:} matching engine, calibration, security and workflow rules.
+  \item \textbf{Chapters 6--10:} modules, interface walkthrough, testing, results and conclusions.
 \end{itemize}
 
 % ===========================================================================
@@ -443,7 +440,7 @@ FR-09 & Close every dependent claim, match and report when a case ends. & \statu
 \begin{table}[H]
 \centering\small
 \caption{Principal use cases}
-\begin{tabularx}{\textwidth}{>{\bfseries}P{11mm}P{29mm}P{20mm}X}
+\begin{tabularx}{\textwidth}{>{\bfseries}P{10mm}P{29mm}P{25mm}X}
 \toprule
 ID & Use case & Actor & Main flow and outcome\\
 \midrule
@@ -622,7 +619,7 @@ Testing & Django TestCase, Playwright & Unit and integration tests, browser work
 \begin{table}[H]
 \centering\small
 \caption{Custom management commands}
-\begin{tabularx}{\textwidth}{P{50mm}X}
+\begin{tabularx}{\textwidth}{P{53mm}X}
 \toprule
 Command & Purpose\\
 \midrule
@@ -684,7 +681,7 @@ Command & Purpose\\
 Every page follows Django's Model--View--Template flow, with security checks before any data is read.
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[node distance=5mm and 6mm]
+\begin{tikzpicture}[scale=0.92,every node/.append style={transform shape},node distance=5mm and 6mm]
 \node[term] (req) {HTTP request};
 \node[box,right=of req] (mw) {Middleware\\session, CSRF,\\security headers};
 \node[box,right=of mw] (url) {URL\\resolver};
@@ -709,7 +706,7 @@ Every page follows Django's Model--View--Template flow, with security checks bef
 \end{itemize}
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[node distance=6mm and 10mm]
+\begin{tikzpicture}[scale=0.88,every node/.append style={transform shape},node distance=6mm and 10mm]
 \node[pbox,minimum width=30mm,minimum height=12mm] (client) {Browser\\(phone or laptop)};
 \node[draw=teal,dashed,rounded corners=2mm,minimum width=78mm,minimum height=46mm,right=14mm of client,yshift=-8mm] (svc) {};
 \node[font=\scriptsize\bfseries,text=teal,anchor=north west] at (svc.north west) {\,Render web service};
@@ -825,7 +822,7 @@ Every page follows Django's Model--View--Template flow, with security checks bef
 \end{itemize}
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[scale=0.84,every node/.append style={transform shape},
+\begin{tikzpicture}[scale=0.74,every node/.append style={transform shape},
   entity/.style={draw=ink,rounded corners=1mm,fill=paper,minimum width=28mm,minimum height=11mm,align=center,font=\small\bfseries},
   wideentity/.style={entity,minimum width=38mm},
   rel/.style={draw=teal,thick},
@@ -1024,7 +1021,7 @@ ScoreSnapshot & histogram, mean, tier counts, manifest & Score-distribution moni
 \begin{table}[H]
 \centering\small
 \caption{Principal routes and who can open them}
-\begin{tabularx}{\textwidth}{P{56mm}X P{24mm}}
+\begin{tabularx}{\textwidth}{P{64mm}X P{25mm}}
 \toprule
 Route & Page or action & Access\\
 \midrule
