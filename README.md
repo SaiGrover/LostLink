@@ -93,75 +93,89 @@ runs the suite against PostgreSQL on every push. Deployment notes are in
 
 ## Matching engine
 
-Code: [matching/engine.py](matching/engine.py) (scores),
+Code: [matching/engine.py](matching/engine.py) (the single scoring function
+`score_evidence`), [matching/textmodel.py](matching/textmodel.py) (stable
+text representation), [matching/chronology.py](matching/chronology.py),
+[matching/colour.py](matching/colour.py),
 [matching/services.py](matching/services.py) (eligibility, persistence,
-notifications), [matching/features.py](matching/features.py) (cached,
-versioned embeddings), [matching/embeddings.py](matching/embeddings.py)
-(pinned pretrained models). The active profile is
-[matching/profile.json](matching/profile.json).
+retirement, notifications), [matching/signals.py](matching/signals.py)
+(taxonomy, report and claim changes), [matching/features.py](matching/features.py)
+(cached, versioned features and their processing state),
+[matching/embeddings.py](matching/embeddings.py) (pinned pretrained models).
+The active profile is [matching/profile.json](matching/profile.json) (engine
+`synopsis-v3`). Full description: [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ```
-score = Σ weight_c × similarity_c   over components with evidence, weights renormalised to 1
+similarity = Σ weight_c × similarity_c   over compared components, weights renormalised to 1
 ```
 
-- **Missing evidence is not negative evidence.** If either report has no photo,
-  or neither attribute (brand, colour) is present on both, that component is
-  dropped and the others are renormalised. The dropped components are stored
-  on the match and shown as “Not compared”.
-- **Temporal rule.** A found report dated more than one day before the lost
-  report is impossible; it is never stored as a match.
-- **Image calibration.** Pretrained image features never put unrelated photos
-  at zero: on the pilot set, photos of different items have a median cosine of
-  0.275 (ResNet-50), 0.568 (CLIP) and 0.574 (histogram). Image similarity is
-  rescaled above that chance level, `(cos - chance) / (1 - chance)`, so
-  unrelated photos add no points and identical photos still score 1. The
-  baselines and their provenance are in `matching/profile.json`.
-- **Brand and colour.** Brands compare without case, spaces or punctuation;
-  colours agree when they share a colour word after normalising spellings and
-  dropping modifiers ("Navy blue" matches "blue", "grey" matches "gray").
-- **Live matches only.** Pairs whose report was returned, withdrawn or removed
-  stay stored as claim evidence but are not counted as open matches.
-- **Partial credit.** Adjacent zones score 0.5; compatible categories (set by an
-  administrator) score 0.5.
-- **Eligibility.** Only active, moderator-approved reports of the opposite type
-  by a different person are compared. Editing, rejecting or withdrawing a
-  report removes its stored matches.
-- **Versioning.** Each match records the engine version, models, model
-  revisions and weights. Pages show only current-version matches;
-  `python manage.py rebuild_matches` recomputes after a configuration change.
-- **Robustness.** Embeddings are computed once per report and cached by a
-  fingerprint. A model or inference failure is logged; the report keeps
-  working with metadata and text, and features are retried later.
-- **Notifications.** Both reporters are told once when a pair first reaches
-  the medium or high tier.
+- **A similarity score, not a probability.** The percentage is a weighted
+  compatibility score. Tiers (above 85 strong, 70–85 moderate, below 70 weak
+  similarity) are heuristic display thresholds, not confidence levels.
+- **Missing is not contradictory.** A photo, brand/colour, date or text that
+  is absent (or a photo that could not be processed) is dropped and the other
+  weights renormalised; disagreeing evidence is scored. **Evidence coverage**
+  (share of base weight compared) is stored and shown with every score; below
+  70% a pair is shown as moderate at most, below 50% as weak.
+- **Stable text.** Title + description, normalised by a curated, versioned
+  lexicon (synonyms, paraphrases, brands, spelling variants, abbreviations,
+  campus terms; identifiers kept exact) and weighted by fixed term classes
+  from the release `matching/text_model/lexical-v1.json`
+  (`manage.py build_text_model`). A pair's score never depends on other
+  reports or on which side started matching. Sentence-BERT is optional.
+- **Graded chronology.** Date and optional time; found-before-lost is
+  approximate, suspicious or contradictory (penalised, warned, tier capped),
+  never silently excluded. Same-day contradictory times are not fully
+  compatible; approximate student input is tolerated, across midnight too.
+- **Colours** are compared as families with shades and multicolour sets:
+  "red and blue" vs "red" is partial, never full agreement.
+- **Image calibration.** Image cosine is rescaled above each model's chance
+  level (ResNet-50 0.275, CLIP 0.568, histogram 0.574) so unrelated photos add
+  no points.
+- **Partial credit.** Adjacent zones and compatible categories score 0.5;
+  editing them in the dashboard rescores the affected pairs automatically.
+- **Eligibility.** One rule, `Item.objects.matchable()`, for a report and its
+  candidates; never the same report or reporter. Matches that stop being
+  valid are retired with a reason (kept as history and claim evidence),
+  never left active.
+- **Versioning.** Each match stores the engine version, model manifest, text
+  release and taxonomy fingerprint; `python manage.py rebuild_matches`
+  rescores in place after any change and is idempotent.
+- **Robustness.** Per-report feature state (processed / missing / failed /
+  retrying, and the model actually used) is recorded; failures are logged,
+  matching continues on the other signals, and `retry_features` retries.
+  `matching_status` prints a health report.
+- **Notifications.** Both reporters are told once per pair, when it first
+  reaches moderate or strong similarity.
 
 Pretrained models are fixed feature extractors. Nothing is trained.
 
 ## Evaluation
 
 ```bash
-python manage.py evaluate_hybrid evaluation/pilot/dataset.json   # TF-IDF/SBERT × ResNet/CLIP, weights, thresholds
+python manage.py evaluate_hybrid evaluation/pilot/dataset.json --image resnet clip histogram none
 python manage.py validate_research_dataset path/to/reviewed-pairs.json
 python manage.py evaluate_matches path/to/pairs.csv --split test  # text-only retrieval metrics
 python manage.py monitor_matching                                  # score-distribution snapshot
 python manage.py evaluate_discovery_study path/to/study.csv        # AJAX vs manual search study
 ```
 
-The bundled 180-pair pilot is a **constructed engineering fixture**: positive
-pairs reuse a transformed copy of the same Commons photo and descriptions come
-from source titles. Its near-perfect scores in
-[evaluation/results.json](evaluation/results.json) are not evidence of
-real-world accuracy, and the dataset deliberately fails the research-readiness
-check. The deployed weights are the synopsis defaults, not the pilot-tuned
-variant. Read [docs/EVALUATION.md](docs/EVALUATION.md) before quoting any
-number.
+Evaluation uses the production scoring function, tunes on the validation
+split only and records dataset hash, provenance, models, versions, weights,
+thresholds and limitations with every result. The bundled 180-pair pilot is a
+**constructed engineering fixture** (positives reuse a transformed copy of
+the same Commons photo; descriptions come from source titles); its results
+in [evaluation/results.json](evaluation/results.json) are labelled as an
+engineering check and are not evidence of real-world accuracy. The format
+for independently collected, manually reviewed pairs is in
+[docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Tests
 
 ```bash
 python manage.py check
 python manage.py makemigrations --check --dry-run
-python manage.py test                       # 118 tests; uses TF-IDF + histogram, no downloads
+python manage.py test                       # uses the lexical text release + histogram, no downloads
 LOSTLINK_TEST_PRETRAINED=1 python manage.py test matching.tests.PretrainedSmokeTests
 python scripts/browser_check.py --base http://127.0.0.1:8000   # needs: pip install playwright
 ```

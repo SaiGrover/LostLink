@@ -1,6 +1,7 @@
 {
-  "version": "synopsis-v2",
+  "version": "synopsis-v3",
   "text": "tfidf",
+  "text_release": "lexical-v1",
   "image": "resnet",
   "weights": {
     "text": 0.3,
@@ -12,9 +13,13 @@
   },
   "medium": 0.7,
   "high": 0.85,
-  "selection": "Synopsis Section 4.9 initial weights and Section 4.9 confidence tiers (>85% high, 70-85% medium, <70% low). TF-IDF + ResNet-50 were selected from the four-way pilot comparison in evaluation/results.json, where all combinations tied on validation F1 and deterministic order picked TF-IDF + ResNet. The pilot-tuned weight variant (text 0.2 / image 0.4, thresholds 0.8 / 0.9) is recorded there as an experiment only: the constructed pilot fails the research-readiness gate, so it must not override the synopsis defaults in production.",
-  "missing_data_policy": "Components with no evidence on one or both reports (no photograph; no brand and no colour) are dropped and the remaining weights are renormalised. Dropped components are stored per match.",
-  "temporal_rule": "A found report dated more than 1 day before the lost report is impossible and is never stored as a match.",
+  "selection": "Synopsis Section 4.9 initial weights and Section 4.9 tiers (>85% strong, 70-85% moderate, <70% weak similarity). The tiers are heuristic display thresholds, not calibrated probabilities. Text 'tfidf' selects the fixed-vocabulary lexical release named in text_release (term frequency x fixed per-class term weights shipped with the release, title + description, concept normalisation); it is no longer fitted on the candidate pool. ResNet-50 images. The pilot-tuned weight variant recorded in earlier results is an experiment only: the constructed pilot fails the research-readiness gate, so it must not override the synopsis defaults in production.",
+  "changes": {
+    "synopsis-v3": "Stable pairwise lexical text model (lexical-v1) over title + description; graded chronology with time of day (no hard found-before-lost exclusion); multicolour-aware colour comparison; evidence coverage with coverage- and chronology-based tier caps; matches retired instead of deleted.",
+    "synopsis-v2": "Image similarity calibrated above each model's chance level."
+  },
+  "missing_data_policy": "Components with no evidence on one or both reports (no photo or an unprocessed photo; no brand and no colour on both; no usable text; no date) are dropped and the remaining weights renormalised. Dropped components and the evidence coverage (share of base weight compared) are stored per match; coverage below 0.70 caps the tier at moderate, below 0.50 at weak.",
+  "temporal_rule": "Graded chronology, never a hard exclusion: plausible (found on/after lost), approximate (found up to 1 day earlier on dates alone, or up to 3 hours earlier when both times are known; penalty x0.9), suspicious (earlier than that, up to 7 days; penalty x0.5, tier capped at moderate, moderator warning), contradictory (more than 7 days earlier; date score 0, tier capped at weak, warning).",
   "image_chance": {
     "resnet": 0.275,
     "clip": 0.568,

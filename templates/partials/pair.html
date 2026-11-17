@@ -1,5 +1,5 @@
 {# Compact match row: mine, other, match, href #}
-<a class="pair tier-{{ match.tier }}" href="{{ href }}">
+<a class="pair tier-{{ match.tier }}" href="{{ href }}" title="{{ match.tier_label }}: similarity score {{ match.percent }}/100, evidence coverage {{ match.coverage_percent }}%">
   <span class="pair__end pair__end--a">
     {% include 'partials/thumb.html' with item=mine %}
     <span class="pair__text"><span class="pair__title clamp-2">{{ mine.title }}</span><span class="pair__meta">{% include 'partials/type_badge.html' with item=mine %}<span>{{ mine.location.name }}</span></span></span>

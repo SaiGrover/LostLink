@@ -253,3 +253,27 @@ MATCHING['TIER_MEDIUM'] = MATCHING_PROFILE['medium']
 MATCHING['TIER_HIGH'] = MATCHING_PROFILE['high']
 # Chance-level image similarity per vision model (see matching/profile.json).
 MATCHING['IMAGE_CHANCE'] = MATCHING_PROFILE.get('image_chance', {})
+
+# --- Matching: stable text model, chronology, evidence coverage ---
+# Text similarity uses a versioned, fixed-vocabulary lexical release
+# (matching/text_model/<release>.json, built by `manage.py build_text_model`),
+# so a pair's score never depends on which other reports exist. Changing the
+# release, chronology or coverage rules changes scoring semantics: bump the
+# engine version in matching/profile.json and run `manage.py rebuild_matches`.
+MATCHING['TEXT_MODEL_RELEASE'] = MATCHING_PROFILE.get('text_release', 'lexical-v1')
+# Graded chronology (matching/chronology.py): found-before-lost is penalised
+# and flagged, never silently excluded. Heuristic, documented thresholds.
+MATCHING['CHRONOLOGY'] = {
+    'HALF_LIFE_DAYS': MATCHING['DATE_HALF_LIFE_DAYS'],
+    'APPROXIMATE_DAYS': MATCHING['TEMPORAL_TOLERANCE_DAYS'],
+    'TIME_TOLERANCE_HOURS': 3,
+    'CONTRADICTORY_DAYS': 7,
+    'PENALTY': {'plausible': 1.0, 'approximate': 0.9, 'suspicious': 0.5, 'contradictory': 0.0},
+    'TIER_CAP': {'suspicious': 'medium', 'contradictory': 'low'},
+}
+# Evidence coverage = share of the base weight compared on both reports.
+# Below STRONG_MIN a pair is shown as moderate at most; below MODERATE_MIN as
+# weak. Heuristic display rules, not calibrated statistics.
+MATCHING['EVIDENCE_COVERAGE'] = {'STRONG_MIN': 0.70, 'MODERATE_MIN': 0.50}
+# Feature extraction attempts before a report waits for `manage.py retry_features`.
+MATCHING['FEATURE_MAX_ATTEMPTS'] = 3

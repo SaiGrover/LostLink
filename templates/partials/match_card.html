@@ -1,4 +1,4 @@
-{% load ui humanize %}{# A match: the two reports printed over each other. Expects: match, other; optional: mine, action_url, action_label, open, size #}
+{% load ui humanize matching_tags %}{# A match: the two reports printed over each other. Expects: match, other; optional: mine, action_url, action_label, open, size #}
 {% with left=mine|default:match.lost_item %}
 <article class="match" aria-labelledby="match-{{ match.pk }}-title">
   <div class="match__pair">
@@ -7,7 +7,7 @@
       <span class="match__text">
         {% include 'partials/type_badge.html' with item=left %}
         <span class="match__title clamp-2">{{ left.title }}</span>
-        <span class="match__meta">{{ left.location.name }}, <span class="num">{{ left.event_date|date:"j M" }}</span></span>
+        <span class="match__meta">{{ left.location.name }}, <span class="num">{{ left.event_date|date:"j M" }}{% if left.event_time %} {{ left.event_time|time:"H:i" }}{% endif %}</span></span>
       </span>
     </a>
     {% include 'partials/overlap.html' with a=left b=other score=match.percent size=size|default:'md' reveal=True %}
@@ -16,7 +16,7 @@
       <span class="match__text">
         {% include 'partials/type_badge.html' with item=other %}
         <span class="match__title clamp-2">{{ other.title }}</span>
-        <span class="match__meta">{{ other.location.name }}, <span class="num">{{ other.event_date|date:"j M" }}</span></span>
+        <span class="match__meta">{{ other.location.name }}, <span class="num">{{ other.event_date|date:"j M" }}{% if other.event_time %} {{ other.event_time|time:"H:i" }}{% endif %}</span></span>
       </span>
     </a>
   </div>
@@ -24,10 +24,14 @@
   <div class="match__foot">
     <div class="match__facts">
       {% include 'partials/tier_badge.html' with tier=match.tier %}
-      <span>{{ match.percent }} out of 100 similar. Similarity, not proof of ownership.</span>
+      <span>Similarity score {{ match.percent }}/100 · evidence coverage {{ match.coverage_percent }}%. A weighted comparison, not a probability or proof of ownership.</span>
     </div>
     {% if action_url %}<a href="{{ action_url }}" class="btn btn-primary btn-sm">{{ action_label }}</a>{% endif %}
   </div>
+
+  {% if match.chronology_warning %}
+  <div class="notice notice--warn" style="margin-top:var(--s3)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Check the dates</span><span>{{ match.chronology_warning }}</span></div></div>
+  {% endif %}
 
   <details class="disclosure"{% if open %} open{% endif %}>
     <summary>Why this score{% icon 'chevron-down' 'chev' %}</summary>
@@ -37,15 +41,17 @@
         <li class="signal{% if c.missing %} is-missing{% endif %}">
           {% if c.missing %}
           <div class="overlap overlap--sm" style="--s:0" aria-hidden="true"><span class="overlap__disc overlap__disc--a overlap__disc--ghost"></span><span class="overlap__disc overlap__disc--b overlap__disc--ghost"></span></div>
-          <div><p class="signal__label">{{ c.label }}</p><p class="signal__meta">Not compared: {{ c.missing_reason }}</p></div>
+          <div><p class="signal__label">{{ c.label }}</p><p class="signal__meta"><span>Not compared: {{ c.missing_reason }}</span><span>base weight {{ c.base_percent }}% → 0%</span></p></div>
           {% else %}
           {% include 'partials/overlap.html' with a=left b=other score=c.percent size='sm' %}
-          <div><p class="signal__label">{{ c.label }}</p><p class="signal__meta"><span>{{ c.percent }}% similar</span><span>weight {{ c.effective_percent }}%</span><span class="signal__pts">+{{ c.contribution_percent }}</span></p></div>
+          <div><p class="signal__label">{{ c.label }}</p><p class="signal__meta"><span>{{ c.percent }}% similar{% if c.status_label %} · {{ c.status_label|lower }}{% endif %}</span><span>weight {{ c.base_percent }}%{% if c.effective_percent != c.base_percent %} → {{ c.effective_percent }}%{% endif %}</span><span class="signal__pts">+{{ c.contribution_percent }}</span>{% if c.note %}<span>{{ c.note }}</span>{% endif %}</p></div>
           {% endif %}
         </li>
         {% endfor %}
       </ul>
-      <p class="small muted mt-4" style="max-width:68ch">Each pair of discs overlaps by how similar that signal is. Points are similarity times weight; they add up to {{ match.percent }}.{% if match.missing_components %} Signals that couldn't be compared are left out and their weight is shared among the rest.{% endif %} Scored {{ match.updated_at|default:match.created_at|naturaltime }} with {{ match.model_label }}. A moderator, not the score, decides ownership.</p>
+      <p class="small muted mt-4" style="max-width:68ch">Each pair of discs overlaps by how similar that signal is. Points are similarity times effective weight; they add up to the similarity score of {{ match.percent }}.{% if match.missing_components %} Signals that couldn't be compared are left out, not counted as disagreement, and their base weight is shared among the compared signals, so only {{ match.coverage_percent }}% of the evidence backs this score.{% else %} Every signal was compared (evidence coverage 100%).{% endif %}</p>
+      {% for cap in match.tier_caps %}<p class="small muted mt-2" style="max-width:68ch">{{ cap.text }}</p>{% endfor %}
+      <p class="small muted mt-2" style="max-width:68ch">{% tier_thresholds_note %} Scored {{ match.updated_at|default:match.created_at|naturaltime }} with {{ match.model_label }}. A moderator, not the score, decides ownership.</p>
     </div>
   </details>
 </article>

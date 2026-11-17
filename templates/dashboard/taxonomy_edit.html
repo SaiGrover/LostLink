@@ -6,7 +6,7 @@
 <header class="page-head page-head--tight">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'dashboard:taxonomy' %}">Categories and zones</a>{% icon 'chevron-right' %}<span>{{ obj.name }}</span></nav>
   <h1>Edit {% if kind == 'category' %}category{% else %}zone{% endif %}: {{ obj.name }}</h1>
-  <p class="lede">Used by {{ usage }} report{{ usage|pluralize }}. Matching uses the record, not its name, so renaming is safe.</p>
+  <p class="lede">Used by {{ usage }} report{{ usage|pluralize }}. Matching uses the record, not its name, so renaming is safe. Changing compatible categories or neighbouring zones rescores the affected matches automatically.</p>
 </header>
 <form method="post" novalidate class="stack" style="--gap:var(--s5);max-width:620px">
   {% csrf_token %}

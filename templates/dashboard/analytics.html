@@ -7,7 +7,7 @@
   <div class="page-head__row">
     <div class="stack" style="--gap:var(--s3)">
       <h1>Analytics</h1>
-      <p class="lede">{% if period.active %}Reports filed {% if period.from %}from {{ period.from }}{% endif %}{% if period.to %} until {{ period.to }}{% endif %}.{% else %}All time.{% endif %} Match figures describe similarity scores from the engine, never verified ownership.</p>
+      <p class="lede">{% if period.active %}Reports filed {% if period.from %}from {{ period.from }}{% endif %}{% if period.to %} until {{ period.to }}{% endif %}.{% else %}All time.{% endif %} Match figures describe weighted similarity scores from the engine (not probabilities), never verified ownership.</p>
     </div>
     <details class="menu">
       <summary class="btn btn-primary">{% icon 'download' %}Export{% icon 'chevron-down' %}</summary>
@@ -35,7 +35,7 @@
 
 <section class="figures" aria-label="Headline figures">
   <div class="figure"><span class="figure__n">{{ kpis.reports }}</span><span class="figure__l">reports filed: {{ kpis.lost }} lost, {{ kpis.found }} found</span></div>
-  <div class="figure"><span class="figure__n">{{ kpis.matches }}</span><span class="figure__l">matches: {{ kpis.high }} high, {{ kpis.medium }} medium, {{ kpis.low }} low</span></div>
+  <div class="figure"><span class="figure__n">{{ kpis.matches }}</span><span class="figure__l">candidate pairs: {{ kpis.high }} strong, {{ kpis.medium }} moderate, {{ kpis.low }} weak similarity</span></div>
   <div class="figure"><span class="figure__n">{{ kpis.returned }}</span><span class="figure__l">returned, {{ kpis.recovery_rate }}% of active and returned reports</span></div>
   <a class="figure quiet-link" href="{% url 'dashboard:moderation' %}"><span class="figure__n">{{ kpis.pending }}</span><span class="figure__l">waiting for review, {{ kpis.flags_open }} open flag{{ kpis.flags_open|pluralize }}</span></a>
   <div class="figure"><span class="figure__n">{{ kpis.users }}</span><span class="figure__l">registered people</span></div>
@@ -75,16 +75,16 @@
   </section>
 
   <section class="chart" aria-labelledby="tiers-title">
-    <h2 class="h3" id="tiers-title">Where match scores land</h2>
-    <p>Current matches in 10-point bands, engine {{ manifest.version }}.</p>
+    <h2 class="h3" id="tiers-title">Where similarity scores land</h2>
+    <p>Current candidate pairs in 10-point bands of weighted similarity score, engine {{ manifest.version }}.</p>
     {% if kpis.matches %}
-    <div class="columns" role="img" aria-label="Histogram of match scores">
+    <div class="columns" role="img" aria-label="Histogram of similarity scores">
       {% for b in histogram %}<div class="columns__col" title="{{ b.label }}: {{ b.n }}"><div class="columns__bar{% if b.tier == 'high' %} columns__bar--hi{% elif b.tier == 'medium' %} columns__bar--mid{% endif %}" style="height:{{ b.pct }}%"></div></div>{% endfor %}
     </div>
     <div class="columns__axis"><span>0</span><span>50</span><span>100</span></div>
     {% endif %}
     <div class="cluster mt-4">{% for t in tier_dist %}<span class="cluster" style="--gap:var(--s2)">{% include 'partials/tier_badge.html' with tier=t.tier %}<b class="num">{{ t.n }}</b><span class="faint small">{{ t.pct }}%</span></span>{% endfor %}</div>
-    <p class="small muted mt-4">Above {{ thresholds.high|times100 }} is high, {{ thresholds.medium|times100 }} to {{ thresholds.high|times100 }} medium. The average match scores {{ avg_match|times100 }}.</p>
+    <p class="small muted mt-4">Above {{ thresholds.high|times100 }} is strong, {{ thresholds.medium|times100 }} to {{ thresholds.high|times100 }} moderate similarity: heuristic display thresholds, not calibrated probabilities. A pair whose evidence coverage is low, or whose dates conflict, is shown one tier lower at most. The average similarity score is {{ avg_match|times100 }}.</p>
   </section>
 
   <section class="chart" aria-labelledby="loc-title">
@@ -131,7 +131,7 @@
         {% for k, v in manifest.weights.items %}<dt>Weight: {{ k }}</dt><dd class="num">{{ v }}</dd>{% endfor %}
       </dl>
       <div class="table-wrap"><table class="table">
-        <thead><tr><th scope="col">Recorded</th><th scope="col">Version</th><th scope="col" class="n">Matches</th><th scope="col" class="n">Mean</th><th scope="col" class="n">High</th><th scope="col" class="n">Medium</th><th scope="col" class="n">Low</th></tr></thead>
+        <thead><tr><th scope="col">Recorded</th><th scope="col">Version</th><th scope="col" class="n">Matches</th><th scope="col" class="n">Mean</th><th scope="col" class="n">Strong</th><th scope="col" class="n">Moderate</th><th scope="col" class="n">Weak</th></tr></thead>
         <tbody>{% for s in snapshots %}<tr><td class="num">{{ s.created_at|date:'j M Y H:i' }}</td><td>{{ s.configuration.version }}</td><td class="n">{{ s.match_count }}</td><td class="n">{{ s.mean_score|floatformat:3 }}</td><td class="n">{{ s.tiers.high }}</td><td class="n">{{ s.tiers.medium }}</td><td class="n">{{ s.tiers.low }}</td></tr>{% empty %}<tr><td colspan="7" class="muted">No snapshots yet. Run python manage.py monitor_matching.</td></tr>{% endfor %}</tbody>
       </table></div>
     </div>

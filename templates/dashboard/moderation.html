@@ -36,7 +36,7 @@
           {% if item.duplicate_of %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span><b>Possible duplicate</b> of <a class="link" href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }}, {{ item.duplicate_of.title }}</a></span></div></div>{% endif %}
         </div>
         <div class="review__decide">
-          <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve “{{ item.title }}”?" data-confirm-text="It becomes searchable and is compared with reports of the other type. People with strong matches are notified." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<button class="btn btn-ok w-full" type="submit">{% icon 'check' %}Approve</button></form>
+          <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve “{{ item.title }}”?" data-confirm-text="It becomes searchable and is compared with reports of the other type. Reporters of pairs with moderate or strong similarity are notified once." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<button class="btn btn-ok w-full" type="submit">{% icon 'check' %}Approve</button></form>
           <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" data-confirm="Reject “{{ item.title }}”?" data-confirm-text="It stays hidden. The reporter sees your reason and can edit and resubmit it." data-confirm-tone="danger" data-confirm-label="Reject report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn w-full" type="submit">{% icon 'x' %}Reject</button></form>
         </div>
       </article>
@@ -123,7 +123,7 @@
         </div>
         <div class="review__decide">
           <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'dismiss' %}">{% csrf_token %}<button class="btn w-full" type="submit">Dismiss flags</button></form>
-          <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove “{{ item.title }}”?" data-confirm-text="It's rejected and deactivated, its matches are removed and the reporter is told." data-confirm-tone="danger" data-confirm-label="Remove report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger w-full" type="submit">Remove report</button></form>
+          <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove “{{ item.title }}”?" data-confirm-text="It's rejected and deactivated, its similarity matches are retired and the reporter is told." data-confirm-tone="danger" data-confirm-label="Remove report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger w-full" type="submit">Remove report</button></form>
         </div>
       </article>
     {% empty %}
