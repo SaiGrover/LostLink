@@ -42,6 +42,23 @@ class Location(models.Model):
         return self.name
 
 
+class ItemQuerySet(models.QuerySet):
+    """Single source of truth for which reports take part in discovery and matching.
+
+    ``matchable()`` is used by the matching engine and anything else that
+    must agree on eligibility; claim/ownership rules are folded in here so a
+    report that can no longer accept claims stops producing matches.
+    """
+
+    def matchable(self):
+        return self.filter(is_active=True,
+                           status__in=[Item.Status.APPROVED, Item.Status.CLAIMED])
+
+    def public(self):
+        return self.filter(is_active=True,
+                           status__in=[Item.Status.APPROVED, Item.Status.CLAIMED])
+
+
 class Item(models.Model):
     """A lost or found item report — the platform's primary operational data."""
 
@@ -94,6 +111,8 @@ class Item(models.Model):
     feature_version = models.CharField(max_length=200, blank=True)
     duplicate_of = models.ForeignKey('self', null=True, blank=True,
                                     on_delete=models.SET_NULL, related_name='possible_duplicates')
+
+    objects = ItemQuerySet.as_manager()
 
     class Meta:
         ordering = ['-created_at']
