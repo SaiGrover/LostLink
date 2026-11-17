@@ -79,7 +79,7 @@
           {% csrf_token %}
           <label class="label" for="{{ code_form.code.id_for_label }}">Owner's handover code</label>
           {{ code_form.code }}
-          <div><button class="btn btn-ok btn-lg" type="submit">{% icon 'check' %}Verify &amp; complete handover</button></div>
+          <div><button class="btn btn-ok btn-lg" type="submit" aria-label="Verify the code and complete the handover">{% icon 'check' %}Verify code</button></div>
           {% if not session %}<span class="hint">No code is active yet. The owner creates it on their claim page when you meet.</span>{% endif %}
         </form>
       {% else %}

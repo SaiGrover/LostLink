@@ -162,7 +162,7 @@ class Claim(models.Model):
         States: ``done``, ``current``, ``pending``, ``blocked``.
         """
         s = self.status
-        reached = {'submitted': 0, 'questions': 1, 'answered': 2, 'approved': 3,
+        reached = {'submitted': 0, 'questions': 1, 'answered': 2, 'approved': 4,
                    'returned': 5, 'rejected': 2, 'withdrawn': 2}[s]
         branch = s in (self.Status.REJECTED, self.Status.WITHDRAWN)
         has_questions = self.questions.exists()
