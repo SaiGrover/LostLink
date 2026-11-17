@@ -13,7 +13,7 @@ from django.views.decorators.http import require_POST
 
 from claims.models import Claim
 from matching.models import Match
-from matching.services import clear_matches, run_matching
+from matching.services import clear_matches
 
 from .forms import FlagForm, ItemForm
 from .models import Category, Item, Location
@@ -29,10 +29,13 @@ def home(request):
         return redirect('items:dashboard')
     public = (Item.objects.filter(is_active=True, status__in=PUBLIC_STATUSES)
               .select_related('category', 'location'))
-    with_photos = list(public.exclude(image='').exclude(image__isnull=True)[:12])
+    # Decorative landing imagery never uses photos marked sensitive.
+    with_photos = list(public.exclude(image='').exclude(image__isnull=True)
+                       .exclude(photo_sensitive=True)[:12])
     # The strongest current match between two public reports with photos:
     # a real, engine-computed example for the landing page's matching story.
     featured = (_current_matches().exclude(lost_item__image='').exclude(found_item__image='')
+                .exclude(lost_item__photo_sensitive=True).exclude(found_item__photo_sensitive=True)
                 .select_related('lost_item', 'found_item', 'lost_item__category',
                                 'found_item__category', 'lost_item__location', 'found_item__location')
                 .order_by('-score').first())
@@ -312,8 +315,9 @@ def search_filters(request):
 
 def _search_queryset(request, filters=None):
     f = filters or search_filters(request)
+    # Result cards never show the reporter, so their account row is not loaded.
     qs = (Item.objects.filter(is_active=True, status__in=PUBLIC_STATUSES)
-          .select_related('category', 'location', 'reporter'))
+          .select_related('category', 'location'))
     if f['q']:
         q = f['q']
         qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) |
@@ -418,20 +422,8 @@ def edit_item(request, pk):
 
 
 def serve_media(request, path):
-    """Protected media: item photographs are only served to users allowed to
-    see the report (public once approved; otherwise owner, participants and
-    staff). Never exposed through a static file URL."""
-    from django.http import FileResponse, Http404
-    item = get_object_or_404(Item, image=path)
-    user = request.user
-    allowed = user.is_authenticated and (
-        user.is_staff_role or item.reporter_id == user.id or
-        item.claims.filter(claimant=user).exists())
-    if not (item.is_public or allowed):
-        raise PermissionDenied('This image is awaiting review or is no longer public.')
-    try:
-        response = FileResponse(item.image.open('rb'))
-    except (FileNotFoundError, OSError):
-        raise Http404('Image unavailable')
-    response['Cache-Control'] = 'private, no-store'
-    return response
+    """Protected media (``/media/<path>``). Never exposed through a static
+    file URL. The deny-by-default policy, path normalisation, sensitive-photo
+    previews and response headers are defined in ``items.media``."""
+    from .media import serve
+    return serve(request, path)

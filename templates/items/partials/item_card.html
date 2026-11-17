@@ -1,4 +1,4 @@
-<article class="item{% if item.status == 'returned' %} is-returned{% endif %}" style="--i:{{ forloop.counter0|default:0 }}">
+{% load photos %}<article class="item{% if item.status == 'returned' %} is-returned{% endif %}" style="--i:{{ forloop.counter0|default:0 }}">
   <div class="item__photo">
     <div class="photo" style="view-transition-name:item-{{ item.pk }}">
       {% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy" decoding="async">
@@ -11,5 +11,6 @@
     <h3 class="item__title clamp-2"><a href="{% url 'items:detail' item.pk %}">{{ item.title }}</a></h3>
     <div class="item__where">{% include 'partials/type_badge.html' %}<span>{{ item.location.name }}</span><span class="num">{{ item.event_date|date:"j M" }}{% if item.event_time %}, {{ item.event_time|time:"H:i" }}{% endif %}</span></div>
     {% if item.is_demo_photo %}<p class="item__note">Representative photo, not the reported item</p>{% endif %}
+    {% photo_restricted item as restricted %}{% if restricted %}<p class="item__note">Photo blurred for privacy</p>{% endif %}
   </div>
 </article>
