@@ -19,6 +19,7 @@ urlpatterns = [
     path('<int:pk>/dispute/resolve/', views.resolve_dispute, name='resolve_dispute'),
     path('<int:pk>/handover/code/', views.issue_code, name='issue_code'),
     path('<int:pk>/handover/verify/', views.verify_code, name='verify_code'),
+    path('<int:pk>/close-own-report/<int:item_id>/', views.close_own_report, name='close_own_report'),
     # Documented moderator exception (the normal path is the owner's code).
     path('<int:pk>/return/', views.confirm_return, name='return'),
 ]

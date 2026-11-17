@@ -163,7 +163,7 @@ def checklist_problems(checklist):
     return problems
 
 
-def approve_claim(claim, item, actor, *, note, checklist):
+def approve_claim(claim, item, actor, *, note, checklist, confirm_linked_report=False):
     _require_independent_moderator(claim, actor)
     if not claim.is_open:
         raise ClaimError('This claim has already been decided.')
@@ -188,8 +188,15 @@ def approve_claim(claim, item, actor, *, note, checklist):
             claim.save()
     except IntegrityError:
         raise ClaimError('Another claim on this item was verified at the same time.')
+    linked = None
+    if confirm_linked_report:
+        linked = suggested_counterpart(claim)
+        if linked is not None:
+            confirm_link(claim, linked, actor, save=True)
     record_decision(actor, A.CLAIM_APPROVED, item=item, claim=claim, note=note,
-                    from_state=previous, to_state=claim.status, metadata={'checklist': checklist})
+                    from_state=previous, to_state=claim.status,
+                    metadata={'checklist': checklist,
+                              'linked_report_confirmed': linked.pk if linked else None})
 
     for other in item.claims.exclude(pk=claim.pk).filter(status__in=OPEN).select_related('claimant'):
         other_prev = other.status
@@ -692,14 +699,37 @@ def exception_handover(claim, item, actor, *, reason, note):
                       metadata={'reason': reason, 'reason_text': EXCEPTION_REASONS[reason]})
 
 
-def complete_handover(claim, item, actor, *, method, note, metadata=None):
-    """Mark the claim returned and close the report (and the claimant's own
-    counterpart report). Caller holds the locks and has verified authority."""
+def confirm_link(claim, report, user, *, save=True):
+    """Record that ``report`` (the claimant's own) is the same physical item."""
+    claim.linked_report = report
+    claim.linked_report_confirmed_by = user
+    claim.linked_report_confirmed_at = timezone.now()
+    if save:
+        claim.save(update_fields=['linked_report', 'linked_report_confirmed_by',
+                                  'linked_report_confirmed_at', 'updated_at'])
+
+
+def _close_linked_report(claim, item, own, actor, note):
     from matching.services import clear_matches
 
-    # Identify the claimant's own report while the linking match still exists
-    # (closing the item below retires its matches).
-    own = counterpart_report(claim)
+    own = Item.objects.select_for_update().get(pk=own.pk)
+    if not own.is_active or own.status not in lifecycle.MATCHING_STATES:
+        return False
+    lifecycle.transition(own, Item.Status.RETURNED, actor=actor, action=A.REPORT_STATUS_CHANGED,
+                         note=note, metadata={'claim': claim.pk, 'returned_report': item.pk})
+    clear_matches(own)
+    close_claims(own, actor, 'This item has been returned through another report, so this claim is closed.')
+    return True
+
+
+def complete_handover(claim, item, actor, *, method, note, metadata=None):
+    """Mark the claim returned and close the report. The claimant's own
+    report of the item is closed only when its identity was explicitly
+    confirmed (``claim.linked_report``); a matching suggestion alone never
+    closes it. Caller holds the locks and has verified authority."""
+    # Read the suggestion while the linking match is still current (closing
+    # the item below retires its matches); used only to inform the claimant.
+    suggested = suggested_counterpart(claim) if not claim.linked_report_id else None
     previous = claim.status
     claim.status = Claim.Status.RETURNED
     claim.handover_method = method
@@ -714,24 +744,43 @@ def complete_handover(claim, item, actor, *, method, note, metadata=None):
                          audit=True, action=A.REPORT_STATUS_CHANGED)
     close_claims(item, actor, 'This item has been returned to its owner, so this claim is closed.')
 
-    if own is not None and own.is_active and own.status in lifecycle.MATCHING_STATES:
-        own = Item.objects.select_for_update().get(pk=own.pk)
-        lifecycle.transition(own, Item.Status.RETURNED, actor=actor, action=A.REPORT_STATUS_CHANGED,
-                             note=f'Resolved together with report #{item.pk}.')
-        clear_matches(own)
-        close_claims(own, actor, 'This item has been returned through another report, so this claim is closed.')
+    if claim.linked_report_id:
+        _close_linked_report(claim, item, claim.linked_report, actor,
+                             note=f'Confirmed as the same item as report #{item.pk}; resolved together.')
+    elif suggested is not None and suggested.is_active:
+        notify_user(claim.claimant, kind='report', title=f'Your report “{suggested.title}” is still open',
+                    body='It was only suggested as a match, so it was not closed. If it described this '
+                         'same item, close it from the claim page; otherwise it keeps matching.',
+                    url=claim.get_absolute_url(), item=suggested)
     for user in (claim.claimant, item.reporter):
         notify_user(user, kind='claim', title=f'Handover completed — “{item.title}”',
                     body='The item is recorded as returned. Thank you for using LostLink.',
                     url=claim.get_absolute_url(), item=item)
 
 
-def counterpart_report(claim):
-    """The claimant's own report of the same item, if it can be identified.
+def close_own_report_as_same_item(claim, item, user, report):
+    """After a handover, the claimant confirms their own open report described
+    this same item and closes it as returned (audited)."""
+    if user.id != claim.claimant_id:
+        raise ClaimError('Only the claimant can confirm their own report.')
+    if claim.status != Claim.Status.RETURNED:
+        raise ClaimError('This is available once the handover is complete.')
+    if report.reporter_id != user.id or report.report_type == item.report_type or report.pk == item.pk:
+        raise ClaimError('That report is not your own report of the opposite type.')
+    if not report.is_active or report.status not in lifecycle.MATCHING_STATES:
+        raise ClaimError('That report is already closed.')
+    confirm_link(claim, report, user)
+    _close_linked_report(claim, item, report, user,
+                         note=f'Owner confirmed it was the same item as report #{item.pk}.')
+    return report
+
+
+def suggested_counterpart(claim):
+    """The claimant's own report that matching *suggests* is the same item.
 
     A claim started from a match names it directly; otherwise the claimant's
-    report is used only when exactly one current match links it to this item,
-    so an unrelated report is never closed by guesswork.
+    report is used only when exactly one match links it to this item. This is
+    a suggestion for a human to confirm, never a reason to close a report.
     """
     from matching.models import Match
 
@@ -753,3 +802,7 @@ def counterpart_report(claim):
     if own.reporter_id != claim.claimant_id or own.pk == item.pk:
         return None
     return own
+
+
+# Backwards-compatible name.
+counterpart_report = suggested_counterpart

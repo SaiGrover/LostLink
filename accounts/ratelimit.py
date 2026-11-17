@@ -48,9 +48,22 @@ def reset(name: str) -> None:
 
 
 def client_ip(request) -> str:
-    """Best-effort client address. Behind Render's proxy the first entry of
-    ``X-Forwarded-For`` is the client; elsewhere ``REMOTE_ADDR`` is used."""
-    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    if forwarded:
-        return forwarded.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR', '') or 'unknown'
+    """The client address used for IP rate limits.
+
+    ``X-Forwarded-For`` can be written by the client, so its *first* value is
+    never trusted. With ``LOSTLINK_TRUSTED_PROXY_COUNT = n`` (the number of
+    reverse proxies in front of Django that each append the address they saw)
+    the client is the n-th entry from the right, which only those proxies
+    write. With 0 (the default) the header is ignored and the connection
+    address (``REMOTE_ADDR``) is used.
+    """
+    from django.conf import settings
+
+    remote = request.META.get('REMOTE_ADDR', '') or 'unknown'
+    trusted = getattr(settings, 'LOSTLINK_TRUSTED_PROXY_COUNT', 0) or 0
+    if trusted <= 0:
+        return remote
+    hops = [h.strip() for h in request.META.get('HTTP_X_FORWARDED_FOR', '').split(',') if h.strip()]
+    if len(hops) < trusted:
+        return remote
+    return hops[-trusted]

@@ -104,6 +104,12 @@ def claim_detail(request, pk):
     session = services.active_session(claim) if claim.status == Claim.Status.APPROVED else None
     blocker = services.handover_blocker(claim, item) if claim.status == Claim.Status.APPROVED else ''
     appeal_ok, appeal_reason = services.can_appeal(claim) if claim.status == 'rejected' else (False, '')
+    suggested = None
+    if (claim.status in (Claim.Status.ANSWERED, Claim.Status.QUESTIONS, Claim.Status.SUBMITTED)
+            and can_moderate) or (claim.status == Claim.Status.RETURNED and is_claimant):
+        suggested = services.suggested_counterpart(claim)
+        if suggested is not None and not (suggested.is_active and suggested.status in ('approved', 'claimed')):
+            suggested = None
     return render(request, 'claims/claim_detail.html', {
         'claim': claim,
         'questions': questions,
@@ -136,6 +142,7 @@ def claim_detail(request, pk):
         'timeline': claim.timeline(),
         'decisions': claim.moderation_decisions.select_related('actor') if can_moderate else [],
         'max_appeals': getattr(settings, 'CLAIM_MAX_APPEALS', 2),
+        'suggested_report': suggested,
     })
 
 
@@ -248,7 +255,8 @@ def decide_claim(request, pk, decision):
             if not form.is_valid():
                 return _fail(request, claim, 'Complete every checklist item and give a reason before approving.')
             services.approve_claim(claim, item, request.user, note=form.cleaned_data['note'],
-                                   checklist=form.checklist())
+                                   checklist=form.checklist(),
+                                   confirm_linked_report=form.cleaned_data['confirm_linked_report'])
             messages.success(request, 'Claim approved. The item is reserved; the handover is confirmed '
                                       'with the owner\'s one-time code.')
         else:
@@ -420,6 +428,19 @@ def confirm_return(request, pk):
     except ClaimError:
         raise
     messages.success(request, 'Handover recorded as a documented exception. The item is returned.')
+    return redirect(claim.get_absolute_url())
+
+
+@login_required
+@verified_required
+@require_POST
+@transaction.atomic
+def close_own_report(request, pk, item_id):
+    """The claimant confirms their own open report was this same item."""
+    claim, item = _locked(pk)
+    report = get_object_or_404(Item, pk=item_id)
+    services.close_own_report_as_same_item(claim, item, request.user, report)
+    messages.success(request, f'“{report.title}” is closed as returned with this claim.')
     return redirect(claim.get_absolute_url())
 
 

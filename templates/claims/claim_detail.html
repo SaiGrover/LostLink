@@ -25,7 +25,12 @@
 {% elif claim.status == 'withdrawn' %}
   <div class="notice" style="margin-bottom:var(--s8)">{% icon 'info' %}<div class="notice__body"><span class="notice__title">Withdrawn</span><span>The claimant withdrew this claim.</span></div></div>
 {% elif claim.status == 'returned' %}
-  <div class="notice notice--ok" style="margin-bottom:var(--s8)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Returned</span><span>{% if claim.handover_method == 'exception' %}Recorded by a moderator exception with documented evidence{% else %}Confirmed with the owner's one-time code{% endif %}{% if claim.returned_at %}, {{ claim.returned_at|date:"j M Y, H:i" }}{% endif %}.</span></div></div>
+  <div class="notice notice--ok" style="margin-bottom:var(--s8)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Returned</span><span>{% if claim.handover_method == 'exception' %}Recorded by a moderator exception with documented evidence{% else %}Confirmed with the owner's one-time code{% endif %}{% if claim.returned_at %}, {{ claim.returned_at|date:"j M Y, H:i" }}{% endif %}.{% if claim.linked_report %} Your report {{ claim.linked_report.pk|report_id }} was confirmed as the same item and closed too.{% endif %}</span></div></div>
+  {% if suggested_report %}
+  <form method="post" action="{% url 'claims:close_own_report' claim.pk suggested_report.pk %}" class="notice" style="margin-bottom:var(--s8)" data-confirm="Close your report “{{ suggested_report.title }}”?" data-confirm-text="Only if it described this same item. It is recorded as returned and stops matching." data-confirm-tone="success" data-confirm-label="Close as returned">
+    {% csrf_token %}{% icon 'info' %}<div class="notice__body"><span class="notice__title">Your report {{ suggested_report.pk|report_id }} is still open</span><span>Matching suggested “{{ suggested_report.title }}” might be this same item, so it was not closed automatically. If it was, close it here; if not, it keeps matching.</span><div class="mt-3"><button class="btn btn-sm" type="submit">It was this item: close it</button></div></div>
+  </form>
+  {% endif %}
 {% elif is_claimant and unanswered %}
   <div class="notice notice--here" style="margin-bottom:var(--s8)">{% icon 'question' %}<div class="notice__body"><span class="notice__title">{{ unanswered }} question{{ unanswered|pluralize }} waiting for you</span><span>Answer below so a moderator can decide.</span></div></div>
 {% endif %}
@@ -210,6 +215,7 @@
           <div class="form-grid form-grid--2">
             {% for f in decision_form %}{% if f.name != 'note' %}<div class="field"><label class="label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}</div>{% endif %}{% endfor %}
             <div class="field span-2"><label class="label" for="{{ decision_form.note.id_for_label }}">Reason (shared with the claimant)</label>{{ decision_form.note }}</div>
+            {% if suggested_report %}<div class="field span-2"><label class="check"><input type="checkbox" name="confirm_linked_report" value="on"> <span>The claimant's own report <a class="link" href="{{ suggested_report.get_absolute_url }}" target="_blank" rel="noopener">{{ suggested_report.pk|report_id }}, “{{ suggested_report.title }}”</a> describes this same physical item; close it too when the handover completes.</span></label><span class="hint">Matching only suggested this link. Tick it only if the evidence shows it is the same object; otherwise that report stays open.</span></div>{% endif %}
           </div>
           <div><button class="btn btn-ok btn-lg" type="submit" {% if not claim.all_answered %}disabled{% endif %}>{% icon 'check' %}Approve after verification</button></div>
         </form>

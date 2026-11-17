@@ -382,6 +382,35 @@ PASSWORD_RESET_TIMEOUT = int(os.environ.get('LOSTLINK_PASSWORD_RESET_TIMEOUT') o
 # accounts.policy.DEFAULT_RATE_LIMITS can be overridden here.
 LOSTLINK_AUTH_RATE_LIMITS = {}
 
+# --- Review follow-ups: production identity checks, proxy trust, shared cache ---
+# Decided when settings load (the test runner later forces DEBUG off, so checks
+# must not read DEBUG itself).
+LOSTLINK_PRODUCTION = not DEBUG
+
+# Campus-only access: in production an empty LOSTLINK_ALLOWED_EMAIL_DOMAINS is
+# a configuration error (accounts.E001), because email verification alone
+# proves control of an inbox, not campus affiliation. An open deployment (for
+# example a public demo) must opt out explicitly.
+LOSTLINK_REQUIRE_CAMPUS_DOMAIN = os.environ.get(
+    'LOSTLINK_REQUIRE_CAMPUS_DOMAIN', 'true').strip().lower() in ('1', 'true', 'yes', 'on')
+
+# How many reverse proxies in front of Django append to X-Forwarded-For.
+# 0 (default): the header is ignored and the connection address is used, so a
+# client cannot pick its own rate-limit bucket. On Render (one proxy that
+# appends the real client address) set 1 after confirming the header format.
+LOSTLINK_TRUSTED_PROXY_COUNT = int(os.environ.get('LOSTLINK_TRUSTED_PROXY_COUNT', 0) or 0)
+
+# Rate-limit counters and other cache data. Local memory is per process, so
+# with several workers or instances each would keep its own quota: production
+# should use Redis (REDIS_URL) or the database cache
+# (LOSTLINK_CACHE=database, then `python manage.py createcachetable`).
+if os.environ.get('REDIS_URL'):
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                          'LOCATION': os.environ['REDIS_URL']}}
+elif os.environ.get('LOSTLINK_CACHE', '').strip().lower() == 'database':
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+                          'LOCATION': 'lostlink_cache'}}
+
 # --- Matching: stable text model, chronology, evidence coverage ---
 # Text similarity uses a versioned, fixed-vocabulary lexical release
 # (matching/text_model/<release>.json, built by `manage.py build_text_model`),

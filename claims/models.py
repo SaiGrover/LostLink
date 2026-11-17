@@ -68,6 +68,18 @@ class Claim(models.Model):
     handover_method = models.CharField(max_length=10, choices=HandoverMethod.choices, blank=True)
     returned_at = models.DateTimeField(null=True, blank=True)
 
+    # The claimant's own report of the same physical item (their lost report
+    # when claiming a found item, or their found report when offering to
+    # return a lost one). A matching suggestion is never enough: this is set
+    # only by an explicit, audited confirmation (the reviewing moderator at
+    # approval, or the claimant after the handover). Only a confirmed link
+    # closes that second report.
+    linked_report = models.ForeignKey(Item, on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='confirmed_links')
+    linked_report_confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                                   null=True, blank=True, related_name='+')
+    linked_report_confirmed_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

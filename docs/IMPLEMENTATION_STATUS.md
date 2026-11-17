@@ -118,8 +118,13 @@ timeline and decision log.
 - One photo per report.
 - The visual palette is provisional by request; see `docs/FRONTEND.md`.
 - Email delivery needs an SMTP account in production; without it, sign-ups
-  cannot verify (the system check warns `accounts.W001`).
-- Rate limits use Django's cache; multi-process deployments need a shared cache.
+  cannot verify (the system check warns `accounts.W001`). Live verification
+  and password-reset emails are launch checks in `docs/DEPLOY_RENDER.md`.
+- Production refuses to start without a campus email domain
+  (`accounts.E001`) unless an open deployment opts out explicitly.
+- Rate limits need a shared cache (`REDIS_URL` or the database cache) with
+  several workers (`accounts.W003`), and `X-Forwarded-For` is trusted only
+  after the hosting proxy's behaviour is confirmed (`LOSTLINK_TRUSTED_PROXY_COUNT`).
 - Automatic sensitive-photo detection is a keyword/category hint, not a
   guarantee; moderators make the decision.
 - A free demonstration deployment exists on a separate branch; no production
