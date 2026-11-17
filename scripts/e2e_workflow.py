@@ -2,8 +2,10 @@
 
 Student A reports a found item, student B reports the matching lost item, a
 moderator approves both, B sees the match and claims the item, A asks a
-private question, B answers, the moderator approves and confirms the
-handover. Every step goes through forms and confirmation dialogs in a real
+private question, B answers, an independent moderator approves with the
+evidence checklist, B (the owner) creates the one-time handover code and A
+enters it to complete the return. Every step goes through forms and
+confirmation dialogs in a real
 browser. It WRITES to the database, so run it only against a local demo
 database seeded with ``seed_demo``.
 
@@ -120,27 +122,40 @@ def main():
         steps.append('owner answered; finder contact still hidden before approval')
 
         mod.goto(claim_url)
-        mod.click('form[action*="/decide/"][action$="/approve/"] button')
-        confirm(mod, note='Initials match the finder\'s check')
+        approve = mod.locator('form[action*="/decide/"][action$="/approve/"]')
+        approve.locator('[name=note]').fill('Initials match the finder\'s check')
+        approve.locator('button[type=submit]').click()
+        confirm(mod)
         mod.wait_for_url(claim_url)
-        expect(mod.locator('.notice--ok')).to_contain_text('Approved, not yet returned')
-        steps.append('moderator approved the claim; item not yet marked returned')
+        expect(mod.locator('.notice--ok')).to_contain_text('handover pending')
+        steps.append('moderator approved the claim with the evidence checklist; item reserved, not returned')
 
         owner.goto(claim_url)
         expect(owner.locator('.contact a').first).to_be_visible()
         steps.append('contact details now visible to the owner')
 
+        owner.goto(claim_url)
+        owner.click('form[action*="/handover/code/"] button')
+        code = owner.locator('.score').first.inner_text().replace(' ', '').strip()
+        assert re.fullmatch(r'\d{6}', code), code
+        steps.append('owner created the one-time handover code (shown once, only to the owner)')
+
         mod.goto(claim_url)
-        mod.click('form[action*="/return/"] button')
-        confirm(mod, note='Collected at the library desk')
-        mod.wait_for_url(claim_url)
-        expect(mod.locator('.route > li.is-done')).to_have_count(5)
-        mod.goto(f'{base}/item/{found_id}/')
-        expect(mod.locator('.notice--ok')).to_contain_text('Returned')
-        steps.append('handover confirmed: claim returned, report closed, timeline complete')
+        expect(mod.locator('#handover-title')).to_be_visible()
+        assert code not in mod.content() and f'{code[:3]} {code[3:]}' not in mod.content()
+        steps.append('moderator sees the code status but never the code')
+
+        finder.goto(claim_url)
+        finder.fill('[name=code]', code)
+        finder.click('form[action*="/handover/verify/"] button')
+        finder.wait_for_url(claim_url)
+        expect(finder.locator('.route > li.is-done')).to_have_count(6)
+        finder.goto(f'{base}/item/{found_id}/')
+        expect(finder.locator('.notice--ok')).to_contain_text('Returned')
+        steps.append('finder entered the code: claim returned, report closed, timeline complete')
 
         mod.goto(base + '/manage/moderation/history/')
-        expect(mod.locator('tbody')).to_contain_text('Handover confirmed')
+        expect(mod.locator('tbody')).to_contain_text('Handover confirmed (code)')
         steps.append('decision log records approvals, claim decision and handover')
         browser.close()
     for s in steps:
