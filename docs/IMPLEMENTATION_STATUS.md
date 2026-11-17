@@ -1,7 +1,8 @@
 # Implementation status
 
-Last verified: 5 November 2026, on Windows 11 with Python 3.13, Django 6.1,
-SQLite and PostgreSQL 17.11 (Docker).
+Last verified: 17 November 2026, on Windows 11 with Python 3.13, Django 6.1
+and SQLite. PostgreSQL 17 is exercised by the GitHub Actions workflow on push
+(no local PostgreSQL server was available for this round).
 
 ## Verification results
 
@@ -9,22 +10,41 @@ SQLite and PostgreSQL 17.11 (Docker).
 | --- | --- |
 | `python manage.py check` | No issues |
 | `python manage.py makemigrations --check --dry-run` | No changes |
-| `python manage.py migrate` on an empty PostgreSQL 17.11 database | All migrations applied |
-| `python manage.py migrate` on the existing populated SQLite database | 4 new additive migrations applied, data kept |
-| `python manage.py test` on SQLite | 118 tests, all passing, 1 skipped (pretrained smoke test, opt-in) |
-| `python manage.py test` on PostgreSQL 17.11 | 118 tests, all passing, 1 skipped |
+| `python manage.py check --deploy` (DEBUG off, production env) | Only `accounts.W001`: email delivery not configured in that test environment (expected until SMTP is set) |
+| `python manage.py migrate` on a copy of the populated demo database | All new migrations applied; data kept; legacy disputes and inactive reports migrated; existing accounts marked verified (legacy) |
+| `python manage.py test` on SQLite | 364 tests, all passing, 1 skipped (pretrained smoke test, opt-in) |
+| `scripts/smoke_first_run.py` on an empty database | 11 steps passed (registration + email verification, taxonomy seeding, reports, moderation, matching, checklist approval, one-time-code handover, notifications); real SMTP delivery not run |
+| `scripts/e2e_workflow.py` | Full journey through the real UI passes, ending with the owner's one-time code entered by the finder |
 | `scripts/browser_check.py` (4 roles, 24 routes, 390/768/1440 px, light and dark) | 318 page checks, no HTTP errors, overflow, JS errors or heading faults |
-| `scripts/e2e_workflow.py` | Full journey through the real UI passes (below) |
-| `rebuild_matches` (ResNet-50, engine `synopsis-v3`) on a copy of the demo database | 6 true lost/found pairs scored 71–92 (2 strong, 4 moderate); second run changed nothing |
-| `monitor_matching` | Snapshot recorded |
+| `scripts/mobile_nav_check.py` (320–767 px, 7 pages) | 65 checks, content and last controls clear of the tab bar |
+| `rebuild_matches` (ResNet-50, engine `synopsis-v3`) on a copy of the demo database | 6 true lost/found pairs scored 71–92 (2 strong, 4 moderate), evidence coverage 1.0; second run changed nothing |
 
 The end-to-end script signs in as two students and a moderator and, in a real
-browser: reports a found and a lost item with photos, approves both through
-the confirmation dialog, confirms the owner sees the scored match and a
-notification, starts a claim from the match, asks and answers a private
-question, checks contact details are hidden before approval and visible
-after, approves, confirms the handover, and checks the timeline and decision
-log. Analytics then showed the returned item.
+browser: reports a found and a lost item with photos, approves both, confirms
+the owner sees the scored match and a notification, starts a claim from the
+match, asks and answers a private question, checks contact details are hidden
+before approval, approves with the evidence checklist (item reserved, not
+returned), has the owner create the one-time handover code, checks the
+moderator never sees the code, has the finder enter it, and checks the
+timeline and decision log.
+
+## Remediation round (November 2026)
+
+| Area | Change | Where |
+| --- | --- | --- |
+| Campus identity | Expiring single-use email verification, institutional-domain policy, no enumeration, legacy accounts grandfathered; unverified accounts cannot report or claim | `accounts/`, [migrations 0002–0003] |
+| Password recovery | Reset by email with rate limits and session invalidation; production email backend from environment | `accounts/`, settings |
+| Auth hardening | Login rate limiting, POST-only logout, admin role-escalation fix | `accounts/` |
+| Independent moderation | No self-review of reports, claims, disputes or handover exceptions; own reports listed separately | `dashboard/views.py`, `claims/services.py` |
+| Report lifecycle | One validated transition function, explicit withdrawn/removed states, audited from/to state | `items/lifecycle.py` |
+| Ownership | Approved claim = reservation; disputes are separate records and never release it; revocation is explicit and audited | `claims/models.py`, `claims/services.py` |
+| Reconsideration | Limited, rate-limited appeals with immutable statement history | `ClaimRevision` |
+| Verification evidence | Moderator evidence checklist; private expected answers; reporter's private details; private re-encoded evidence photos with retention | `claims/`, `items/forms.py` |
+| Handover | Owner-held one-time code (hashed, 10 min, single use, attempt lock, rate limits, suspended by disputes); documented moderator exception | `HandoverSession`, [docs/CLAIMS_AND_HANDOVER.md](CLAIMS_AND_HANDOVER.md) |
+| Matching | Stable versioned text model with titles, colour and chronology rules, evidence coverage, retired match history, taxonomy rescoring, feature status | `matching/`, [EVALUATION.md](EVALUATION.md) |
+| Media | Upload sanitising, deny-by-default media access, sensitive-photo restriction | `items/media.py` |
+| Production | `seed_taxonomy`, startup checks for secrets/hosts/origins, error pages, smoke test | settings, `scripts/` |
+| UI | Status-aware actions (Handover pending), mobile tab-bar clearance, similarity wording | templates, `static/css/layout.css` |
 
 ## Defects found and fixed
 
@@ -74,10 +94,10 @@ log. Analytics then showed the returned item.
 | AJAX search: keyword, type, category, zone, status, dates, sort, pagination | Implemented and tested |
 | Hybrid matching with synopsis weights, explanations, versioning | Implemented and tested (`synopsis-v3`: stable text, coverage, graded chronology, retirement) |
 | Lexical vs Sentence-BERT, ResNet vs CLIP comparison | Implemented (`evaluate_hybrid`, production scoring function); run on the constructed pilot only |
-| Claim workflow with private questions, moderator approval, handover | Implemented and tested end to end |
+| Claim workflow with private questions, evidence checklist, reservation, disputes, appeals and one-time-code handover | Implemented and tested end to end |
 | In-app notifications | Implemented and tested |
 | Analytics, CSV and PDF | Implemented and tested |
-| SQLite and PostgreSQL | Both verified |
+| SQLite and PostgreSQL | SQLite verified locally this round; PostgreSQL 17 verified by CI on push |
 | Responsive, accessible interface with a token-based design system | Implemented; see `docs/FRONTEND.md` |
 
 ## Remaining limitations
@@ -97,4 +117,10 @@ log. Analytics then showed the returned item.
   would need a background queue.
 - One photo per report.
 - The visual palette is provisional by request; see `docs/FRONTEND.md`.
-- No hosted deployment has been made.
+- Email delivery needs an SMTP account in production; without it, sign-ups
+  cannot verify (the system check warns `accounts.W001`).
+- Rate limits use Django's cache; multi-process deployments need a shared cache.
+- Automatic sensitive-photo detection is a keyword/category hint, not a
+  guarantee; moderators make the decision.
+- A free demonstration deployment exists on a separate branch; no production
+  deployment has been made.
