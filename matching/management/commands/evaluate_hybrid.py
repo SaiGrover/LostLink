@@ -1,137 +1,198 @@
-import hashlib
+"""Evaluate the production matcher on a labelled pair dataset.
+
+    python manage.py evaluate_hybrid evaluation/pilot/dataset.json
+    python manage.py evaluate_hybrid reviewed.json --text tfidf sbert --image resnet clip
+
+Every pair is scored by ``matching.engine.score_evidence`` (the production
+scoring function) through ``matching.evaluation``. Weights and the decision
+threshold are tuned on the validation split only; the test split is scored
+once with the selected setting. Output records dataset identity and hash,
+evidence class (constructed engineering check vs independently reviewed),
+model names / revisions, profile and engine version, configuration, weights,
+thresholds, timestamp, metrics, ablations and limitations.
+"""
 import json
 import os
-from collections import defaultdict
-from datetime import date
 from pathlib import Path
+
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
-from matching import engine
-from matching.embeddings import (CLIP_REVISION, RESNET_REVISION, image_vector,
-                                 text_vectors)
-from matching.features import manifest
-from PIL import Image
+
+from matching import evaluation as ev
+from matching.evaluation import metrics  # noqa: F401  (re-exported for callers/tests)
+
+THRESHOLDS = [round(0.40 + 0.05 * i, 2) for i in range(12)]  # 0.40 .. 0.95
 
 
-def metrics(rows, scores, threshold):
-    labels = [r['label'] for r in rows]
-    p,r,f,_ = precision_recall_fscore_support(labels,[s>=threshold for s in scores],average='binary',zero_division=0)
-    groups = defaultdict(list)
-    for row, score in zip(rows,scores):
-        groups[row['query_id']].append((score,row['candidate']['id'],row['label']))
-    rr, pk = [], []
-    for group in groups.values():
-        ranked = sorted(group,key=lambda x:(-x[0],x[1]))
-        rr.append(next((1/i for i,entry in enumerate(ranked,1) if entry[2]),0))
-        pk.append(sum(entry[2] for entry in ranked[:3])/3)
-    return {'precision':float(p),'recall':float(r),'f1':float(f),
-            'roc_auc':float(roc_auc_score(labels,scores)), 'mrr':sum(rr)/len(rr),
-            'precision_at_3':sum(pk)/len(pk), 'pairs':len(rows)}
+def weight_candidates():
+    base = dict(settings.MATCHING['WEIGHTS'])
+    candidates = {'profile': base}
+    for tw in (0.2, 0.3, 0.4):
+        w = dict(base, text=tw, image=round(0.6 - tw, 2))
+        key = f'text{tw:.1f}-image{0.6 - tw:.1f}'
+        if w != base:
+            candidates[key] = w
+    return candidates
 
 
 class Command(BaseCommand):
-    help = 'Compare TF-IDF/SBERT and ResNet/CLIP, tune on validation only, evaluate untouched test pairs.'
+    help = ('Evaluate the production scoring function on labelled pairs: tune weights/threshold on '
+            'validation only, report untouched test metrics with provenance.')
 
     def add_arguments(self, parser):
         parser.add_argument('dataset')
-        parser.add_argument('--output',default='evaluation/results.json')
-        parser.add_argument('--text',nargs='+',default=['tfidf','sbert'])
-        parser.add_argument('--image',nargs='+',default=['resnet','clip'])
-        parser.add_argument('--apply',action='store_true',help='Activate the validation-selected model profile; rebuild operational features afterwards.')
+        parser.add_argument('--output', default=None,
+                            help='Default: evaluation/results.json for a constructed dataset, '
+                                 'evaluation/research/results-<hash>.json otherwise.')
+        parser.add_argument('--text', nargs='+', default=['tfidf'], choices=['tfidf', 'sbert'])
+        parser.add_argument('--image', nargs='+', default=['resnet', 'clip'],
+                            choices=['resnet', 'clip', 'histogram', 'none'])
+        parser.add_argument('--no-cache', action='store_true', help='Do not cache image vectors on disk.')
+        parser.add_argument('--apply', action='store_true',
+                            help='Activate the validation-selected profile (reviewed research data only); '
+                                 'bump the engine version and run rebuild_matches afterwards.')
 
-    def handle(self,dataset,output,text,image,**options):
-        if options.get('apply'):
-            from matching.research import validate_dataset
-            summary = validate_dataset(dataset)
-            if not summary['research_ready']:
-                raise CommandError('Profile activation requires reviewed research data: ' + '; '.join(summary['errors']))
-        import torch
-        torch.set_num_threads(2)
+    def handle(self, dataset, output, text, image, **options):
+        from matching.research import validate_dataset
         path = Path(dataset)
-        raw = path.read_bytes()
-        payload = json.loads(raw)
+        if options.get('apply'):
+            summary = validate_dataset(path)
+            if not summary['research_ready']:
+                raise CommandError('Profile activation requires reviewed research data: '
+                                   + '; '.join(summary['errors']))
+        try:
+            payload, raw = ev.load_dataset(path)
+        except (OSError, ValueError) as exc:
+            raise CommandError(f'Cannot read dataset: {exc}') from exc
         pairs = payload['pairs']
-        membership = defaultdict(set)
         for row in pairs:
-            if row['label'] not in (0,1):
-                raise CommandError('Labels must be binary.')
-            for field in ('query','candidate'):
-                membership[row[field]['id']].add(row['split'])
-        if any(len(s)>1 for s in membership.values()):
-            raise CommandError('Physical/source identity leaks across splits.')
-        for split in ('validation','test'):
-            if set(r['label'] for r in pairs if r['split']==split)!={0,1}:
-                raise CommandError('Both splits need both classes.')
-        feature_cache = path.parent/'features'
-        feature_cache.mkdir(exist_ok=True)
-        cache = {}
-        def vector(record, kind):
-            image_path = path.parent/record['image']
-            revision = RESNET_REVISION if kind == 'resnet' else CLIP_REVISION
-            # Image embeddings depend on the source bytes and model revision,
-            # not on hybrid weights or notification thresholds.
-            key = hashlib.sha256(
-                image_path.read_bytes() + kind.encode() + revision.encode()).hexdigest()
-            if key not in cache:
-                file = feature_cache/f'{key}.json'
-                if file.exists():
-                    cache[key]=json.loads(file.read_text())
-                else:
-                    with Image.open(image_path) as im:
-                        cache[key]=image_vector(im.convert('RGB'),kind)
-                    file.write_text(json.dumps(cache[key]))
-            return cache[key]
-        text_cache = {}
-        if 'sbert' in text:
-            descriptions = sorted({r[k]['description'] for r in pairs for k in ('query','candidate')})
-            text_cache = dict(zip(descriptions,text_vectors(descriptions)))
+            if row.get('label') not in (0, 1) or row.get('split') not in ('validation', 'test'):
+                raise CommandError('Every pair needs a 0/1 label and a validation/test split.')
+        leaks = ev.check_split_leakage(pairs, path.parent)
+        if leaks:
+            raise CommandError('Split leakage: ' + ' '.join(leaks))
+        for split in ('validation', 'test'):
+            if {r['label'] for r in pairs if r['split'] == split} != {0, 1}:
+                raise CommandError(f'Split {split!r} needs both positive and negative pairs.')
+        try:
+            validation = validate_dataset(path, allow_small=True)
+        except CommandError as exc:
+            validation = {'research_ready': False, 'errors': [str(exc)]}
+        identity = ev.dataset_identity(path, payload, raw, validation)
+
+        related, adjacent = ev.taxonomy_pairs(payload)
+        cache_dir = None if options.get('no_cache') else path.parent / 'features'
+        cache = ev.ImageFeatureCache(path.parent, cache_dir)
+        val_idx = [i for i, r in enumerate(pairs) if r['split'] == 'validation']
+        test_idx = [i for i, r in enumerate(pairs) if r['split'] == 'test']
         experiments = []
-        original = os.environ.get('LOSTLINK_TEXT_MODEL')
-        os.environ['LOSTLINK_TEXT_MODEL']='tfidf'
+        saved_env = {k: os.environ.get(k) for k in ('LOSTLINK_TEXT_MODEL', 'LOSTLINK_IMAGE_MODEL')}
         try:
             for txt in text:
                 for img in image:
-                    self.stdout.write(f'Evaluating {txt} + {img}...',ending='\n')
-                    components = []
-                    for row in pairs:
-                        a,b = row['query'],row['candidate']
-                        ts = engine.image_similarity(text_cache[a['description']],text_cache[b['description']]) if txt=='sbert' else engine.text_similarity(a['description'],[b['description']])[0]
-                        components.append([ts,engine.calibrated_image_similarity(vector(a,img),vector(b,img),img),
-                            float(a['location']==b['location']),float(a['category']==b['category']),
-                            engine.date_score(date.fromisoformat(a['date']),date.fromisoformat(b['date'])),
-                            engine.attribute_score(a['brand'],a['color'],b['brand'],b['color'])])
-                    val_idx=[i for i,r in enumerate(pairs) if r['split']=='validation']
-                    test_idx=[i for i,r in enumerate(pairs) if r['split']=='test']
-                    best=None
-                    for tw in (.2,.3,.4):
-                        weights=[tw,.6-tw,.15,.1,.1,.05]
-                        scores=[sum(c*w for c,w in zip(comp,weights)) for comp in components]
-                        for threshold in (.6,.65,.7,.75,.8,.85,.9):
-                            result=metrics([pairs[i] for i in val_idx],[scores[i] for i in val_idx],threshold)
-                            key=(result['f1'],result['precision'],result['mrr'],threshold)
-                            if best is None or key>best[0]:
-                                best=(key,weights,threshold,scores,result)
-                    _,weights,threshold,scores,val=best
-                    test=metrics([pairs[i] for i in test_idx],[scores[i] for i in test_idx],threshold)
-                    experiments.append({'text':txt,'image':img,'weights':dict(zip(['text','image','location','category','date','attribute'],weights)),
-                        'threshold':threshold,'validation':val,'test':test})
-                    self.stdout.write(json.dumps(experiments[-1]))
+                    img_kind = None if img == 'none' else img
+                    os.environ['LOSTLINK_TEXT_MODEL'] = txt
+                    os.environ['LOSTLINK_IMAGE_MODEL'] = img_kind or 'histogram'
+                    self.stdout.write(f'Evaluating {txt} + {img} ...')
+                    experiments.append(self._experiment(pairs, txt, img_kind, cache, related, adjacent,
+                                                        val_idx, test_idx))
         finally:
-            if original is None: os.environ.pop('LOSTLINK_TEXT_MODEL',None)
-            else: os.environ['LOSTLINK_TEXT_MODEL']=original
-        selected=max(experiments,key=lambda e:(e['validation']['f1'],e['validation']['precision'],e['validation']['mrr']))
-        report={'dataset_sha256':hashlib.sha256(raw).hexdigest(),'provenance':payload.get('provenance'),
-                'limitations':payload.get('limitations',[]),'model_versions':manifest(),
-                'experiments':experiments,'selected_by_validation':selected}
-        target=Path(output)
-        target.parent.mkdir(parents=True,exist_ok=True)
-        target.write_text(json.dumps(report,indent=2),encoding='utf-8')
+            for key, value in saved_env.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+        selected = max(experiments, key=lambda e: (ev._key(e['validation']['f1']),
+                                                   ev._key(e['validation']['precision']),
+                                                   ev._key(e['validation']['mrr'])))
+        limitations = list(payload.get('limitations', []))
+        if identity['dataset_kind'] != 'independent_reviewed' or not identity['research_ready']:
+            limitations.insert(0, 'ENGINEERING CHECK ONLY: this dataset is constructed or not independently '
+                                  'reviewed; these metrics are not evidence of real-world accuracy.')
+        limitations.append('Scores are weighted similarity scores, not calibrated probabilities; '
+                           'tiers are heuristic thresholds.')
+        report = {
+            'schema_version': ev.REPORT_SCHEMA_VERSION,
+            'generated_at': ev.utc_now(),
+            'code_commit': ev.git_commit(),
+            'code_uncommitted_changes': ev.git_dirty(),
+            'dataset': identity,
+            'engine': ev.engine_identity(text[0], None if image[0] == 'none' else image[0]),
+            'environment': ev.environment(),
+            'protocol': {
+                'tuning': 'weights and threshold selected on the validation split only '
+                          '(F1, then precision, then MRR; ties -> lower threshold)',
+                'test': 'test split scored once with the selected setting',
+                'weight_candidates': weight_candidates(),
+                'thresholds_tried': THRESHOLDS,
+                'leakage_checks': 'report ids, physical-object ids and image bytes are split-disjoint',
+            },
+            'experiments': experiments,
+            'selected_by_validation': {k: selected[k] for k in ('text', 'image', 'weights_key', 'weights',
+                                                                'threshold')},
+            'limitations': limitations,
+        }
+        if output:
+            target = Path(output)
+        elif identity['dataset_kind'] == 'constructed':
+            target = Path(settings.BASE_DIR) / 'evaluation' / 'results.json'
+        else:
+            target = Path(settings.BASE_DIR) / 'evaluation' / 'research' / f'results-{identity["sha256"][:12]}.json'
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(report, indent=2, default=str) + '\n', encoding='utf-8')
+
         if options.get('apply'):
-            from django.conf import settings
-            profile={'version':'tuned-'+hashlib.sha256(raw).hexdigest()[:10],
-                'text':selected['text'],'image':selected['image'],'weights':selected['weights'],
-                'medium':selected['threshold'],'high':min(.99,max(.85,selected['threshold']+.1)),
-                'selection':'Validation-only selection; see evaluation report and dataset limitations.'}
-            (settings.BASE_DIR/'matching'/'profile.json').write_text(json.dumps(profile,indent=2),encoding='utf-8')
-            self.stdout.write('Profile activated. Restart the app and run rebuild_matches before serving traffic.')
+            profile_path = Path(settings.BASE_DIR) / 'matching' / 'profile.json'
+            profile = json.loads(profile_path.read_text(encoding='utf-8'))
+            profile.update({
+                'version': 'tuned-' + identity['sha256'][:10],
+                'text': selected['text'], 'image': selected['image'] or profile.get('image'),
+                'weights': selected['weights'], 'medium': selected['threshold'],
+                'high': min(.99, max(.85, selected['threshold'] + .1)),
+                'selection': f'Validation-only selection on {identity["path"]} '
+                             f'(sha256 {identity["sha256"][:12]}); see {target.name}.'})
+            profile_path.write_text(json.dumps(profile, indent=2) + '\n', encoding='utf-8')
+            self.stdout.write('Profile activated (other profile fields kept). Restart the app and run '
+                              'rebuild_matches before serving traffic.')
         self.stdout.write(self.style.SUCCESS(str(target)))
+
+    def _experiment(self, pairs, txt, img_kind, cache, related, adjacent, val_idx, test_idx):
+        evidence = ev.build_evidence(pairs, img_kind, cache)
+        if txt == 'sbert':
+            from matching import engine
+            from matching.embeddings import text_vectors
+            texts = sorted({engine._joined(e.title, e.description) for pair in evidence for e in pair})
+            vectors = dict(zip(texts, text_vectors(texts)))
+            model = engine.text_model_id({'text': 'sbert', 'image': img_kind or 'histogram'})
+            for pair in evidence:
+                for e in pair:
+                    e.text_vector, e.text_model = vectors[engine._joined(e.title, e.description)], model
+        candidates = weight_candidates()
+        disabled = () if img_kind else ('image',)  # text + metadata only
+        results = {key: ev.score_all(evidence, related, adjacent, base_weights=w, disabled=disabled)
+                   for key, w in candidates.items()}
+        scores = {key: [r['score'] for r in res] for key, res in results.items()}
+        best = ev.tune_on_validation(scores, pairs, val_idx, THRESHOLDS)
+        wkey, threshold = best['weights_key'], best['threshold']
+        test_rows = [pairs[i] for i in test_idx]
+        test = ev.metrics(test_rows, [scores[wkey][i] for i in test_idx], threshold)
+
+        # As deployed: profile weights at the production "moderate" threshold.
+        deployed_threshold = settings.MATCHING['TIER_MEDIUM']
+        deployed = ev.metrics(test_rows, [scores['profile'][i] for i in test_idx], deployed_threshold)
+        # Ranking with vs without images (same weights, image dropped and renormalised).
+        no_image = ev.score_all(evidence, related, adjacent, base_weights=candidates[wkey], disabled=('image',))
+        without_images = ev.metrics(test_rows, [no_image[i]['score'] for i in test_idx], threshold)
+        test_results = [results[wkey][i] for i in test_idx]
+        tiers = {t: sum(1 for r in test_results if r['tier'] == t) for t in ('high', 'medium', 'low')}
+        coverage = [r['coverage'] for r in test_results]
+        return {
+            'text': txt, 'image': img_kind, 'weights_key': wkey, 'weights': candidates[wkey],
+            'threshold': threshold, 'validation': best['validation'], 'test': test,
+            'test_as_deployed': {'weights': 'profile', 'threshold': deployed_threshold, **deployed},
+            'test_without_images': without_images,
+            'test_tiers': tiers,
+            'test_mean_coverage': round(sum(coverage) / len(coverage), 4) if coverage else None,
+            'test_errors': ev.error_analysis(test_rows, test_results, threshold),
+        }

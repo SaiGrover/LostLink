@@ -265,3 +265,30 @@ class PublicDetailsTests(TestCase):
         self.post(private_details='Roll number 2408030010')
         item = Item.objects.get()
         self.assertEqual(item.private_details, 'Roll number 2408030010')
+
+
+@lightweight_models
+class CounterpartAfterApprovalTests(TestCase):
+    def test_handover_resolves_owner_report_even_after_approval_retired_matches(self):
+        from claims.test_support import EXCEPTION
+        from matching.services import run_matching
+        cache.clear()
+        t = make_taxonomy()
+        u = make_users()
+        found = Item.objects.create(reporter=u['finder'], report_type='found', title='Black wallet',
+                                    status='approved', description='Black leather wallet with silver logo',
+                                    category=t['bags'], location=t['library'])
+        lost = Item.objects.create(reporter=u['owner'], report_type='lost', title='Black wallet',
+                                   status='approved', description='Black leather wallet with silver logo',
+                                   category=t['bags'], location=t['library'])
+        run_matching(lost)
+        claim = Claim.objects.create(item=found, claimant=u['owner'], statement='Mine', status='answered')
+        VerificationQuestion.objects.create(claim=claim, asked_by=u['finder'], text='?', answer='!')
+        found.status = 'claimed'
+        found.save()
+        self.client.force_login(u['mod'])
+        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
+        self.assertFalse(Match.objects.filter(found_item=found).exists())  # retired, not deleted
+        self.client.post(reverse('claims:return', args=[claim.pk]), EXCEPTION)
+        lost.refresh_from_db()
+        self.assertEqual(lost.status, 'returned')

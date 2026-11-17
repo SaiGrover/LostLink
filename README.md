@@ -8,9 +8,10 @@ LostLink replaces scattered campus group chats and notice boards with one
 searchable record. A hybrid matching engine compares every approved lost
 report with every approved found report using text, photographs and
 structured metadata, and explains each score. A human-in-the-loop claim
-workflow (private verification questions, a moderator decision, and a
-separately confirmed handover) decides who gets the item. Similarity scores
-never approve anything.
+workflow (private verification questions and evidence, an independent
+moderator decision, and a handover confirmed with the owner's one-time code)
+decides who gets the item. Similarity scores never approve anything:
+claim approved ≠ item returned.
 
 Built with Django for the JIIT Full Stack Development Lab (project-based learning).
 
@@ -18,13 +19,13 @@ Built with Django for the JIIT Full Stack Development Lab (project-based learnin
 
 | Area | What is implemented |
 | --- | --- |
-| Roles | Student, Moderator, Administrator. Server-side checks on every restricted view and action; self-registration is always Student. |
+| Roles and accounts | Student, Moderator, Administrator. Server-side checks on every restricted view and action; self-registration is always Student. Email verification with expiring single-use links and an optional institutional-domain policy (`LOSTLINK_ALLOWED_EMAIL_DOMAINS`); unverified accounts can browse but not report or claim. Password reset by email. Login, registration, resend and reset are rate limited and never reveal whether an address exists. |
 | Reporting | Lost or found; title, category, campus zone, event date, approximate time, description, brand, colour, one photo. Validation of dates, text length and real image content (format, size, pixel count). Edit sends the report back to review; withdraw removes it from search and matching. |
-| Moderation | Approve or reject reports with a reason, possible-duplicate warnings, user flags (duplicate, suspicious, inappropriate), dispute review, handover confirmation, and an append-only decision log. |
+| Moderation | Independent review: nobody approves, rejects or removes their own report or decides a claim they are part of. Possible-duplicate warnings, user flags, sensitive-photo review, dispute resolution (dismiss / revoke / reject), documented handover exceptions, and an append-only decision log with previous and new state. Every report status change goes through one validated lifecycle (`items/lifecycle.py`). |
 | Discovery | AJAX search with keyword, type, category, zone, status, date range, sort and pagination; shareable URLs; a no-JavaScript fallback and a `?study=manual` baseline for the usability study. Only approved, active reports are public. |
 | Matching | TF-IDF or Sentence-BERT text, ResNet-50 or CLIP image embeddings, zone adjacency, compatible categories, date decay, brand/colour. Synopsis weights 0.30/0.30/0.15/0.10/0.10/0.05; tiers above 85% high, 70–85% medium, below 70% low. |
 | Explanations | Every match stores its component scores, the components that had no evidence, the model manifest and weight version. The UI shows each signal's similarity, effective weight and points. |
-| Claims | Owners claim found items; finders offer to return lost items. Private questions and answers, moderator approval (never by the claimant or the person who reported the item), contact details revealed only after approval, disputes, and handover confirmation. A confirmed handover also closes the claimant's own matching report. Removing a report closes its open claims and tells each claimant. A database constraint allows one verified claimant per item. |
+| Claims | Owners claim found items; finders offer to return lost items. Private questions with private expected answers, private evidence photos, the reporter's private verification details, and an evidence checklist the moderator must complete. Approval reserves the item for one claimant (database constraint); a dispute never releases that reservation. Rejected claimants can request reconsideration (limited, with history); claimants can withdraw. The handover completes only when the person handing over enters the owner's one-time code (hashed, 10-minute, single-use, attempt-limited). See [docs/CLAIMS_AND_HANDOVER.md](docs/CLAIMS_AND_HANDOVER.md). |
 | Notifications | Persistent in-app notifications for matches, claims, questions, answers, decisions, disputes and handovers; de-duplicated across matching runs; mark read/unread without reload; live unread badge. |
 | Analytics | Users, lost/found counts, pending moderation, match tiers and score histogram, claim outcomes, returns and recovery rate, categories, zones, weekly trends, photo coverage, lost-to-found day gaps, wording variation, monitoring snapshots. Optional date range. |
 | Exports | CSV of reports (no usernames, contacts or answers; formula-injection safe) and PDF summaries for a month or a date range. |
@@ -129,75 +130,89 @@ runs the suite against PostgreSQL on every push. Deployment notes are in
 
 ## Matching engine
 
-Code: [matching/engine.py](matching/engine.py) (scores),
+Code: [matching/engine.py](matching/engine.py) (the single scoring function
+`score_evidence`), [matching/textmodel.py](matching/textmodel.py) (stable
+text representation), [matching/chronology.py](matching/chronology.py),
+[matching/colour.py](matching/colour.py),
 [matching/services.py](matching/services.py) (eligibility, persistence,
-notifications), [matching/features.py](matching/features.py) (cached,
-versioned embeddings), [matching/embeddings.py](matching/embeddings.py)
-(pinned pretrained models). The active profile is
-[matching/profile.json](matching/profile.json).
+retirement, notifications), [matching/signals.py](matching/signals.py)
+(taxonomy, report and claim changes), [matching/features.py](matching/features.py)
+(cached, versioned features and their processing state),
+[matching/embeddings.py](matching/embeddings.py) (pinned pretrained models).
+The active profile is [matching/profile.json](matching/profile.json) (engine
+`synopsis-v3`). Full description: [docs/EVALUATION.md](docs/EVALUATION.md).
 
 ```
-score = Σ weight_c × similarity_c   over components with evidence, weights renormalised to 1
+similarity = Σ weight_c × similarity_c   over compared components, weights renormalised to 1
 ```
 
-- **Missing evidence is not negative evidence.** If either report has no photo,
-  or neither attribute (brand, colour) is present on both, that component is
-  dropped and the others are renormalised. The dropped components are stored
-  on the match and shown as “Not compared”.
-- **Temporal rule.** A found report dated more than one day before the lost
-  report is impossible; it is never stored as a match.
-- **Image calibration.** Pretrained image features never put unrelated photos
-  at zero: on the pilot set, photos of different items have a median cosine of
-  0.275 (ResNet-50), 0.568 (CLIP) and 0.574 (histogram). Image similarity is
-  rescaled above that chance level, `(cos - chance) / (1 - chance)`, so
-  unrelated photos add no points and identical photos still score 1. The
-  baselines and their provenance are in `matching/profile.json`.
-- **Brand and colour.** Brands compare without case, spaces or punctuation;
-  colours agree when they share a colour word after normalising spellings and
-  dropping modifiers ("Navy blue" matches "blue", "grey" matches "gray").
-- **Live matches only.** Pairs whose report was returned, withdrawn or removed
-  stay stored as claim evidence but are not counted as open matches.
-- **Partial credit.** Adjacent zones score 0.5; compatible categories (set by an
-  administrator) score 0.5.
-- **Eligibility.** Only active, moderator-approved reports of the opposite type
-  by a different person are compared. Editing, rejecting or withdrawing a
-  report removes its stored matches.
-- **Versioning.** Each match records the engine version, models, model
-  revisions and weights. Pages show only current-version matches;
-  `python manage.py rebuild_matches` recomputes after a configuration change.
-- **Robustness.** Embeddings are computed once per report and cached by a
-  fingerprint. A model or inference failure is logged; the report keeps
-  working with metadata and text, and features are retried later.
-- **Notifications.** Both reporters are told once when a pair first reaches
-  the medium or high tier.
+- **A similarity score, not a probability.** The percentage is a weighted
+  compatibility score. Tiers (above 85 strong, 70–85 moderate, below 70 weak
+  similarity) are heuristic display thresholds, not confidence levels.
+- **Missing is not contradictory.** A photo, brand/colour, date or text that
+  is absent (or a photo that could not be processed) is dropped and the other
+  weights renormalised; disagreeing evidence is scored. **Evidence coverage**
+  (share of base weight compared) is stored and shown with every score; below
+  70% a pair is shown as moderate at most, below 50% as weak.
+- **Stable text.** Title + description, normalised by a curated, versioned
+  lexicon (synonyms, paraphrases, brands, spelling variants, abbreviations,
+  campus terms; identifiers kept exact) and weighted by fixed term classes
+  from the release `matching/text_model/lexical-v1.json`
+  (`manage.py build_text_model`). A pair's score never depends on other
+  reports or on which side started matching. Sentence-BERT is optional.
+- **Graded chronology.** Date and optional time; found-before-lost is
+  approximate, suspicious or contradictory (penalised, warned, tier capped),
+  never silently excluded. Same-day contradictory times are not fully
+  compatible; approximate student input is tolerated, across midnight too.
+- **Colours** are compared as families with shades and multicolour sets:
+  "red and blue" vs "red" is partial, never full agreement.
+- **Image calibration.** Image cosine is rescaled above each model's chance
+  level (ResNet-50 0.275, CLIP 0.568, histogram 0.574) so unrelated photos add
+  no points.
+- **Partial credit.** Adjacent zones and compatible categories score 0.5;
+  editing them in the dashboard rescores the affected pairs automatically.
+- **Eligibility.** One rule, `Item.objects.matchable()`, for a report and its
+  candidates; never the same report or reporter. Matches that stop being
+  valid are retired with a reason (kept as history and claim evidence),
+  never left active.
+- **Versioning.** Each match stores the engine version, model manifest, text
+  release and taxonomy fingerprint; `python manage.py rebuild_matches`
+  rescores in place after any change and is idempotent.
+- **Robustness.** Per-report feature state (processed / missing / failed /
+  retrying, and the model actually used) is recorded; failures are logged,
+  matching continues on the other signals, and `retry_features` retries.
+  `matching_status` prints a health report.
+- **Notifications.** Both reporters are told once per pair, when it first
+  reaches moderate or strong similarity.
 
 Pretrained models are fixed feature extractors. Nothing is trained.
 
 ## Evaluation
 
 ```bash
-python manage.py evaluate_hybrid evaluation/pilot/dataset.json   # TF-IDF/SBERT × ResNet/CLIP, weights, thresholds
+python manage.py evaluate_hybrid evaluation/pilot/dataset.json --image resnet clip histogram none
 python manage.py validate_research_dataset path/to/reviewed-pairs.json
 python manage.py evaluate_matches path/to/pairs.csv --split test  # text-only retrieval metrics
 python manage.py monitor_matching                                  # score-distribution snapshot
 python manage.py evaluate_discovery_study path/to/study.csv        # AJAX vs manual search study
 ```
 
-The bundled 180-pair pilot is a **constructed engineering fixture**: positive
-pairs reuse a transformed copy of the same Commons photo and descriptions come
-from source titles. Its near-perfect scores in
-[evaluation/results.json](evaluation/results.json) are not evidence of
-real-world accuracy, and the dataset deliberately fails the research-readiness
-check. The deployed weights are the synopsis defaults, not the pilot-tuned
-variant. Read [docs/EVALUATION.md](docs/EVALUATION.md) before quoting any
-number.
+Evaluation uses the production scoring function, tunes on the validation
+split only and records dataset hash, provenance, models, versions, weights,
+thresholds and limitations with every result. The bundled 180-pair pilot is a
+**constructed engineering fixture** (positives reuse a transformed copy of
+the same Commons photo; descriptions come from source titles); its results
+in [evaluation/results.json](evaluation/results.json) are labelled as an
+engineering check and are not evidence of real-world accuracy. The format
+for independently collected, manually reviewed pairs is in
+[docs/EVALUATION.md](docs/EVALUATION.md).
 
 ## Tests
 
 ```bash
 python manage.py check
 python manage.py makemigrations --check --dry-run
-python manage.py test                       # 118 tests; uses TF-IDF + histogram, no downloads
+python manage.py test                       # uses the lexical text release + histogram, no downloads
 LOSTLINK_TEST_PRETRAINED=1 python manage.py test matching.tests.PretrainedSmokeTests
 python scripts/browser_check.py --base http://127.0.0.1:8000   # needs: pip install playwright
 ```
@@ -213,7 +228,7 @@ config/         settings, URLs, shared test helpers
 accounts/       custom User with roles, auth views, RBAC decorators
 items/          Category, Location, Item, ReportFlag; reporting, search, detail; seed commands; UI template tags
 matching/       engine, Match and ScoreSnapshot, services, features, evaluation commands
-claims/         Claim and VerificationQuestion; verification, decision, dispute and handover views
+claims/         Claim, disputes, revisions, evidence, handover codes; rules in claims/services.py
 notifications/  Notification model, inbox, read state, unread count
 dashboard/      ModerationDecision audit log; moderation, analytics, people, taxonomy, CSV and PDF exports
 templates/      base, app shell, partials and pages
@@ -257,4 +272,8 @@ docs/           evaluation, frontend, PostgreSQL, deployment, study protocol, im
 - One photo per report.
 - Matching runs synchronously when a moderator approves a report. With
   pretrained models on CPU this adds noticeable latency per approval at scale.
-- Email and SMS notifications, GPS, payments and native apps are out of scope (synopsis Section 3.3).
+- Email is used only for account verification and password reset (an SMTP
+  server must be configured in production); match and claim notifications are
+  in-app. SMS, GPS, payments and native apps are out of scope (synopsis Section 3.3).
+- Rate limits use Django's cache; with several server processes configure a
+  shared cache so limits apply across them.

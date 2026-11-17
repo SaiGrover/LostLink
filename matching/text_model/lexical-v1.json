@@ -1,0 +1,1946 @@
+{
+ "abbreviations": {
+  "audi": "auditorium",
+  "blk": "black",
+  "blu": "blue",
+  "bt": "bluetooth",
+  "btl": "bottle",
+  "caf": "cafeteria",
+  "grn": "green",
+  "gry": "grey",
+  "hp": "hp",
+  "hstl": "hostel",
+  "lap": "laptop",
+  "lappy": "laptop",
+  "lib": "library",
+  "mob": "mobile",
+  "pb": "powerbank",
+  "phn": "phone",
+  "pkt": "pocket",
+  "specs": "spectacles",
+  "umb": "umbrella",
+  "w": "with",
+  "wht": "white",
+  "wo": "without"
+ },
+ "class_weights": {
+  "brand": 2.0,
+  "colour": 1.0,
+  "descriptor": 0.6,
+  "feature": 1.5,
+  "identifier": 2.5,
+  "material": 1.2,
+  "object": 2.0,
+  "other": 1.0,
+  "place": 0.5
+ },
+ "classes": {
+  "acer": "brand",
+  "adidas": "brand",
+  "airpods": "brand",
+  "american tourister": "brand",
+  "apple": "brand",
+  "asus": "brand",
+  "auditorium": "place",
+  "backpack": "object",
+  "bag": "object",
+  "bankcard": "object",
+  "beige": "colour",
+  "bench": "place",
+  "black": "colour",
+  "blue": "colour",
+  "boat": "brand",
+  "book": "object",
+  "bose": "brand",
+  "bottle": "object",
+  "bracelet": "object",
+  "brown": "colour",
+  "cable": "object",
+  "cafeteria": "place",
+  "calculator": "object",
+  "camera": "object",
+  "campus": "place",
+  "cap": "object",
+  "card": "object",
+  "case": "feature",
+  "cash": "object",
+  "casio": "brand",
+  "cello": "brand",
+  "charger": "object",
+  "classmate": "brand",
+  "classroom": "place",
+  "damaged": "feature",
+  "dark": "colour",
+  "dell": "brand",
+  "dented": "feature",
+  "documents": "object",
+  "earphones": "object",
+  "earring": "object",
+  "fabric": "material",
+  "fastrack": "brand",
+  "fossil": "brand",
+  "galaxy": "brand",
+  "gate": "place",
+  "glass": "material",
+  "glasses": "object",
+  "gloves": "object",
+  "gold": "colour",
+  "google": "brand",
+  "green": "colour",
+  "grey": "colour",
+  "gym": "place",
+  "harddrive": "object",
+  "headphones": "object",
+  "helmet": "object",
+  "hoodie": "object",
+  "hostel": "place",
+  "hp": "brand",
+  "hydroflask": "brand",
+  "idcard": "object",
+  "ipad": "brand",
+  "iphone": "brand",
+  "jacket": "object",
+  "jbl": "brand",
+  "key": "object",
+  "keyboard": "object",
+  "keychain": "object",
+  "lab": "place",
+  "laptop": "object",
+  "large": "descriptor",
+  "leather": "material",
+  "lenovo": "brand",
+  "lenskart": "brand",
+  "library": "place",
+  "logo": "feature",
+  "lunchbox": "object",
+  "macbook": "brand",
+  "metal": "material",
+  "milton": "brand",
+  "motorola": "brand",
+  "mouse": "object",
+  "multicolour": "colour",
+  "name": "feature",
+  "navy": "colour",
+  "necklace": "object",
+  "new": "descriptor",
+  "nike": "brand",
+  "nokia": "brand",
+  "notebook": "object",
+  "old": "descriptor",
+  "oneplus": "brand",
+  "oppo": "brand",
+  "orange": "colour",
+  "parker": "brand",
+  "parking": "place",
+  "pen": "object",
+  "pencilcase": "object",
+  "phone": "object",
+  "photo": "feature",
+  "pink": "colour",
+  "plastic": "material",
+  "pocket": "feature",
+  "powerbank": "object",
+  "print": "feature",
+  "puma": "brand",
+  "purple": "colour",
+  "rayban": "brand",
+  "realme": "brand",
+  "red": "colour",
+  "ring": "object",
+  "rubber": "material",
+  "samsung": "brand",
+  "scarf": "object",
+  "scratched": "feature",
+  "screen": "feature",
+  "shoes": "object",
+  "silver": "colour",
+  "size": "descriptor",
+  "skybags": "brand",
+  "small": "descriptor",
+  "smartwatch": "object",
+  "sony": "brand",
+  "speaker": "object",
+  "steel": "material",
+  "sticker": "feature",
+  "strap": "feature",
+  "stripe": "feature",
+  "student": "descriptor",
+  "sunglasses": "object",
+  "sweater": "object",
+  "tablet": "object",
+  "tag": "feature",
+  "teal": "colour",
+  "thinkpad": "brand",
+  "titan": "brand",
+  "transparent": "colour",
+  "umbrella": "object",
+  "usbdrive": "object",
+  "vivo": "brand",
+  "wallet": "object",
+  "watch": "object",
+  "white": "colour",
+  "wildcraft": "brand",
+  "wooden": "material",
+  "xiaomi": "brand",
+  "yellow": "colour",
+  "zip": "feature"
+ },
+ "default_class": "other",
+ "generated_by": "python manage.py build_text_model --release lexical-v1",
+ "identifier_class": "identifier",
+ "kind": "fixed-vocabulary weighted lexical model",
+ "lexicon_sha256": "19ba6d8939d426001298e4c7a9871a3ea01368c5d6bcae4e54a2f8cbb6801aef",
+ "notes": "Fixed-vocabulary lexical model: concept normalisation (synonyms, paraphrases, object hierarchy, brands, campus terms), spelling variants and abbreviations, conservative plural folding, and fixed per-class term weights. Weights are heuristics shipped with the release, not statistics fitted on the candidate pool.",
+ "number_class": "descriptor",
+ "phrases": {
+  "access card": [
+   "idcard",
+   "card"
+  ],
+  "air pods": [
+   "airpods",
+   "apple",
+   "earphones"
+  ],
+  "american tourister": [
+   "american tourister"
+  ],
+  "apple phone": [
+   "apple",
+   "phone"
+  ],
+  "atm card": [
+   "bankcard",
+   "card"
+  ],
+  "back cover": [
+   "case"
+  ],
+  "bank card": [
+   "bankcard",
+   "card"
+  ],
+  "brand new": [
+   "new"
+  ],
+  "bunch of keys": [
+   "key"
+  ],
+  "car park": [
+   "parking"
+  ],
+  "cell phone": [
+   "phone"
+  ],
+  "college id": [
+   "idcard",
+   "card"
+  ],
+  "college id card": [
+   "idcard",
+   "card"
+  ],
+  "computer lab": [
+   "lab"
+  ],
+  "computer labs": [
+   "lab"
+  ],
+  "credit card": [
+   "bankcard",
+   "card"
+  ],
+  "debit card": [
+   "bankcard",
+   "card"
+  ],
+  "duffel bag": [
+   "bag"
+  ],
+  "ear buds": [
+   "earphones"
+  ],
+  "ear phones": [
+   "earphones"
+  ],
+  "ear pods": [
+   "earphones"
+  ],
+  "fitness band": [
+   "smartwatch",
+   "watch"
+  ],
+  "flash drive": [
+   "usbdrive"
+  ],
+  "food court": [
+   "cafeteria"
+  ],
+  "geometry box": [
+   "pencilcase"
+  ],
+  "hand bag": [
+   "bag"
+  ],
+  "hard disk": [
+   "harddrive"
+  ],
+  "hard drive": [
+   "harddrive"
+  ],
+  "head phones": [
+   "headphones"
+  ],
+  "hydro flask": [
+   "hydroflask"
+  ],
+  "i card": [
+   "idcard",
+   "card"
+  ],
+  "id card": [
+   "idcard",
+   "card"
+  ],
+  "identification card": [
+   "idcard",
+   "card"
+  ],
+  "identity card": [
+   "idcard",
+   "card"
+  ],
+  "key chain": [
+   "keychain",
+   "key"
+  ],
+  "key ring": [
+   "keychain",
+   "key"
+  ],
+  "laptop bag": [
+   "laptop",
+   "bag"
+  ],
+  "laptop sleeve": [
+   "laptop",
+   "case"
+  ],
+  "lecture hall": [
+   "classroom"
+  ],
+  "lecture theatre": [
+   "classroom"
+  ],
+  "library card": [
+   "idcard",
+   "card"
+  ],
+  "lunch box": [
+   "lunchbox"
+  ],
+  "main gate": [
+   "gate"
+  ],
+  "mobile phone": [
+   "phone"
+  ],
+  "multi color": [
+   "multicolour"
+  ],
+  "multi colored": [
+   "multicolour"
+  ],
+  "multi colour": [
+   "multicolour"
+  ],
+  "multi coloured": [
+   "multicolour"
+  ],
+  "name tag": [
+   "tag",
+   "name"
+  ],
+  "name written": [
+   "name"
+  ],
+  "notebook computer": [
+   "laptop"
+  ],
+  "off white": [
+   "white"
+  ],
+  "one plus": [
+   "oneplus"
+  ],
+  "parking lot": [
+   "parking"
+  ],
+  "pen drive": [
+   "usbdrive"
+  ],
+  "pencil box": [
+   "pencilcase"
+  ],
+  "pencil case": [
+   "pencilcase"
+  ],
+  "phone cover": [
+   "phone",
+   "case"
+  ],
+  "power bank": [
+   "powerbank"
+  ],
+  "ray ban": [
+   "rayban"
+  ],
+  "reading glasses": [
+   "glasses"
+  ],
+  "reading room": [
+   "library"
+  ],
+  "rose gold": [
+   "gold",
+   "pink"
+  ],
+  "royal blue": [
+   "blue"
+  ],
+  "school bag": [
+   "backpack",
+   "bag"
+  ],
+  "screen guard": [
+   "screen"
+  ],
+  "screen protector": [
+   "screen"
+  ],
+  "set of keys": [
+   "key"
+  ],
+  "sky blue": [
+   "blue"
+  ],
+  "sling bag": [
+   "bag"
+  ],
+  "smart phone": [
+   "phone"
+  ],
+  "smart watch": [
+   "smartwatch",
+   "watch"
+  ],
+  "sports complex": [
+   "gym"
+  ],
+  "student id": [
+   "idcard",
+   "card"
+  ],
+  "student id card": [
+   "idcard",
+   "card"
+  ],
+  "sun glasses": [
+   "sunglasses",
+   "glasses"
+  ],
+  "tempered glass": [
+   "screen"
+  ],
+  "thumb drive": [
+   "usbdrive"
+  ],
+  "tiffin box": [
+   "lunchbox"
+  ],
+  "tote bag": [
+   "bag"
+  ],
+  "usb drive": [
+   "usbdrive"
+  ],
+  "usb stick": [
+   "usbdrive"
+  ],
+  "water bottle": [
+   "bottle"
+  ],
+  "wine red": [
+   "red"
+  ]
+ },
+ "release": "lexical-v1",
+ "shade_words": [
+  "bright",
+  "dark",
+  "deep",
+  "faded",
+  "glossy",
+  "light",
+  "matt",
+  "matte",
+  "metallic",
+  "pale",
+  "shiny"
+ ],
+ "source": "matching/lexicon.py",
+ "spelling": {
+  "airpod": "airpods",
+  "aluminum": "aluminium",
+  "backpak": "backpack",
+  "bottel": "bottle",
+  "calculater": "calculator",
+  "center": "centre",
+  "chager": "charger",
+  "charcher": "charger",
+  "color": "colour",
+  "colour": "colour",
+  "earbud": "earbuds",
+  "earfones": "earphones",
+  "earpod": "earpods",
+  "favorite": "favourite",
+  "gray": "grey",
+  "grayish": "grey",
+  "greyish": "grey",
+  "headfones": "headphones",
+  "jewelry": "jewellery",
+  "jewlery": "jewellery",
+  "keychian": "keychain",
+  "laptp": "laptop",
+  "license": "licence",
+  "mobil": "mobile",
+  "spectacle": "spectacles",
+  "specticles": "spectacles",
+  "theater": "theatre",
+  "umbrela": "umbrella",
+  "umbrellla": "umbrella",
+  "walet": "wallet",
+  "wallett": "wallet"
+ },
+ "stopwords": [
+  "a",
+  "about",
+  "afternoon",
+  "also",
+  "am",
+  "an",
+  "and",
+  "any",
+  "anyone",
+  "approx",
+  "approximately",
+  "are",
+  "around",
+  "as",
+  "at",
+  "be",
+  "been",
+  "believe",
+  "belonging",
+  "belongs",
+  "by",
+  "color",
+  "colored",
+  "colour",
+  "coloured",
+  "contact",
+  "evening",
+  "for",
+  "found",
+  "from",
+  "get",
+  "got",
+  "had",
+  "has",
+  "have",
+  "he",
+  "help",
+  "her",
+  "here",
+  "his",
+  "i",
+  "if",
+  "in",
+  "inside",
+  "into",
+  "is",
+  "it",
+  "item",
+  "items",
+  "its",
+  "just",
+  "keep",
+  "kept",
+  "kind",
+  "left",
+  "like",
+  "locate",
+  "look",
+  "looking",
+  "looks",
+  "lost",
+  "lying",
+  "made",
+  "maybe",
+  "me",
+  "mine",
+  "misplaced",
+  "missing",
+  "morning",
+  "my",
+  "near",
+  "night",
+  "of",
+  "on",
+  "one",
+  "onto",
+  "or",
+  "our",
+  "outside",
+  "over",
+  "owner",
+  "please",
+  "pm",
+  "probably",
+  "really",
+  "report",
+  "reported",
+  "reward",
+  "seen",
+  "she",
+  "so",
+  "some",
+  "someone",
+  "somewhere",
+  "stuff",
+  "that",
+  "the",
+  "their",
+  "them",
+  "there",
+  "these",
+  "they",
+  "thing",
+  "think",
+  "this",
+  "those",
+  "to",
+  "today",
+  "type",
+  "under",
+  "very",
+  "was",
+  "we",
+  "were",
+  "what",
+  "when",
+  "where",
+  "which",
+  "while",
+  "who",
+  "whoever",
+  "with",
+  "yesterday",
+  "you",
+  "your"
+ ],
+ "tokens": {
+  "acer": [
+   "acer"
+  ],
+  "adapter": [
+   "charger"
+  ],
+  "adaptor": [
+   "charger"
+  ],
+  "adidas": [
+   "adidas"
+  ],
+  "airpods": [
+   "airpods",
+   "apple",
+   "earphones"
+  ],
+  "aluminium": [
+   "metal"
+  ],
+  "apple": [
+   "apple"
+  ],
+  "aqua": [
+   "teal"
+  ],
+  "asus": [
+   "asus"
+  ],
+  "auditorium": [
+   "auditorium"
+  ],
+  "azure": [
+   "blue"
+  ],
+  "backpack": [
+   "backpack",
+   "bag"
+  ],
+  "badge": [
+   "logo"
+  ],
+  "bag": [
+   "bag"
+  ],
+  "band": [
+   "bracelet"
+  ],
+  "bangle": [
+   "bracelet"
+  ],
+  "beanie": [
+   "cap"
+  ],
+  "beige": [
+   "beige"
+  ],
+  "belt": [
+   "strap"
+  ],
+  "bench": [
+   "bench"
+  ],
+  "bent": [
+   "dented"
+  ],
+  "big": [
+   "large"
+  ],
+  "billfold": [
+   "wallet"
+  ],
+  "black": [
+   "black",
+   "dark"
+  ],
+  "blackish": [
+   "black"
+  ],
+  "blazer": [
+   "jacket"
+  ],
+  "block": [
+   "campus"
+  ],
+  "blue": [
+   "blue"
+  ],
+  "blueish": [
+   "blue"
+  ],
+  "bluish": [
+   "blue"
+  ],
+  "boat": [
+   "boat"
+  ],
+  "book": [
+   "book"
+  ],
+  "bose": [
+   "bose"
+  ],
+  "bottle": [
+   "bottle"
+  ],
+  "bracelet": [
+   "bracelet"
+  ],
+  "branding": [
+   "logo"
+  ],
+  "broken": [
+   "damaged"
+  ],
+  "brolly": [
+   "umbrella"
+  ],
+  "brown": [
+   "brown"
+  ],
+  "building": [
+   "campus"
+  ],
+  "bulky": [
+   "large"
+  ],
+  "burgundy": [
+   "red"
+  ],
+  "busted": [
+   "damaged"
+  ],
+  "cable": [
+   "cable"
+  ],
+  "cafe": [
+   "cafeteria"
+  ],
+  "cafeteria": [
+   "cafeteria"
+  ],
+  "calculator": [
+   "calculator"
+  ],
+  "camera": [
+   "camera"
+  ],
+  "campus": [
+   "campus"
+  ],
+  "canteen": [
+   "cafeteria"
+  ],
+  "canvas": [
+   "fabric"
+  ],
+  "cap": [
+   "cap"
+  ],
+  "card": [
+   "card"
+  ],
+  "cardholder": [
+   "wallet"
+  ],
+  "cardigan": [
+   "sweater"
+  ],
+  "carpark": [
+   "parking"
+  ],
+  "case": [
+   "case"
+  ],
+  "cash": [
+   "cash"
+  ],
+  "casing": [
+   "case"
+  ],
+  "casio": [
+   "casio"
+  ],
+  "cello": [
+   "cello"
+  ],
+  "cellphone": [
+   "phone"
+  ],
+  "certificate": [
+   "documents"
+  ],
+  "chain": [
+   "necklace"
+  ],
+  "chair": [
+   "bench"
+  ],
+  "chappals": [
+   "shoes"
+  ],
+  "charcoal": [
+   "grey"
+  ],
+  "charger": [
+   "charger"
+  ],
+  "charging": [
+   "charger"
+  ],
+  "checked": [
+   "print"
+  ],
+  "chipped": [
+   "damaged"
+  ],
+  "chocolate": [
+   "brown"
+  ],
+  "chromebook": [
+   "laptop"
+  ],
+  "class": [
+   "classroom"
+  ],
+  "classmate": [
+   "classmate"
+  ],
+  "classroom": [
+   "classroom"
+  ],
+  "clear": [
+   "transparent"
+  ],
+  "cloth": [
+   "fabric"
+  ],
+  "coat": [
+   "jacket"
+  ],
+  "cobalt": [
+   "blue"
+  ],
+  "coffee": [
+   "brown"
+  ],
+  "college": [
+   "campus"
+  ],
+  "colorful": [
+   "multicolour"
+  ],
+  "colourful": [
+   "multicolour"
+  ],
+  "compact": [
+   "small"
+  ],
+  "compartment": [
+   "pocket"
+  ],
+  "copy": [
+   "notebook"
+  ],
+  "cord": [
+   "cable"
+  ],
+  "corridor": [
+   "campus"
+  ],
+  "cotton": [
+   "fabric"
+  ],
+  "court": [
+   "gym"
+  ],
+  "cover": [
+   "case"
+  ],
+  "crack": [
+   "damaged"
+  ],
+  "cracked": [
+   "damaged"
+  ],
+  "cream": [
+   "beige"
+  ],
+  "crimson": [
+   "red"
+  ],
+  "currency": [
+   "cash"
+  ],
+  "cyan": [
+   "teal"
+  ],
+  "damage": [
+   "damaged"
+  ],
+  "damaged": [
+   "damaged"
+  ],
+  "dark": [
+   "dark"
+  ],
+  "decal": [
+   "sticker"
+  ],
+  "decals": [
+   "sticker"
+  ],
+  "dell": [
+   "dell"
+  ],
+  "denim": [
+   "fabric"
+  ],
+  "dent": [
+   "dented"
+  ],
+  "dented": [
+   "dented"
+  ],
+  "dents": [
+   "dented"
+  ],
+  "desk": [
+   "bench"
+  ],
+  "diary": [
+   "notebook"
+  ],
+  "display": [
+   "screen"
+  ],
+  "document": [
+   "documents"
+  ],
+  "documents": [
+   "documents"
+  ],
+  "dorm": [
+   "hostel"
+  ],
+  "dormitory": [
+   "hostel"
+  ],
+  "duffel": [
+   "bag"
+  ],
+  "duffle": [
+   "bag"
+  ],
+  "dupatta": [
+   "scarf"
+  ],
+  "earbuds": [
+   "earphones"
+  ],
+  "earphone": [
+   "earphones"
+  ],
+  "earphones": [
+   "earphones"
+  ],
+  "earpiece": [
+   "earphones"
+  ],
+  "earpods": [
+   "earphones"
+  ],
+  "earring": [
+   "earring"
+  ],
+  "earrings": [
+   "earring"
+  ],
+  "emblem": [
+   "logo"
+  ],
+  "engraved": [
+   "name"
+  ],
+  "engraving": [
+   "name"
+  ],
+  "entrance": [
+   "gate"
+  ],
+  "eyeglasses": [
+   "glasses"
+  ],
+  "eyewear": [
+   "glasses"
+  ],
+  "fabric": [
+   "fabric"
+  ],
+  "fastrack": [
+   "fastrack"
+  ],
+  "faux": [
+   "leather"
+  ],
+  "field": [
+   "gym"
+  ],
+  "file": [
+   "documents"
+  ],
+  "fitbit": [
+   "smartwatch",
+   "watch"
+  ],
+  "flashdrive": [
+   "usbdrive"
+  ],
+  "flask": [
+   "bottle"
+  ],
+  "floor": [
+   "campus"
+  ],
+  "floral": [
+   "print"
+  ],
+  "fob": [
+   "keychain"
+  ],
+  "folder": [
+   "documents"
+  ],
+  "foodcourt": [
+   "cafeteria"
+  ],
+  "footwear": [
+   "shoes"
+  ],
+  "fossil": [
+   "fossil"
+  ],
+  "galaxy": [
+   "galaxy",
+   "samsung"
+  ],
+  "gate": [
+   "gate"
+  ],
+  "geometrybox": [
+   "pencilcase"
+  ],
+  "glass": [
+   "glass"
+  ],
+  "glasses": [
+   "glasses"
+  ],
+  "glove": [
+   "gloves"
+  ],
+  "gloves": [
+   "gloves"
+  ],
+  "goggles": [
+   "glasses"
+  ],
+  "gold": [
+   "gold"
+  ],
+  "golden": [
+   "gold"
+  ],
+  "google": [
+   "google"
+  ],
+  "green": [
+   "green"
+  ],
+  "greenish": [
+   "green"
+  ],
+  "grey": [
+   "grey"
+  ],
+  "ground": [
+   "gym"
+  ],
+  "gym": [
+   "gym"
+  ],
+  "hall": [
+   "auditorium"
+  ],
+  "handbag": [
+   "bag"
+  ],
+  "handset": [
+   "phone"
+  ],
+  "hardcover": [
+   "book"
+  ],
+  "hat": [
+   "cap"
+  ],
+  "headphone": [
+   "headphones"
+  ],
+  "headphones": [
+   "headphones"
+  ],
+  "headset": [
+   "earphones"
+  ],
+  "helmet": [
+   "helmet"
+  ],
+  "hoodie": [
+   "hoodie"
+  ],
+  "hoody": [
+   "hoodie"
+  ],
+  "hostel": [
+   "hostel"
+  ],
+  "hp": [
+   "hp"
+  ],
+  "huge": [
+   "large"
+  ],
+  "hydroflask": [
+   "hydroflask"
+  ],
+  "icard": [
+   "idcard",
+   "card"
+  ],
+  "idcard": [
+   "idcard",
+   "card"
+  ],
+  "initials": [
+   "name"
+  ],
+  "insignia": [
+   "logo"
+  ],
+  "institute": [
+   "campus"
+  ],
+  "ipad": [
+   "ipad",
+   "apple",
+   "tablet"
+  ],
+  "iphone": [
+   "iphone",
+   "apple",
+   "phone"
+  ],
+  "iron": [
+   "metal"
+  ],
+  "ivory": [
+   "beige"
+  ],
+  "jacket": [
+   "jacket"
+  ],
+  "jbl": [
+   "jbl"
+  ],
+  "journal": [
+   "notebook"
+  ],
+  "jumper": [
+   "sweater"
+  ],
+  "kada": [
+   "bracelet"
+  ],
+  "key": [
+   "key"
+  ],
+  "keyboard": [
+   "keyboard"
+  ],
+  "keychain": [
+   "keychain",
+   "key"
+  ],
+  "keyring": [
+   "keychain",
+   "key"
+  ],
+  "keys": [
+   "key"
+  ],
+  "khaki": [
+   "beige"
+  ],
+  "knapsack": [
+   "backpack",
+   "bag"
+  ],
+  "lab": [
+   "lab"
+  ],
+  "label": [
+   "tag"
+  ],
+  "laboratory": [
+   "lab"
+  ],
+  "labs": [
+   "lab"
+  ],
+  "lanyard": [
+   "keychain"
+  ],
+  "laptop": [
+   "laptop"
+  ],
+  "laptopbag": [
+   "bag"
+  ],
+  "large": [
+   "large"
+  ],
+  "lavender": [
+   "purple"
+  ],
+  "lead": [
+   "cable"
+  ],
+  "leather": [
+   "leather"
+  ],
+  "leatherette": [
+   "leather"
+  ],
+  "lecture": [
+   "classroom"
+  ],
+  "lecturehall": [
+   "classroom"
+  ],
+  "lenovo": [
+   "lenovo"
+  ],
+  "lenskart": [
+   "lenskart"
+  ],
+  "library": [
+   "library"
+  ],
+  "lilac": [
+   "purple"
+  ],
+  "lime": [
+   "green"
+  ],
+  "little": [
+   "small"
+  ],
+  "locket": [
+   "necklace"
+  ],
+  "logo": [
+   "logo"
+  ],
+  "lunchbox": [
+   "lunchbox"
+  ],
+  "macbook": [
+   "macbook",
+   "apple",
+   "laptop"
+  ],
+  "magenta": [
+   "pink"
+  ],
+  "marker": [
+   "pen"
+  ],
+  "maroon": [
+   "red"
+  ],
+  "mess": [
+   "cafeteria"
+  ],
+  "messenger": [
+   "bag"
+  ],
+  "metal": [
+   "metal"
+  ],
+  "metallic": [
+   "metal"
+  ],
+  "mi": [
+   "xiaomi"
+  ],
+  "milton": [
+   "milton"
+  ],
+  "mini": [
+   "small"
+  ],
+  "mint": [
+   "green"
+  ],
+  "mittens": [
+   "gloves"
+  ],
+  "mobile": [
+   "phone"
+  ],
+  "money": [
+   "cash"
+  ],
+  "moneybag": [
+   "wallet"
+  ],
+  "moto": [
+   "motorola"
+  ],
+  "motorola": [
+   "motorola"
+  ],
+  "mouse": [
+   "mouse"
+  ],
+  "muffler": [
+   "scarf"
+  ],
+  "multicolor": [
+   "multicolour"
+  ],
+  "multicolored": [
+   "multicolour"
+  ],
+  "multicolour": [
+   "multicolour"
+  ],
+  "multicoloured": [
+   "multicolour"
+  ],
+  "mustard": [
+   "yellow"
+  ],
+  "name": [
+   "name"
+  ],
+  "nametag": [
+   "tag"
+  ],
+  "navy": [
+   "navy",
+   "blue"
+  ],
+  "necklace": [
+   "necklace"
+  ],
+  "new": [
+   "new"
+  ],
+  "nike": [
+   "nike"
+  ],
+  "nokia": [
+   "nokia"
+  ],
+  "notebook": [
+   "notebook"
+  ],
+  "notepad": [
+   "notebook"
+  ],
+  "novel": [
+   "book"
+  ],
+  "nylon": [
+   "fabric"
+  ],
+  "offwhite": [
+   "white"
+  ],
+  "old": [
+   "old"
+  ],
+  "olive": [
+   "green"
+  ],
+  "oneplus": [
+   "oneplus"
+  ],
+  "oppo": [
+   "oppo"
+  ],
+  "orange": [
+   "orange"
+  ],
+  "paperback": [
+   "book"
+  ],
+  "papers": [
+   "documents"
+  ],
+  "parka": [
+   "jacket"
+  ],
+  "parker": [
+   "parker"
+  ],
+  "parking": [
+   "parking"
+  ],
+  "pattern": [
+   "print"
+  ],
+  "patterned": [
+   "print"
+  ],
+  "pen": [
+   "pen"
+  ],
+  "pencil": [
+   "pen"
+  ],
+  "pencilcase": [
+   "pencilcase"
+  ],
+  "pendant": [
+   "necklace"
+  ],
+  "pendrive": [
+   "usbdrive"
+  ],
+  "phone": [
+   "phone"
+  ],
+  "photo": [
+   "photo"
+  ],
+  "photograph": [
+   "photo"
+  ],
+  "picture": [
+   "photo"
+  ],
+  "pink": [
+   "pink"
+  ],
+  "pixel": [
+   "google",
+   "phone"
+  ],
+  "plastic": [
+   "plastic"
+  ],
+  "pocket": [
+   "pocket"
+  ],
+  "pockets": [
+   "pocket"
+  ],
+  "poco": [
+   "xiaomi"
+  ],
+  "polyester": [
+   "fabric"
+  ],
+  "pouch": [
+   "bag"
+  ],
+  "powerbank": [
+   "powerbank"
+  ],
+  "print": [
+   "print"
+  ],
+  "printed": [
+   "print"
+  ],
+  "pullover": [
+   "sweater"
+  ],
+  "puma": [
+   "puma"
+  ],
+  "purple": [
+   "purple"
+  ],
+  "purse": [
+   "wallet"
+  ],
+  "rainbow": [
+   "multicolour"
+  ],
+  "raincoat": [
+   "jacket"
+  ],
+  "rayban": [
+   "rayban"
+  ],
+  "realme": [
+   "realme"
+  ],
+  "red": [
+   "red"
+  ],
+  "reddish": [
+   "red"
+  ],
+  "redmi": [
+   "xiaomi"
+  ],
+  "register": [
+   "notebook"
+  ],
+  "residence": [
+   "hostel"
+  ],
+  "ring": [
+   "ring"
+  ],
+  "room": [
+   "campus"
+  ],
+  "rose": [
+   "pink"
+  ],
+  "rubber": [
+   "rubber"
+  ],
+  "rucksack": [
+   "backpack",
+   "bag"
+  ],
+  "rupees": [
+   "cash"
+  ],
+  "samsung": [
+   "samsung"
+  ],
+  "sandals": [
+   "shoes"
+  ],
+  "satchel": [
+   "bag"
+  ],
+  "scarf": [
+   "scarf"
+  ],
+  "scarlet": [
+   "red"
+  ],
+  "school": [
+   "campus"
+  ],
+  "schoolbag": [
+   "bag"
+  ],
+  "scratch": [
+   "scratched"
+  ],
+  "scratched": [
+   "scratched"
+  ],
+  "scratches": [
+   "scratched"
+  ],
+  "screen": [
+   "screen"
+  ],
+  "scuffed": [
+   "scratched"
+  ],
+  "seat": [
+   "bench"
+  ],
+  "seminar": [
+   "auditorium"
+  ],
+  "shades": [
+   "sunglasses",
+   "glasses"
+  ],
+  "shattered": [
+   "damaged"
+  ],
+  "shoe": [
+   "shoes"
+  ],
+  "shoes": [
+   "shoes"
+  ],
+  "silicone": [
+   "rubber"
+  ],
+  "silver": [
+   "silver"
+  ],
+  "silvery": [
+   "silver"
+  ],
+  "sipper": [
+   "bottle"
+  ],
+  "size": [
+   "size"
+  ],
+  "skin": [
+   "case"
+  ],
+  "skybags": [
+   "skybags"
+  ],
+  "sleeve": [
+   "case"
+  ],
+  "sling": [
+   "bag"
+  ],
+  "slippers": [
+   "shoes"
+  ],
+  "small": [
+   "small"
+  ],
+  "smartband": [
+   "smartwatch",
+   "watch"
+  ],
+  "smartphone": [
+   "phone"
+  ],
+  "smartwatch": [
+   "smartwatch",
+   "watch"
+  ],
+  "smashed": [
+   "damaged"
+  ],
+  "sneaker": [
+   "shoes"
+  ],
+  "sneakers": [
+   "shoes"
+  ],
+  "sony": [
+   "sony"
+  ],
+  "speaker": [
+   "speaker"
+  ],
+  "spectacles": [
+   "glasses"
+  ],
+  "split": [
+   "damaged"
+  ],
+  "sports": [
+   "gym"
+  ],
+  "stadium": [
+   "gym"
+  ],
+  "stainless": [
+   "steel",
+   "metal"
+  ],
+  "steel": [
+   "steel",
+   "metal"
+  ],
+  "sticker": [
+   "sticker"
+  ],
+  "stickers": [
+   "sticker"
+  ],
+  "stole": [
+   "scarf"
+  ],
+  "strap": [
+   "strap"
+  ],
+  "straps": [
+   "strap"
+  ],
+  "stripe": [
+   "stripe"
+  ],
+  "striped": [
+   "stripe"
+  ],
+  "stripes": [
+   "stripe"
+  ],
+  "stud": [
+   "earring"
+  ],
+  "student": [
+   "student"
+  ],
+  "students": [
+   "student"
+  ],
+  "studs": [
+   "earring"
+  ],
+  "stylus": [
+   "pen"
+  ],
+  "sunglasses": [
+   "sunglasses",
+   "glasses"
+  ],
+  "sweater": [
+   "sweater"
+  ],
+  "sweatshirt": [
+   "sweater"
+  ],
+  "table": [
+   "bench"
+  ],
+  "tablet": [
+   "tablet"
+  ],
+  "tag": [
+   "tag"
+  ],
+  "tan": [
+   "brown"
+  ],
+  "teal": [
+   "teal"
+  ],
+  "telephone": [
+   "phone"
+  ],
+  "textbook": [
+   "book"
+  ],
+  "thermos": [
+   "bottle"
+  ],
+  "thinkpad": [
+   "thinkpad",
+   "lenovo",
+   "laptop"
+  ],
+  "thumbdrive": [
+   "usbdrive"
+  ],
+  "tiffin": [
+   "lunchbox"
+  ],
+  "tin": [
+   "metal"
+  ],
+  "tiny": [
+   "small"
+  ],
+  "titan": [
+   "titan"
+  ],
+  "toilet": [
+   "campus"
+  ],
+  "tote": [
+   "bag"
+  ],
+  "touchscreen": [
+   "screen"
+  ],
+  "trainers": [
+   "shoes"
+  ],
+  "translucent": [
+   "transparent"
+  ],
+  "transparent": [
+   "transparent"
+  ],
+  "tumbler": [
+   "bottle"
+  ],
+  "turquoise": [
+   "teal"
+  ],
+  "tutorial": [
+   "classroom"
+  ],
+  "tws": [
+   "earphones"
+  ],
+  "ultrabook": [
+   "laptop"
+  ],
+  "umbrella": [
+   "umbrella"
+  ],
+  "university": [
+   "campus"
+  ],
+  "usb": [
+   "usbdrive"
+  ],
+  "usbdrive": [
+   "usbdrive"
+  ],
+  "used": [
+   "old"
+  ],
+  "vintage": [
+   "old"
+  ],
+  "violet": [
+   "purple"
+  ],
+  "vivo": [
+   "vivo"
+  ],
+  "wallet": [
+   "wallet"
+  ],
+  "washroom": [
+   "campus"
+  ],
+  "watch": [
+   "watch"
+  ],
+  "white": [
+   "white"
+  ],
+  "whitish": [
+   "white"
+  ],
+  "wildcraft": [
+   "wildcraft"
+  ],
+  "windcheater": [
+   "jacket"
+  ],
+  "wire": [
+   "cable"
+  ],
+  "wood": [
+   "wooden"
+  ],
+  "wooden": [
+   "wooden"
+  ],
+  "wool": [
+   "fabric"
+  ],
+  "woollen": [
+   "fabric"
+  ],
+  "worn": [
+   "scratched"
+  ],
+  "wristwatch": [
+   "watch"
+  ],
+  "written": [
+   "name"
+  ],
+  "xiaomi": [
+   "xiaomi"
+  ],
+  "yellow": [
+   "yellow"
+  ],
+  "zip": [
+   "zip"
+  ],
+  "zipper": [
+   "zip"
+  ],
+  "zips": [
+   "zip"
+  ]
+ },
+ "vocabulary_size": 149
+}

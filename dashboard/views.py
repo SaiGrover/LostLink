@@ -556,7 +556,7 @@ def export_csv(request):
     writer = csv.writer(response)
     writer.writerow(['ID', 'Type', 'Title', 'Category', 'Location', 'Event date', 'Approximate time',
                      'Status', 'Active', 'Brand', 'Color', 'Has photo', 'Sensitive photo', 'Reporter ID',
-                     'Potential matches', 'Claims', 'Created', 'Updated'])
+                     'Current similarity matches', 'Claims', 'Created', 'Updated'])
     for it in qs.iterator():
         row = [it.id, it.get_report_type_display(), it.title, it.category.name, it.location.name,
                it.event_date.isoformat(), it.event_time.strftime('%H:%M') if it.event_time else '',
@@ -641,8 +641,8 @@ def export_pdf(request):
         ['Found reports', items.filter(report_type=Item.Type.FOUND).count()],
         ['Reports awaiting moderation', items.filter(status=Item.Status.PENDING, is_active=True).count()],
         ['Reports with a photograph', items.exclude(image='').exclude(image__isnull=True).count()],
-        ['Potential matches (current engine)', matches.count()],
-        ['  High / medium / low confidence', f"{tier.get('high', 0)} / {tier.get('medium', 0)} / {tier.get('low', 0)}"],
+        ['Candidate pairs (current engine, weighted similarity)', matches.count()],
+        ['  Strong / moderate / weak similarity (heuristic tiers)', f"{tier.get('high', 0)} / {tier.get('medium', 0)} / {tier.get('low', 0)}"],
         ['Claims submitted', claims.count()],
         ['  Pending / approved / rejected',
          f"{sum(cstat.get(s, 0) for s in ('submitted', 'questions', 'answered'))} / "
@@ -659,7 +659,7 @@ def export_pdf(request):
     section('Campus locations with the most reports', loc_rows)
 
     story.append(Paragraph(
-        'Match figures describe similarity scores produced by the configured engine '
+        'Match figures describe weighted similarity scores (not probabilities) produced by the configured engine '
         f"({manifest()['text']} text, {manifest()['image']} image, weights version {manifest()['version']}). "
         'They are not measurements of ownership or real-world accuracy. This report excludes '
         'personal contact details and private verification answers.', small))

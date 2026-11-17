@@ -1,5 +1,5 @@
 {% extends 'shell.html' %}
-{% load humanize ui photos %}
+{% load humanize ui photos matching_tags %}
 {% block title %}{{ item.title }}{% endblock %}
 
 {% block main %}
@@ -53,7 +53,7 @@
       {% if item.is_active and item.status != 'returned' %}
       <div class="case__actions">
         <a class="btn" href="{% url 'items:edit' item.pk %}">{% icon 'edit' %}Edit report</a>
-        <form method="post" action="{% url 'items:withdraw' item.pk %}" data-confirm="Withdraw this report?" data-confirm-text="It's removed from search and matching, and its match scores are deleted. You can't undo this in the app." data-confirm-tone="danger" data-confirm-label="Withdraw report">
+        <form method="post" action="{% url 'items:withdraw' item.pk %}" data-confirm="Withdraw this report?" data-confirm-text="It's removed from search and matching, and its similarity matches are retired. You can't undo this in the app." data-confirm-tone="danger" data-confirm-label="Withdraw report">
           {% csrf_token %}<button class="btn btn-plain" type="submit">{% icon 'trash' %}Withdraw report</button>
         </form>
       </div>
@@ -86,7 +86,7 @@
       {% if item.duplicate_of %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Possible duplicate</span><span>Same reporter as <a class="link" href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }}, {{ item.duplicate_of.title }}</a>.</span></div></div>{% endif %}
       {% if item.status == 'pending' and item.is_active %}
       <div class="cluster">
-        <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve this report?" data-confirm-text="It becomes searchable and is compared with reports of the other type. People with strong matches are notified." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-ok" type="submit">{% icon 'check' %}Approve</button></form>
+        <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve this report?" data-confirm-text="It becomes searchable and is compared with reports of the other type. Reporters of pairs with moderate or strong similarity are notified once." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-ok" type="submit">{% icon 'check' %}Approve</button></form>
         <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" data-confirm="Reject this report?" data-confirm-text="It stays hidden. The reporter sees your reason and can edit and resubmit it." data-confirm-tone="danger" data-confirm-label="Reject report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-danger" type="submit">{% icon 'x' %}Reject</button></form>
       </div>
       {% endif %}
@@ -147,7 +147,7 @@
 <section class="mt-9" aria-labelledby="matches-title">
   <div class="sect-head">
     <h2 id="matches-title">{% if item.is_lost %}Found reports that look similar{% else %}Lost reports that look similar{% endif %}</h2>
-    <p class="muted"><b class="num">{{ match_rows|length }}</b> candidate{{ match_rows|length|pluralize }}</p>
+    <p class="muted"><b class="num">{{ match_rows|length }}</b> candidate{{ match_rows|length|pluralize }}, ranked by weighted similarity score</p>
   </div>
   {% if match_rows %}
     <div>
@@ -158,7 +158,28 @@
   {% elif not item.is_matchable %}
     {% include 'partials/empty.html' with compact=True title='Matching starts after approval' text='Only active, approved reports are compared. Pending, rejected, withdrawn and returned reports never are.' %}
   {% else %}
-    {% include 'partials/empty.html' with compact=True title='No similar reports yet' text="Every newly approved report is compared with this one. You'll be notified when a medium or high similarity candidate appears." %}
+    {% include 'partials/empty.html' with compact=True title='No similar reports yet' text="Every newly approved report is compared with this one. You'll be notified once when a report with moderate or strong similarity appears." %}
+  {% endif %}
+  {% if can_review %}
+  {% feature_status item as fs %}{% match_history item as history %}
+  <details class="disclosure mt-5">
+    <summary>{% icon 'info' %}Matching diagnostics (moderators){% icon 'chevron-down' 'chev' %}</summary>
+    <div class="disclosure__body stack" style="--gap:var(--s3)">
+      {% if fs.pending %}
+        <p class="small muted">Features not computed yet{% if fs.has_photo %} (photo waiting to be processed){% endif %}.</p>
+      {% elif fs %}
+        <p class="small"><b>Text:</b> {{ fs.text_state }} · {{ fs.text_model }}</p>
+        <p class="small"><b>Photo:</b> {{ fs.image_state }}{% if fs.image_state_key == 'missing' %} (no photo supplied){% else %} · {{ fs.image_model }}{% if fs.image_model_detail %} <span class="faint">({{ fs.image_model_detail }})</span>{% endif %}{% endif %}</p>
+        {% if fs.last_error %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Processing problem ({{ fs.attempts }} attempt{{ fs.attempts|pluralize }})</span><span class="small">{{ fs.last_error }}</span>{% if fs.needs_retry %}<span class="small">Retried automatically on the next matching run; after repeated failures run <code>python manage.py retry_features --item {{ item.pk }}</code>.</span>{% endif %}</div></div>{% endif %}
+      {% endif %}
+      {% if history %}
+        <h3 class="h4">Retired matches (history, not actionable)</h3>
+        <ul class="rows" style="border-top-width:1px">
+          {% for h in history %}<li class="r" style="padding:var(--s2) 0"><div class="r__main"><span class="r__title"><a href="{{ h.other.get_absolute_url }}">{{ h.other.title }}</a></span><span class="r__meta"><span>score {{ h.match.percent }}/100 ({{ h.match.tier_label|lower }}), {{ h.match.engine_version }}</span><span>{{ h.match.get_retired_reason_display }}</span><span>{{ h.match.retired_at|naturaltime }}</span></span></div></li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </details>
   {% endif %}
 </section>
 {% endblock %}

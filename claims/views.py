@@ -147,10 +147,10 @@ def build_ai_assessment(claim):
 
     item = claim.item
     if item.is_found:
-        match_qs = Match.objects.filter(found_item=item, lost_item__reporter=claim.claimant,
+        match_qs = Match.all_objects.filter(found_item=item, lost_item__reporter=claim.claimant,
                                         engine_version=settings.MATCHING['VERSION'])
     else:
-        match_qs = Match.objects.filter(lost_item=item, found_item__reporter=claim.claimant,
+        match_qs = Match.all_objects.filter(lost_item=item, found_item__reporter=claim.claimant,
                                         engine_version=settings.MATCHING['VERSION'])
     match = claim.match if (claim.match and claim.match.engine_version == settings.MATCHING['VERSION']) \
         else match_qs.order_by('-score').first()

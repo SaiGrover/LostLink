@@ -739,10 +739,12 @@ def counterpart_report(claim):
     if claim.match_id:
         match = claim.match
     else:
+        # Retired rows count too: approving the claim retires the item's
+        # matches, but they still identify the claimant's own report.
         if item.is_found:
-            candidates = Match.objects.filter(found_item=item, lost_item__reporter=claim.claimant)
+            candidates = Match.all_objects.filter(found_item=item, lost_item__reporter=claim.claimant)
         else:
-            candidates = Match.objects.filter(lost_item=item, found_item__reporter=claim.claimant)
+            candidates = Match.all_objects.filter(lost_item=item, found_item__reporter=claim.claimant)
         candidates = list(candidates.filter(engine_version=settings.MATCHING['VERSION'])[:2])
         match = candidates[0] if len(candidates) == 1 else None
     if match is None:

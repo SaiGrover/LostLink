@@ -47,7 +47,7 @@
 {% elif unread_only or sel_kind %}
   {% include 'partials/empty.html' with title='Nothing here' text='No notifications match this filter.' action_url='/notifications/' action_label='Show all' %}
 {% else %}
-  {% include 'partials/empty.html' with title='No notifications yet' text="You'll hear here about likely matches, claim updates and moderator decisions." %}
+  {% include 'partials/empty.html' with title='No notifications yet' text="You'll hear here about similar reports, claim updates and moderator decisions." %}
 {% endif %}
 {% qs_without 'page' as querystring %}{% include 'partials/pagination.html' %}
 {% endblock %}

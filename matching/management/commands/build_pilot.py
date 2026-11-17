@@ -84,7 +84,7 @@ class Command(BaseCommand):
                     'query':query,'candidate':{'id':candidate['id'], 'description':f"Found: {candidate['description']}",
                     'category':candidate['category'],'location':'library','date':'2026-08-02',
                     'brand':'','color':'','image':candidate['image']}})
-        payload = {'provenance':'Project-constructed source-identity pilot; automatic labels, not human-reviewed campus reports.',
+        payload = {'dataset_kind':'constructed','provenance':'Project-constructed source-identity pilot; automatic labels, not human-reviewed campus reports.',
                    'limitations':['Positive pairs reuse the same photograph with brightness/compression changes.',
                      'Source titles generate descriptions; lexical overlap makes this an optimistic sanity benchmark.',
                      'Negatives use different source files, which are not guaranteed different physical objects.',
