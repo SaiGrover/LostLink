@@ -51,6 +51,33 @@ For a lightweight setup without PyTorch, install `requirements.txt` only and
 set `LOSTLINK_IMAGE_MODEL=histogram`. That baseline is labelled as such in every
 match explanation and is never substituted silently.
 
+### First run without demo data (production)
+
+`seed_demo` is for local development only: it creates accounts with the
+published passwords below and refuses to run when `DEBUG` is off (unless
+forced with `--allow-production` for a disposable demo). A real installation
+needs only:
+
+```bash
+python manage.py migrate
+python manage.py seed_taxonomy --if-empty   # default categories and campus zones
+python manage.py createsuperuser             # your own strong password
+```
+
+`seed_taxonomy` is idempotent and creates no accounts or reports. It never
+edits existing categories or zones; without `--if-empty` it only adds defaults
+that are missing (matched by name or slug), and it never re-adds a related
+category or adjacent zone an administrator removed. Report forms need at least
+one category and one zone, so run it (or add them in *Categories and zones*)
+before inviting users.
+
+`python scripts/smoke_first_run.py` checks this whole first-run path against a
+temporary empty database (migrate, taxonomy, accounts, reports, moderation,
+matching, claim to handover, notifications). Photos stored before upload
+sanitisation existed can be cleaned with `python manage.py sanitize_photos`
+(`--dry-run` first; `--restrict-suggested` also blurs existing ID-card-like
+photos for the public until a moderator decides).
+
 ### Demo accounts (local only)
 
 | Role | Username | Password |
@@ -76,6 +103,15 @@ These are created by `seed_demo` and shown on the sign-in page only while
 | `LOSTLINK_TEXT_MODEL` | Override `tfidf` or `sbert`. |
 | `LOSTLINK_IMAGE_MODEL` | Override `resnet`, `clip` or `histogram`. |
 | `LOSTLINK_LOG_LEVEL` | Log level for the `lostlink` logger (default `INFO`). |
+| `LOSTLINK_UPLOAD_MAX_MB` / `LOSTLINK_UPLOAD_MAX_PIXELS` / `LOSTLINK_UPLOAD_MAX_EDGE` | Upload limits: 5 MB, 40 megapixels, and the long edge photos are scaled to (2048 px). |
+| `LOSTLINK_SQLITE_PATH` | Alternative SQLite file for local runs (ignored when `DATABASE_URL` is set). |
+| `DJANGO_SECURE_SSL_REDIRECT`, `DJANGO_HSTS_SECONDS` | Production only; default `true` and one year. |
+
+With `DJANGO_DEBUG=false` the app refuses to start unless the secret key is a
+private value of at least 50 characters, `DJANGO_ALLOWED_HOSTS` names the real
+host(s) (no `*`), CSRF origins are `https://`, `DATABASE_URL` is set and the
+media directory is outside the static directories. On Render (`RENDER` set),
+`DJANGO_DEBUG` must be given explicitly.
 
 ### PostgreSQL
 
@@ -194,12 +230,25 @@ docs/           evaluation, frontend, PostgreSQL, deployment, study protocol, im
   open a claim, only the claimant answers, and only staff decide.
 - Private answers and contact details are never in public pages or exports;
   contacts appear to the other party only after approval.
-- Photos of pending, rejected or withdrawn reports are served only to the
-  reporter, claim participants and staff (`Cache-Control: private, no-store`).
-- Upload checks on declared type, decoded format, file size and pixel count.
+- Media are deny-by-default (`items/media.py`): only `/media/items/...` has a
+  rule, and a file is served only while it is the current photo of a report
+  the viewer may see. Photos of pending, rejected or withdrawn reports go only
+  to the reporter, claim participants and staff. Every media response is
+  `Cache-Control: private, no-store`, `nosniff`, sandboxed, with its type taken
+  from the file's signature. A new private upload type (e.g. claim evidence)
+  stays unreachable until its app registers an authorisation rule.
+- Uploads are decoded, size- and pixel-limited (decompression bombs refused),
+  checked for HTML/SVG/script polyglots and re-encoded as JPEG under a random
+  name: EXIF (including GPS), XMP, comments and ICC are removed after the
+  orientation is applied. Originals are never stored.
+- Sensitive photos (ID or bank cards, numbers, QR codes): reporters can declare
+  them, ID-card-like reports are restricted as a precaution (a hint, not a
+  guarantee) and moderators decide in the review queue. Everyone except the
+  reporter, staff and a verified claimant gets a blurred low-resolution preview.
 - ORM only; templates auto-escape; CSV cells are protected from formula injection.
 - With `DJANGO_DEBUG=false`: HTTPS redirect, HSTS, secure cookies, and required
-  secret key and database URL. `X-Frame-Options: DENY` and `nosniff` always.
+  secret key, hosts and database URL. `X-Frame-Options: DENY` and `nosniff`
+  always. Custom 400/403/404/500 and CSRF-failure pages show no internals.
 
 ## Known limitations
 

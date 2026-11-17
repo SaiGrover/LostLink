@@ -1,6 +1,11 @@
 """Seed LostLink with demo categories, locations, users, and matching item pairs.
 
-Usage:  python manage.py seed_demo [--fresh]
+Usage:  python manage.py seed_demo [--fresh] [--allow-production]
+
+Development and demonstration only. It creates accounts with published
+passwords, so it refuses to run when DEBUG is off unless explicitly forced
+with ``--allow-production`` (for a disposable demo instance only). Real
+deployments need just ``python manage.py seed_taxonomy``.
 
 Generates a small, self-consistent demo dataset — including simple colour-coded
 placeholder photographs so the image-similarity component of the matching engine
@@ -10,47 +15,21 @@ exist immediately.
 import io
 import random
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
-from django.utils.text import slugify
 
 from claims.models import Claim, VerificationQuestion
-from items.models import Category, Item, Location
+from items.models import Item
+from items.taxonomy import default_categories, default_locations, ensure_default_taxonomy
 from matching.engine import extract_image_vector
 from matching.models import Match
 from matching.services import run_matching
 from notifications.models import Notification
 
 User = get_user_model()
-
-CATEGORIES = [
-    ('Electronics', '📱'), ('Bags & Wallets', '👜'), ('ID & Cards', '🪪'),
-    ('Keys', '🔑'), ('Books & Stationery', '📚'), ('Clothing', '🧥'),
-    ('Water Bottles', '🍶'), ('Jewellery', '💍'), ('Eyewear', '👓'),
-    ('Others', '📦'),
-]
-
-LOCATIONS = [
-    'Central Library', 'Cafeteria', 'Academic Block A', 'Academic Block B',
-    'Sports Complex', 'Hostel', 'Auditorium', 'Parking Lot', 'Main Gate',
-    'Computer Labs',
-]
-
-ADJACENCY = [
-    ('Central Library', 'Academic Block A'),
-    ('Academic Block A', 'Academic Block B'),
-    ('Academic Block B', 'Computer Labs'),
-    ('Cafeteria', 'Auditorium'),
-    ('Parking Lot', 'Main Gate'),
-]
-
-# Compatible categories earn partial category credit (synopsis Section 4.7).
-RELATED_CATEGORIES = [
-    ('Bags & Wallets', 'Others'), ('Electronics', 'Others'), ('Keys', 'ID & Cards'),
-    ('Jewellery', 'Eyewear'), ('Books & Stationery', 'Others'), ('Clothing', 'Others'),
-]
 
 COLOR_MAP = {
     'black': (35, 35, 40), 'blue': (40, 90, 200), 'navy': (25, 40, 90),
@@ -141,8 +120,16 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--fresh', action='store_true',
                             help='Delete existing demo items/matches first.')
+        parser.add_argument('--allow-production', action='store_true',
+                            help='Run even though DEBUG is off (disposable demo instances only).')
 
     def handle(self, *args, **options):
+        if not settings.DEBUG and not options['allow_production']:
+            raise CommandError(
+                'seed_demo creates demo accounts with published passwords and is for local '
+                'development only; refusing to run with DEBUG off. Use '
+                '"python manage.py seed_taxonomy" to initialise a real deployment, or pass '
+                '--allow-production for a disposable demo instance.')
         if options['fresh']:
             self.stdout.write('Clearing existing items, matches, claims…')
             Notification.objects.all().delete()
@@ -151,23 +138,11 @@ class Command(BaseCommand):
             Match.objects.all().delete()
             Item.objects.all().delete()
 
-        cats = {}
-        for name, icon in CATEGORIES:
-            c, _ = Category.objects.get_or_create(
-                slug=slugify(name), defaults={'name': name, 'icon': icon})
-            c.icon = icon
-            c.save()
-            cats[name] = c
-
-        locs = {}
-        for name in LOCATIONS:
-            l, _ = Location.objects.get_or_create(
-                slug=slugify(name), defaults={'name': name})
-            locs[name] = l
-        for a, b in ADJACENCY:
-            locs[a].adjacent.add(locs[b])
-        for a, b in RELATED_CATEGORIES:
-            cats[a].related.add(cats[b])
+        # Categories and zones come from the production-safe seed_taxonomy
+        # vocabulary; existing (possibly customised) rows are left unchanged.
+        ensure_default_taxonomy()
+        cats = default_categories()
+        locs = default_locations()
         self.stdout.write(self.style.SUCCESS(
             f'{len(cats)} categories, {len(locs)} locations ready.'))
 

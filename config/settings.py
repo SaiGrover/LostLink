@@ -264,3 +264,67 @@ CLAIM_APPEALS_PER_DAY = int(os.environ.get('LOSTLINK_CLAIM_APPEALS_PER_DAY', 3))
 CLAIM_EVIDENCE_MAX_FILES = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_MAX_FILES', 5))
 CLAIM_EVIDENCE_MAX_BYTES = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_MAX_BYTES', 5 * 1024 * 1024))
 CLAIM_EVIDENCE_RETENTION_DAYS = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_RETENTION_DAYS', 180))
+
+# --- Production hardening, media and uploads ---
+# Everything below refines the settings above; production-only checks and the
+# media/upload policy live here so they are reviewed in one place.
+
+
+def _env_list(name, default=''):
+    return [value.strip() for value in os.environ.get(name, default).split(',') if value.strip()]
+
+
+def _env_flag(name, default):
+    return os.environ.get(name, 'true' if default else 'false').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+# Hosting platforms set RENDER; there DEBUG must be chosen explicitly, so a
+# forgotten DJANGO_DEBUG can never publish debug pages with tracebacks.
+if DEBUG and os.environ.get('RENDER') and os.environ.get('DJANGO_DEBUG', '').lower() != 'true':
+    raise RuntimeError('Set DJANGO_DEBUG=false on Render (or DJANGO_DEBUG=true to run a debug build on purpose).')
+
+ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+
+# Optional SQLite location for local runs and the first-run smoke test
+# (scripts/smoke_first_run.py); ignored whenever DATABASE_URL is set.
+if os.environ.get('LOSTLINK_SQLITE_PATH') and not os.environ.get('DATABASE_URL'):
+    DATABASES['default']['NAME'] = Path(os.environ['LOSTLINK_SQLITE_PATH'])
+if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+
+if not DEBUG:
+    if len(SECRET_KEY) < 50 or SECRET_KEY.startswith('django-insecure') or len(set(SECRET_KEY)) < 5:
+        raise RuntimeError('DJANGO_SECRET_KEY must be a private random value of at least 50 characters.')
+    if not os.environ.get('DJANGO_ALLOWED_HOSTS') or '*' in ALLOWED_HOSTS:
+        raise RuntimeError('Set DJANGO_ALLOWED_HOSTS to the exact public hostname(s); "*" is not allowed.')
+    CSRF_TRUSTED_ORIGINS = _env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
+    if any(not origin.startswith('https://') for origin in CSRF_TRUSTED_ORIGINS):
+        raise RuntimeError('DJANGO_CSRF_TRUSTED_ORIGINS entries must be https:// origins.')
+    # TLS terminates at the platform proxy, which sets X-Forwarded-Proto.
+    SECURE_SSL_REDIRECT = _env_flag('DJANGO_SECURE_SSL_REDIRECT', True)
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', SECURE_HSTS_SECONDS))
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Uploads must live outside the static tree, so WhiteNoise can never serve
+    # one directly; every upload goes through the media view (items/media.py).
+    _media = Path(MEDIA_ROOT).resolve()
+    for _static in [Path(STATIC_ROOT).resolve(), *(Path(d).resolve() for d in STATICFILES_DIRS)]:
+        if _media == _static or _static in _media.parents or _media in _static.parents:
+            raise RuntimeError('LOSTLINK_MEDIA_ROOT must not overlap the static file directories.')
+
+SESSION_COOKIE_AGE = int(os.environ.get('DJANGO_SESSION_COOKIE_AGE', 60 * 60 * 24 * 14))
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+
+# Uploaded photographs are validated, stripped of metadata and re-encoded by
+# items/media.py; these bound what is accepted before any pixel is decoded.
+LOSTLINK_UPLOAD_MAX_BYTES = int(os.environ.get('LOSTLINK_UPLOAD_MAX_MB', '5')) * 1024 * 1024
+LOSTLINK_UPLOAD_MAX_PIXELS = int(os.environ.get('LOSTLINK_UPLOAD_MAX_PIXELS', '40000000'))
+LOSTLINK_UPLOAD_MAX_EDGE = int(os.environ.get('LOSTLINK_UPLOAD_MAX_EDGE', '2048'))
+FILE_UPLOAD_PERMISSIONS = 0o640
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o750
+
+# Security events (bad Host headers, suspicious file operations) and warnings
+# from any logger reach the console in production too. Log messages carry
+# record IDs only, never contact details or private answers.
+LOGGING['loggers']['django.security'] = {'handlers': ['console'], 'level': 'WARNING', 'propagate': False}
+LOGGING['root'] = {'handlers': ['console'], 'level': 'WARNING'}

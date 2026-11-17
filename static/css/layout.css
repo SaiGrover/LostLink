@@ -35,10 +35,18 @@
 @media (max-width: 1023px) { .mast__nav, .mast__search { display: none; } .mast__in { gap: var(--s3); } }
 @media (max-width: 639px) { .mast .btn-report { display: none; } .mast__in { height: 64px; } }
 
+/* ---- App main ------------------------------------------------------------------------ */
+/* The base rule must come before the tab-bar media query below: both have the same
+   specificity, so a later base rule would cancel the mobile clearance. */
+.app main { padding-top: var(--s8); padding-bottom: var(--s10); overflow-x: clip; }
+
 /* ---- Tab bar ---------------------------------------------------------------------- */
 .tabbar { display: none; }
 @media (max-width: 1023px) {
-  .app main { padding-bottom: calc(var(--tabbar-h) + var(--s8) + env(safe-area-inset-bottom)); }
+  /* Fixed tab bar: 10px gap + bar height + safe area, plus breathing room, so the last
+     control on every page clears it. Keyboard focus and in-page links scroll clear too. */
+  .app main { padding-bottom: calc(var(--tabbar-h) + 10px + var(--s8) + env(safe-area-inset-bottom)); }
+  html:has(> body.app) { scroll-padding-bottom: calc(var(--tabbar-h) + 10px + var(--s4) + env(safe-area-inset-bottom)); }
   .tabbar {
     position: fixed; z-index: var(--z-mast); left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(5, 1fr);
     height: var(--tabbar-h); padding: 6px; border-radius: 24px;
@@ -52,8 +60,7 @@
   .tabbar__report .plus { display: grid; place-items: center; width: 40px; height: 32px; border-radius: var(--r-round); background: var(--btn-accent); color: var(--btn-accent-text); }
 }
 
-/* ---- App main and page heads --------------------------------------------------------- */
-.app main { padding-top: var(--s8); padding-bottom: var(--s10); overflow-x: clip; }
+/* ---- Page heads ------------------------------------------------------------------------ */
 .page-head { display: grid; gap: var(--s4); margin-bottom: var(--s8); animation: rise-in 600ms var(--ease) both; }
 .page-head__row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s4) var(--s6); }
 .page-head h1 { max-width: 20ch; }

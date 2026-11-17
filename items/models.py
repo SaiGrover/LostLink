@@ -111,6 +111,23 @@ class Item(models.Model):
         blank=True,
         help_text='Details only the real owner would know. Kept private; used to verify claims.')
 
+    # Photo privacy (items/media.py). A sensitive photo (ID card, bank card,
+    # anything showing numbers, contact details or codes) is shown in full
+    # only to the reporter, staff and a verified claimant; everyone else gets
+    # a blurred low-resolution preview.
+    class PhotoSensitivitySource(models.TextChoices):
+        REPORTER = 'reporter', 'Declared by the reporter'
+        AUTO = 'auto', 'Suggested automatically'
+        MODERATOR = 'moderator', 'Set by a moderator'
+
+    photo_sensitive = models.BooleanField(
+        default=False, help_text='Restrict the photo to the reporter, staff and a verified owner.')
+    photo_sensitivity_source = models.CharField(max_length=10, blank=True,
+                                                choices=PhotoSensitivitySource.choices)
+    photo_reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                          on_delete=models.SET_NULL, related_name='+')
+    photo_reviewed_at = models.DateTimeField(null=True, blank=True)
+
     status = models.CharField(max_length=12, choices=Status.choices,
                               default=Status.PENDING)
     is_active = models.BooleanField(

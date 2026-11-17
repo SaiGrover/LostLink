@@ -1,1 +1,1 @@
-<span class="thumb {{ cls }}">{% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy">{% else %}<span aria-hidden="true">{{ item.category.icon }}</span>{% endif %}</span>
+{% load photos %}<span class="thumb {{ cls }}">{% if item.image %}{% photo_restricted item as restricted %}<img src="{{ item.image.url }}" alt="" loading="lazy"{% if restricted %} title="Photo blurred for privacy"{% endif %}>{% else %}<span aria-hidden="true">{{ item.category.icon }}</span>{% endif %}</span>

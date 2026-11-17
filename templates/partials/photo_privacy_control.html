@@ -1,0 +1,14 @@
+{# Moderator control for a report photo's privacy (items/media.py). item; next: optional return URL #}
+{% load photos %}
+{% if item.image %}
+<form method="post" action="{% if item.photo_sensitive %}{% url 'dashboard:photo_privacy' item.pk 'public' %}{% else %}{% url 'dashboard:photo_privacy' item.pk 'restrict' %}{% endif %}" class="stack" style="--gap:var(--s2)">
+  {% csrf_token %}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+  {% if item.photo_sensitive %}
+  <p class="small"><span class="badge badge--warn">Sensitive photo</span> {{ item.get_photo_sensitivity_source_display }}. Others see a blurred preview.</p>
+  <button class="btn btn-sm w-full" type="submit">Show photo to everyone</button>
+  {% else %}
+  {% if item|photo_privacy_hint %}<p class="small"><span class="badge badge--warn">Check the photo</span> It may show personal details. This is an automatic hint, not a guarantee.</p>{% endif %}
+  <button class="btn btn-sm w-full" type="submit">Mark photo sensitive</button>
+  {% endif %}
+</form>
+{% endif %}

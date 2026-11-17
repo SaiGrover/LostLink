@@ -13,7 +13,6 @@ from statistics import mean, median
 from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import models
 from django.db.models import Avg, Count, Q
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
@@ -180,6 +179,28 @@ def resolve_flag(request, pk, decision):
     record_decision(request.user, ModerationDecision.Action.FLAG_RESOLVED, item=item,
                     note=f'{decision}: {note}'.strip(': '))
     return redirect('dashboard:moderation')
+
+
+@moderator_required
+@require_POST
+def photo_privacy(request, pk, decision):
+    """Moderator ruling on a report photo: ``restrict`` shows everyone except
+    the reporter, staff and a verified owner a blurred preview; ``public``
+    lifts that (items/media.py). The ruling is recorded on the report."""
+    item = get_object_or_404(Item, pk=pk)
+    next_url = _safe_next(request, 'dashboard:moderation')
+    if decision not in ('restrict', 'public') or not item.image:
+        messages.error(request, 'Unknown decision, or the report has no photo.')
+        return redirect(next_url)
+    item.photo_sensitive = decision == 'restrict'
+    item.photo_sensitivity_source = Item.PhotoSensitivitySource.MODERATOR
+    item.photo_reviewed_by = request.user
+    item.photo_reviewed_at = timezone.now()
+    item.save(update_fields=['photo_sensitive', 'photo_sensitivity_source',
+                             'photo_reviewed_by', 'photo_reviewed_at'])
+    messages.success(request, f'Photo on “{item.title}” is now '
+                              f'{"shown blurred to other people" if item.photo_sensitive else "visible to everyone who can see the report"}.')
+    return redirect(next_url)
 
 
 @moderator_required
@@ -499,8 +520,15 @@ def taxonomy_delete(request, kind, pk):
 # ---------------------------------------------------------------------------
 # Exports (synopsis Section 7.4 — CSV export + PDF report)
 # ---------------------------------------------------------------------------
+_CSV_FORMULA_PREFIXES = ('=', '+', '-', '@', '\t', '\r', '\n')
+
+
 def _csv_safe(value):
-    if isinstance(value, str) and value.lstrip().startswith(('=', '+', '-', '@')):
+    """Neutralise spreadsheet formula injection (OWASP): a text cell that a
+    spreadsheet could evaluate is prefixed with an apostrophe. Leading
+    whitespace is ignored when deciding, because spreadsheets ignore it too."""
+    if isinstance(value, str) and value and (value.startswith(_CSV_FORMULA_PREFIXES)
+                                             or value.lstrip().startswith(_CSV_FORMULA_PREFIXES)):
         return "'" + value
     return value
 
@@ -527,13 +555,14 @@ def export_csv(request):
     response['Content-Disposition'] = f'attachment; filename="lostlink_reports{suffix}.csv"'
     writer = csv.writer(response)
     writer.writerow(['ID', 'Type', 'Title', 'Category', 'Location', 'Event date', 'Approximate time',
-                     'Status', 'Active', 'Brand', 'Color', 'Has photo', 'Reporter ID',
+                     'Status', 'Active', 'Brand', 'Color', 'Has photo', 'Sensitive photo', 'Reporter ID',
                      'Potential matches', 'Claims', 'Created', 'Updated'])
     for it in qs.iterator():
         row = [it.id, it.get_report_type_display(), it.title, it.category.name, it.location.name,
                it.event_date.isoformat(), it.event_time.strftime('%H:%M') if it.event_time else '',
                it.get_status_display(), 'yes' if it.is_active else 'no', it.brand, it.color,
-               'yes' if it.image else 'no', it.reporter_id, it.n_matches, it.n_claims,
+               'yes' if it.image else 'no', 'yes' if it.image and it.photo_sensitive else 'no',
+               it.reporter_id, it.n_matches, it.n_claims,
                timezone.localtime(it.created_at).strftime('%Y-%m-%d %H:%M'),
                timezone.localtime(it.updated_at).strftime('%Y-%m-%d %H:%M')]
         writer.writerow([_csv_safe(v) for v in row])
@@ -549,7 +578,7 @@ def export_pdf(request):
         from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
         from reportlab.lib.units import mm
         from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-    except Exception:
+    except ImportError:
         messages.error(request, 'PDF export needs reportlab. Run: pip install reportlab')
         return redirect('dashboard:analytics')
 

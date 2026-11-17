@@ -1,7 +1,9 @@
 import re
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
+from . import media
 from .models import Category, Item, Location, ReportFlag
 
 
@@ -35,6 +37,12 @@ def _reject_private_identifiers(value, field_label):
 
 
 class ItemForm(forms.ModelForm):
+    declare_sensitive = forms.BooleanField(
+        required=False, label='This photo shows personal details',
+        help_text='For example an ID or bank card, a name, number, phone number or QR code. '
+                  'Others then see only a blurred preview; you, moderators and the verified '
+                  'owner see the full photo.')
+
     class Meta:
         model = Item
         fields = ('report_type', 'title', 'category', 'location', 'event_date', 'event_time',
@@ -55,7 +63,7 @@ class ItemForm(forms.ModelForm):
         self.fields['category'].empty_label = 'Choose a category'
         self.fields['location'].empty_label = 'Choose a campus zone'
         for name, field in self.fields.items():
-            if name == 'report_type':
+            if name in ('report_type', 'declare_sensitive'):
                 continue
             css = 'field-input'
             if name == 'image':
@@ -78,12 +86,16 @@ class ItemForm(forms.ModelForm):
             'e.g. Sticker inside the lid; serial ends in 4F2; library card inside')
         self.fields['event_time'].label = 'Approximate time'
         self.fields['event_date'].widget.attrs['max'] = timezone.localdate().isoformat()
+        if self.instance.pk and self.instance.photo_sensitive:
+            # Reporters can add protection; only a moderator can remove it.
+            self.fields['declare_sensitive'].initial = True
+            self.fields['declare_sensitive'].disabled = True
+            self.fields['declare_sensitive'].help_text = (
+                'This photo is shown to others as a blurred preview. Only a moderator can change that.')
 
-    # --- upload hardening ------------------------------------------------
-    MAX_IMAGE_MB = 5
-    ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp', 'image/gif'}
-    ALLOWED_FORMATS = {'JPEG', 'PNG', 'WEBP', 'GIF'}
-    MAX_PIXELS = 40_000_000  # guards against decompression bombs
+    # --- upload hardening (see items/media.py) ----------------------------
+    MAX_IMAGE_MB = media.DEFAULT_MAX_BYTES // (1024 * 1024)
+    ALLOWED_FORMATS = media.ALLOWED_FORMATS
 
     def clean_title(self):
         value = ' '.join(self.cleaned_data['title'].split())
@@ -110,30 +122,45 @@ class ItemForm(forms.ModelForm):
         return value
 
     def clean_image(self):
+        """Only a newly uploaded file is processed: it is validated, stripped of
+        metadata and re-encoded, so the original bytes are never stored. An
+        existing photo kept on edit is left untouched (it may even be missing
+        from storage, which must not break editing the text)."""
         image = self.cleaned_data.get('image')
-        if not image or not hasattr(image, 'size'):
+        if not isinstance(image, UploadedFile):
             return image
-        if image.size > self.MAX_IMAGE_MB * 1024 * 1024:
-            raise forms.ValidationError(
-                f'Image must be under {self.MAX_IMAGE_MB} MB.')
-        content_type = getattr(image, 'content_type', None)
-        if content_type and content_type not in self.ALLOWED_IMAGE_TYPES:
+        declared = (getattr(image, 'content_type', '') or '').lower()
+        if declared == 'image/svg+xml' or declared.startswith(('text/', 'application/xhtml')):
             raise forms.ValidationError('Please upload a JPG, PNG, WEBP or GIF image.')
-        # Verify the actual bytes, not just the declared type.
         try:
-            from PIL import Image as PILImage
-            image.seek(0)
-            with PILImage.open(image) as probe:
-                fmt = probe.format
-                width, height = probe.size
-            image.seek(0)
-        except Exception:
-            raise forms.ValidationError('That file is not a readable image.')
-        if fmt not in self.ALLOWED_FORMATS:
-            raise forms.ValidationError('Please upload a JPG, PNG, WEBP or GIF image.')
-        if width * height > self.MAX_PIXELS:
-            raise forms.ValidationError('That image is too large in pixel dimensions.')
-        return image
+            return media.sanitize_upload(image)
+        except media.ImageRejected as exc:
+            raise forms.ValidationError(str(exc))
+
+    def save(self, commit=True):
+        item = super().save(commit=False)
+        image = self.cleaned_data.get('image')
+        declared = self.cleaned_data.get('declare_sensitive')
+        if isinstance(image, UploadedFile):
+            # A new photo starts a fresh privacy review.
+            item.photo_reviewed_by = None
+            item.photo_reviewed_at = None
+            if declared:
+                item.photo_sensitive = True
+                item.photo_sensitivity_source = Item.PhotoSensitivitySource.REPORTER
+            elif media.suggests_sensitive(item.title, item.description, item.category):
+                item.photo_sensitive = True
+                item.photo_sensitivity_source = Item.PhotoSensitivitySource.AUTO
+            else:
+                item.photo_sensitive = False
+                item.photo_sensitivity_source = ''
+        elif declared and not item.photo_sensitive:
+            item.photo_sensitive = True
+            item.photo_sensitivity_source = Item.PhotoSensitivitySource.REPORTER
+        if commit:
+            item.save()
+            self.save_m2m()
+        return item
 
 
 class FlagForm(forms.ModelForm):

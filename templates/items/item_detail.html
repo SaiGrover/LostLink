@@ -1,5 +1,5 @@
 {% extends 'shell.html' %}
-{% load humanize ui %}
+{% load humanize ui photos %}
 {% block title %}{{ item.title }}{% endblock %}
 
 {% block main %}
@@ -28,6 +28,8 @@
       {% else %}<span class="photo__none" role="img" aria-label="No photo provided">{{ item.category.icon }}</span>{% endif %}
     </div>
     {% if item.is_demo_photo %}<figcaption class="case__credit">Representative demo photo, not the reported item's actual photograph.{% if photo_credit %} Photo: <a href="{{ photo_credit.source }}" target="_blank" rel="noopener noreferrer">{{ photo_credit.artist|default:"Wikimedia Commons" }}</a>, {% if photo_credit.license_url %}<a href="{{ photo_credit.license_url }}" target="_blank" rel="noopener noreferrer">{{ photo_credit.license }}</a>{% else %}{{ photo_credit.license }}{% endif %}.{% endif %}</figcaption>{% endif %}
+    {% if item.image and item.photo_sensitive %}{% photo_restricted item as restricted %}
+    <p class="case__credit">{% if restricted %}This photo may show personal details, so it is blurred for privacy. The reporter, moderators and the verified owner see the full photo.{% else %}Sensitive photo: other people see only a blurred preview.{% endif %}</p>{% endif %}
   </figure>
 
   <div class="stack" style="--gap:var(--s6)">
@@ -80,6 +82,7 @@
     {% if can_review %}
     <section class="panel stack" style="--gap:var(--s4)" aria-labelledby="mod-title">
       <h2 class="h3" id="mod-title">For moderators</h2>
+      {% if item.image %}<div style="max-width:320px">{% include 'partials/photo_privacy_control.html' with next=request.path %}</div>{% endif %}
       {% if item.duplicate_of %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Possible duplicate</span><span>Same reporter as <a class="link" href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }}, {{ item.duplicate_of.title }}</a>.</span></div></div>{% endif %}
       {% if item.status == 'pending' and item.is_active %}
       <div class="cluster">

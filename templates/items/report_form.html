@@ -89,6 +89,9 @@
           <span class="error" data-file-error role="alert"></span>
           {{ form.image.errors }}
         </div>
+        <div class="field">
+          <label class="check" for="{{ form.declare_sensitive.id_for_label }}">{{ form.declare_sensitive }}<span><b>{{ form.declare_sensitive.label }}</b><br><span class="hint">{{ form.declare_sensitive.help_text }}</span></span></label>
+        </div>
       </fieldset>
 
       <div class="report__submit">
