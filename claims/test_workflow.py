@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from accounts.models import User
+from config.testing import make_user
 from items.models import Item, Category, Location
 from claims.test_support import APPROVE
 from claims.models import Claim, VerificationQuestion
@@ -11,8 +12,9 @@ from notifications.models import Notification
 
 class WorkflowTests(TestCase):
     def setUp(self):
-        self.owner=User.objects.create_user(username='owner',password='strong-example-pass')
-        self.finder=User.objects.create_user(username='finder')
+        # Students who confirmed their campus email (claiming requires it).
+        self.owner=make_user('owner',password='strong-example-pass')
+        self.finder=make_user('finder',password=None)
         self.mod=User.objects.create_user(username='moderator',role='moderator')
         self.admin=User.objects.create_user(username='administrator',role='admin')
         self.category=Category.objects.create(name='Wallets',slug='wallets')
@@ -82,7 +84,7 @@ class WorkflowTests(TestCase):
         # The dispute is recorded without releasing the approved reservation.
         self.assertEqual(claim.status,'approved')
         self.assertTrue(claim.has_open_dispute)
-        outsider=User.objects.create_user(username='outsider')
+        outsider=make_user('outsider',password=None)
         self.client.force_login(outsider)
         self.assertEqual(self.client.get(claim.get_absolute_url()).status_code,403)
 

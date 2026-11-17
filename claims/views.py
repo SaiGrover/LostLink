@@ -22,7 +22,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from accounts.decorators import moderator_required
+from accounts.decorators import moderator_required, verified_required
 from items.models import Item
 from matching.models import Match
 
@@ -41,6 +41,7 @@ def _fail(request, claim, error):
 
 
 @login_required
+@verified_required
 def start_claim(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     user = request.user
@@ -170,6 +171,7 @@ def _locked(pk):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def add_question(request, pk):
@@ -199,6 +201,7 @@ def add_question(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def answer_question(request, pk, qid):
@@ -275,6 +278,7 @@ def withdraw_claim(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def appeal_claim(request, pk):
@@ -293,6 +297,7 @@ def appeal_claim(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def add_evidence(request, pk):
@@ -324,6 +329,7 @@ def evidence_file(request, pk, eid):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def dispute_claim(request, pk):
@@ -357,6 +363,7 @@ def resolve_dispute(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def issue_code(request, pk):
@@ -373,6 +380,7 @@ def issue_code(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 @transaction.atomic
 def verify_code(request, pk):

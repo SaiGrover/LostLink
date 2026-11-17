@@ -2,7 +2,15 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
+from .policy import allowed_domains_display, email_domain_allowed, normalise_email
+
 User = get_user_model()
+
+
+def _domain_error():
+    return forms.ValidationError(
+        'Use your campus email address (%(domains)s).',
+        code='email_domain', params={'domains': allowed_domains_display()})
 
 # A small warm palette students are assigned an avatar colour from.
 AVATAR_COLORS = ['#E8623C', '#12A594', '#7C5CFF', '#E0398B', '#F2A63B', '#2FA36B']
@@ -39,16 +47,27 @@ class RegisterForm(UserCreationForm):
         self.fields['password1'].help_text = ''
 
     def clean_email(self):
-        email = self.cleaned_data['email'].strip().lower()
-        if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('An account with this email already exists.')
+        email = normalise_email(self.cleaned_data['email'])
+        if not email_domain_allowed(email):
+            raise _domain_error()
+        # A duplicate address is deliberately NOT a form error: telling the
+        # visitor "this email already has an account" would let anyone test
+        # which addresses are registered. The view sends the owner of that
+        # address a notice instead and shows the usual "check your inbox" page.
+        self.existing_user = User.objects.filter(email__iexact=email).first()
         return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # New self-registrations are always Students; staff roles are granted
-        # by an administrator (RBAC, synopsis Section 8).
+        # New self-registrations are always unverified Students; staff roles
+        # are granted by an administrator (RBAC, synopsis Section 8) and
+        # verification only by the emailed link. Only the fields in
+        # Meta.fields are read from POST, so role/is_staff/is_superuser/
+        # email_verified_at in the request body are ignored.
         user.role = User.Role.STUDENT
+        user.is_staff = False
+        user.is_superuser = False
+        user.clear_email_verification()
         idx = (len(self.cleaned_data.get('username', '')) or 0) % len(AVATAR_COLORS)
         user.avatar_color = AVATAR_COLORS[idx]
         if commit:
@@ -77,7 +96,16 @@ class ProfileForm(forms.ModelForm):
 
     def clean_email(self):
         # Same rule as registration: one account per email, compared without case.
-        email = (self.cleaned_data.get('email') or '').strip().lower()
+        email = normalise_email(self.cleaned_data.get('email'))
         if email and User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError('Another account already uses this email.')
+        changed = email != normalise_email(User.objects.filter(pk=self.instance.pk)
+                                           .values_list('email', flat=True).first())
+        if email and changed and not email_domain_allowed(email):
+            raise _domain_error()
         return email
+
+
+class ResendVerificationForm(forms.Form):
+    email = forms.EmailField(max_length=254, label='Email address')
+

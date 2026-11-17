@@ -1,0 +1,48 @@
+{% extends 'shell.html' %}
+{% load ui %}
+{% block title %}{% if verified %}Account verified{% else %}Confirm your email{% endif %}{% endblock %}
+
+{% block main %}
+{% if verified %}
+<header class="page-head page-head--tight">
+  <h1>Your account is verified</h1>
+  <p class="lede">You can report lost and found items, flag reports and claim items.</p>
+</header>
+<div class="stack" style="--gap:var(--s5);max-width:60ch">
+  <div class="notice notice--ok" role="status">{% icon 'check' %}<div class="notice__body">
+    <span class="notice__title">Campus identity confirmed</span>
+    <span>{% if user.email_verified_at %}{{ user.email }} confirmed on {{ user.email_verified_at|date:"j F Y" }}.{% else %}Staff accounts are set up by an administrator.{% endif %}</span>
+  </div></div>
+  <div class="cluster"><a class="btn btn-primary" href="{% url 'items:report' %}">{% icon 'plus' %}Report an item</a><a class="btn btn-plain" href="{% url 'items:dashboard' %}">Go to your home page</a></div>
+</div>
+{% else %}
+<header class="page-head page-head--tight">
+  <h1>Confirm your email</h1>
+  <p class="lede">One last step before you can report, flag or claim items.</p>
+</header>
+<div class="stack" style="--gap:var(--s5);max-width:60ch">
+  {% if not user.email %}
+  <div class="notice notice--warn" role="status">{% icon 'alert' %}<div class="notice__body">
+    <span class="notice__title">No email address on your account</span>
+    <span>Add your campus email in your <a class="link" href="{% url 'accounts:profile' %}">profile</a> and we'll send a confirmation link.</span>
+  </div></div>
+  {% elif not domain_ok %}
+  <div class="notice notice--warn" role="status">{% icon 'alert' %}<div class="notice__body">
+    <span class="notice__title">This address isn't a campus email</span>
+    <span>Only {{ domains }} addresses can be verified. Change your email in your <a class="link" href="{% url 'accounts:profile' %}">profile</a>.</span>
+  </div></div>
+  {% else %}
+  <div class="notice notice--here" role="status">{% icon 'info' %}<div class="notice__body">
+    <span class="notice__title">Verification pending</span>
+    <span>We sent a link to <b>{{ user.email }}</b>. Open it to confirm the address. Links expire after {{ hours }} hour{{ hours|pluralize }} and work once.</span>
+  </div></div>
+  <form method="post" action="{% url 'accounts:resend_verification' %}" class="cluster">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Send a new link</button>
+    <a class="btn btn-plain" href="{% url 'accounts:profile' %}">Wrong address? Change it</a>
+  </form>
+  {% endif %}
+  <p class="hint">You can still search and browse reports while you wait.</p>
+</div>
+{% endif %}
+{% endblock %}

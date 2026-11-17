@@ -156,7 +156,8 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'items:dashboard'
 LOGOUT_REDIRECT_URL = 'items:home'
 
-# In development we print emails to the console (email is a future extension).
+# Development default; the accounts block at the end of this file selects
+# the real backend from the environment.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # --- Security hardening (active in production, i.e. when DEBUG is off) -------
@@ -328,3 +329,55 @@ FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o750
 # record IDs only, never contact details or private answers.
 LOGGING['loggers']['django.security'] = {'handlers': ['console'], 'level': 'WARNING', 'propagate': False}
 LOGGING['root'] = {'handlers': ['console'], 'level': 'WARNING'}
+
+
+# --- Accounts: email verification, password reset, email backend ---
+# All values come from the environment; nothing secret is stored here.
+def _env_flag(name, default=False):
+    value = os.environ.get(name)
+    if value is None or value.strip() == '':
+        return default
+    return value.strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+# Email delivery. Precedence: an explicit DJANGO_EMAIL_BACKEND; SMTP when
+# DJANGO_EMAIL_HOST is set; the console in development; otherwise (DEBUG off
+# and nothing configured) a backend that drops mail and logs an ERROR for
+# each message, reported by ``manage.py check`` as accounts.W001. Production
+# never silently prints one-time links to the console.
+EMAIL_HOST = os.environ.get('DJANGO_EMAIL_HOST', '').strip()
+EMAIL_PORT = int(os.environ.get('DJANGO_EMAIL_PORT') or 587)
+EMAIL_HOST_USER = os.environ.get('DJANGO_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_SSL = _env_flag('DJANGO_EMAIL_USE_SSL', False)
+EMAIL_USE_TLS = _env_flag('DJANGO_EMAIL_USE_TLS', not EMAIL_USE_SSL)
+EMAIL_TIMEOUT = int(os.environ.get('DJANGO_EMAIL_TIMEOUT') or 10)
+if os.environ.get('DJANGO_EMAIL_BACKEND', '').strip():
+    EMAIL_BACKEND = os.environ['DJANGO_EMAIL_BACKEND'].strip()
+elif EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+elif DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'accounts.mail.UnconfiguredEmailBackend'
+DEFAULT_FROM_EMAIL = os.environ.get('DJANGO_DEFAULT_FROM_EMAIL', '').strip() or 'LostLink <no-reply@localhost>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Absolute base URL for links in emails, e.g. https://lostlink.example.edu.
+# When empty the current request's (ALLOWED_HOSTS-validated) host is used.
+LOSTLINK_PUBLIC_URL = os.environ.get('LOSTLINK_PUBLIC_URL', '').strip().rstrip('/')
+
+# Campus identity: comma-separated institutional email domains allowed to
+# register (subdomains included). Empty = any domain, still email-verified.
+LOSTLINK_ALLOWED_EMAIL_DOMAINS = [
+    d.strip().lower().lstrip('@') for d in
+    os.environ.get('LOSTLINK_ALLOWED_EMAIL_DOMAINS', '').split(',') if d.strip()]
+
+# Link lifetimes (seconds). Verification links: 3 days. Reset links: 1 hour.
+LOSTLINK_EMAIL_VERIFICATION_MAX_AGE = int(
+    os.environ.get('LOSTLINK_EMAIL_VERIFICATION_MAX_AGE') or 3 * 24 * 3600)
+PASSWORD_RESET_TIMEOUT = int(os.environ.get('LOSTLINK_PASSWORD_RESET_TIMEOUT') or 3600)
+
+# Per-endpoint rate limits as {name: (hits, window_seconds)}; any entry of
+# accounts.policy.DEFAULT_RATE_LIMITS can be overridden here.
+LOSTLINK_AUTH_RATE_LIMITS = {}

@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
+from accounts.decorators import verified_required
 from claims.models import Claim
 from matching.models import Match
 from matching.services import clear_matches
@@ -115,6 +116,7 @@ def dashboard(request):
 
 
 @login_required
+@verified_required
 def report_item(request):
     initial = {}
     rtype = request.GET.get('type')
@@ -226,6 +228,7 @@ def item_detail(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 def flag_item(request, pk):
     item = get_object_or_404(Item, pk=pk)
@@ -415,6 +418,7 @@ def search_api(request):
 
 
 @login_required
+@verified_required
 def edit_item(request, pk):
     from dashboard.models import ModerationDecision
     from items import lifecycle

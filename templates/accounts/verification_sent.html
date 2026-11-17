@@ -1,0 +1,21 @@
+{% extends 'accounts/auth_base.html' %}
+{% load ui %}
+{% block title %}Check your email{% endblock %}
+
+{% block form %}
+<div class="stack" style="--gap:var(--s3)">
+  <h1>Check your email</h1>
+  <p class="muted">We've sent a message to the address you entered. Open the link in it to confirm the address and finish setting up your account.</p>
+</div>
+
+<div class="notice notice--info" role="status">{% icon 'info' %}<div class="notice__body">
+  <span class="notice__title">Next step: confirm your email</span>
+  <span>The link works once and expires in {{ hours }} hour{{ hours|pluralize }}. Until you confirm, you can sign in and browse, but reporting, flagging and claiming items stay locked.</span>
+  <span>If that address already has a LostLink account, its owner gets a sign-in reminder instead and no new account is created.</span>
+</div></div>
+
+<div class="stack" style="--gap:var(--s3)">
+  <a class="btn btn-primary btn-lg btn-block" href="{% url 'accounts:login' %}">Go to sign in</a>
+  <p class="hint">Nothing arrived after a few minutes? Check your spam folder, or <a class="link" href="{% url 'accounts:resend_verification' %}">ask for a new link</a>.</p>
+</div>
+{% endblock %}

@@ -76,18 +76,39 @@ def step_seed_taxonomy(ctx):
     return f'{Category.objects.count()} categories, {Location.objects.count()} zones'
 
 
+def _register_and_verify(username, email, first_name):
+    """Self-service sign-up, then the emailed single-use verification link.
+
+    The link is built with the same token helper the email uses (delivery
+    itself needs SMTP and is listed as an external step)."""
+    from django.urls import reverse
+    from accounts.models import User
+    from accounts.tokens import make_token
+    client = _client()
+    client.post(reverse('accounts:register'), {
+        'first_name': first_name, 'last_name': 'Smoke', 'username': username, 'email': email,
+        'enrolment_no': '', 'password1': PASSWORD, 'password2': PASSWORD})
+    user = User.objects.filter(username=username).first()
+    check(user is not None and not user.is_campus_verified, f'{username}: registration did not create an unverified account')
+    client.post(reverse('accounts:verify_email', args=[make_token(user)]))
+    user.refresh_from_db()
+    check(user.is_campus_verified, f'{username}: verification link did not verify the account')
+    return user
+
+
 def step_register_and_verify_email(ctx):
-    return None  # pending: self-service registration + e-mail verification (accounts workstream)
+    ctx['finder'] = _register_and_verify('smoke_finder', 'finder@campus.test', 'Fin')
+    ctx['owner'] = _register_and_verify('smoke_owner', 'owner@campus.test', 'Olu')
+    return 'two students registered and verified their email with single-use links'
 
 
 def step_create_accounts(ctx):
     from accounts.models import User
-    ctx['finder'] = User.objects.create_user('smoke_finder', 'finder@campus.test', PASSWORD, first_name='Fin')
-    ctx['owner'] = User.objects.create_user('smoke_owner', 'owner@campus.test', PASSWORD, first_name='Olu')
+    # Staff accounts are created by an administrator, not by self-registration.
     ctx['moderator'] = User.objects.create_user('smoke_mod', 'mod@campus.test', PASSWORD, role='moderator')
     client = _client()
     check(client.login(username='smoke_owner', password=PASSWORD), 'password login failed')
-    return 'student x2 + moderator created; password login works'
+    return 'moderator created by an administrator; student password login works'
 
 
 def step_report_requires_taxonomy(ctx):
@@ -205,7 +226,7 @@ def step_email_delivery(ctx):
 
 STEPS = [
     ('seed_taxonomy', step_seed_taxonomy, None),
-    ('register_and_verify_email', step_register_and_verify_email, 'pending'),
+    ('register_and_verify_email', step_register_and_verify_email, None),
     ('create_accounts', step_create_accounts, None),
     ('report_requires_taxonomy', step_report_requires_taxonomy, None),
     ('submit_reports', step_submit_reports, None),

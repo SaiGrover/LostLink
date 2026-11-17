@@ -183,6 +183,11 @@ class Command(BaseCommand):
                 s.set_password('student123')
                 s.save()
             students.append(s)
+        # Demo accounts are pre-verified (campus identity), so they can report
+        # and claim straight away; an existing unverified demo user is fixed up.
+        for u in [admin, mod, *students]:
+            if u.email_verified_at is None:
+                u.mark_email_verified(User.VerificationMethod.ADMIN)
         self.stdout.write(self.style.SUCCESS('Users ready (admin/moderator/4 students).'))
 
         # --- items -------------------------------------------------------

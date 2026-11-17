@@ -29,5 +29,6 @@ class FirstRunSmokeTests(TestCase):
         self.assertEqual(statuses['claim_and_handover'], 'ok')
         self.assertEqual(statuses['notifications'], 'ok')
         self.assertEqual({s for s in statuses.values()} - {'ok', 'pending', 'external'}, set())
-        self.assertEqual(statuses['register_and_verify_email'], 'pending')
+        self.assertEqual(statuses['register_and_verify_email'], 'ok')
+        self.assertEqual(statuses['handover_otp'], 'ok')
         self.assertEqual(statuses['password_reset_email'], 'external')

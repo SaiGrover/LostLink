@@ -1,0 +1,15 @@
+{% extends 'accounts/auth_base.html' %}
+{% load ui %}
+{% block title %}Sign out{% endblock %}
+
+{% block form %}
+<div class="stack" style="--gap:var(--s3)">
+  <h1>Sign out?</h1>
+  <p class="muted">You're signed in as <b>{{ user.display_name }}</b>.</p>
+</div>
+<form method="post" action="{% url 'accounts:logout' %}" class="stack" style="--gap:var(--s3)">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary btn-lg btn-block">{% icon 'logout' %}Sign out</button>
+  <a class="btn btn-plain btn-block" href="{% url 'items:dashboard' %}">Stay signed in</a>
+</form>
+{% endblock %}
