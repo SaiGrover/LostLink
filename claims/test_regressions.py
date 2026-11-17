@@ -44,10 +44,11 @@ class AuditRegressionTests(TestCase):
         self.assertNotIn(claim, list(page.context['open_claims']))
 
     # --- handover resolves the claimant's own report ------------------------
-    def test_handover_resolves_the_claimants_matched_report(self):
+    def test_handover_resolves_the_claimants_report_only_when_confirmed(self):
         match = Match.objects.create(lost_item=self.lost, found_item=self.found, score=0.9, tier='high')
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='Mine',
-                                     match=match, status='approved')
+                                     match=match, status='approved', linked_report=self.lost,
+                                     linked_report_confirmed_by=self.u['mod'])
         self.found.status = 'claimed'
         self.found.save()
         self.client.force_login(self.u['mod'])
@@ -57,14 +58,18 @@ class AuditRegressionTests(TestCase):
         self.assertFalse(self.lost.is_active)
         self.assertEqual(self.client.get(reverse('items:search_api')).json()['total'], 0)
 
-    def test_handover_without_a_linked_match_uses_the_single_current_match(self):
+    def test_a_suggested_match_alone_never_closes_the_claimants_report(self):
+        """A match is a suggestion, not proof: without an explicit confirmation
+        the claimant's other report stays open, and the claimant is told."""
         Match.objects.create(lost_item=self.lost, found_item=self.found, score=0.9, tier='high',
                              engine_version=settings.MATCHING['VERSION'])
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='Mine', status='approved')
         self.client.force_login(self.u['mod'])
         self.client.post(reverse('claims:return', args=[claim.pk]), EXCEPTION)
         self.lost.refresh_from_db()
-        self.assertEqual(self.lost.status, Item.Status.RETURNED)
+        self.assertEqual(self.lost.status, Item.Status.APPROVED)
+        self.assertTrue(self.lost.is_active)
+        self.assertTrue(Notification.objects.filter(user=self.u['owner'], title__icontains='still open').exists())
 
     def test_handover_leaves_unrelated_reports_alone(self):
         other_lost = Item.objects.create(

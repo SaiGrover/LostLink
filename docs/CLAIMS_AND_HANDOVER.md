@@ -57,6 +57,22 @@ Report:  pending → approved ⇄ claimed → returned
 * Reassignment is therefore always two explicit, audited steps: revoke, then
   approve another claim.
 
+## The claimant's other report
+
+A claim is often started from a matching suggestion between the claimant's own
+report and the item. A suggestion is not proof that both reports describe the
+same object (a student can lose two similar wallets), so the handover never
+closes the claimant's other report on its own. That report is closed only when
+the link is **explicitly confirmed**:
+
+* by the reviewing moderator at approval (a checkbox naming the suggested
+  report; recorded in the approval's audit metadata), or
+* by the claimant after the handover ("It was this item: close it" on the
+  claim page).
+
+Without a confirmation the report stays open and keeps matching, and the
+claimant is notified that it is still open.
+
 ## Reconsideration (appeals)
 
 A rejected claimant can request reconsideration with an updated statement,

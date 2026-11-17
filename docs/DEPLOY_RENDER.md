@@ -40,6 +40,26 @@ Set these in the Render web service's **Environment** page:
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | Its HTTPS origin, e.g. `https://lostlink.onrender.com` |
 | `LOSTLINK_MEDIA_ROOT` | `/var/data/media` |
 | `HF_HOME` | `/var/data/huggingface` |
+| `LOSTLINK_ALLOWED_EMAIL_DOMAINS` | The institution's email domain(s), e.g. `college.edu` (subdomains included). **Required**: the app refuses to start with it empty (`accounts.E001`) unless `LOSTLINK_REQUIRE_CAMPUS_DOMAIN=false` is set for a deliberately open deployment |
+| `DJANGO_EMAIL_HOST` | SMTP server of the institution's or a transactional mail provider |
+| `DJANGO_EMAIL_PORT` | Usually `587` (STARTTLS) or `465` with `DJANGO_EMAIL_USE_SSL=true` |
+| `DJANGO_EMAIL_HOST_USER` / `DJANGO_EMAIL_HOST_PASSWORD` | SMTP credentials, entered only in Render's secret environment |
+| `DJANGO_DEFAULT_FROM_EMAIL` | Sender, e.g. `LostLink <no-reply@college.edu>` |
+| `LOSTLINK_PUBLIC_URL` | `https://lostlink.onrender.com` (base of the links in emails) |
+| `LOSTLINK_TRUSTED_PROXY_COUNT` | `1` behind Render's proxy, after checking the header (see below); `0` ignores `X-Forwarded-For` |
+| `REDIS_URL` or `LOSTLINK_CACHE=database` | Shared cache so rate limits hold across workers (with the database cache add `python manage.py createcachetable` to the pre-deploy command) |
+
+The operator supplies the campus domain and the SMTP credentials; neither
+belongs in the repository. Without SMTP every sign-up stays unverified and no
+one can reset a password: `manage.py check` warns `accounts.W001`.
+
+**Client addresses for rate limits.** The first value of `X-Forwarded-For` can
+be written by the client, so it is never used. With
+`LOSTLINK_TRUSTED_PROXY_COUNT=n`, the address added by the n-th proxy from the
+right is used; with `0` the connection address is used. To confirm Render's
+behaviour, send a request with a made-up `X-Forwarded-For: 203.0.113.9` header
+and check (for example in a temporary log line or the Render request logs)
+that the right-most entry is your real address; only then set it to `1`.
 
 The settings refuse to start in production (`DJANGO_DEBUG=false`) when the
 secret key is shorter than 50 characters or is the development key, when
@@ -57,7 +77,7 @@ secret out of GitHub. For a custom domain, add its hostname to
 ## First launch
 
 After any deploy that changes `matching/profile.json` (the engine version is
-currently `synopsis-v2`), run `python manage.py rebuild_matches` in the Render
+currently `synopsis-v3`), run `python manage.py rebuild_matches` in the Render
 Shell. Until then, matches from the previous version are hidden rather than
 shown with outdated scores.
 
@@ -70,9 +90,17 @@ shown with outdated scores.
    unique password. The Django admin URL is `/django-admin/`.
 3. Run `python manage.py check --deploy` in the Shell. Check any warnings against
    the Render proxy and this project's settings.
-4. Test the live signup, lost/found reporting with an image, private image
-   access, matching, claim verification, and moderation. Restart the service
-   and confirm the uploaded image is still available to its authorized users.
+4. **Launch checks for email (required before real users):**
+   - `python manage.py sendtestemail you@college.edu` in the Render Shell
+     delivers a message;
+   - register a new account with a campus address and open the verification
+     link from the real inbox; an address outside the allowed domains is
+     refused;
+   - request a password reset for that account and complete it from the email.
+5. Test lost/found reporting with an image, private image access, matching,
+   claim verification with a one-time handover code, and moderation. Restart
+   the service and confirm the uploaded image is still available to its
+   authorized users.
 
 Before the first real users, `python scripts/smoke_first_run.py` (run locally,
 with `DATABASE_URL` unset) exercises the same first-run path on a temporary

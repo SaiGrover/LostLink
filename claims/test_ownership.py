@@ -269,7 +269,7 @@ class PublicDetailsTests(TestCase):
 
 @lightweight_models
 class CounterpartAfterApprovalTests(TestCase):
-    def test_handover_resolves_owner_report_even_after_approval_retired_matches(self):
+    def test_confirmed_owner_report_closes_even_after_approval_retired_matches(self):
         from claims.test_support import EXCEPTION
         from matching.services import run_matching
         cache.clear()
@@ -287,7 +287,9 @@ class CounterpartAfterApprovalTests(TestCase):
         found.status = 'claimed'
         found.save()
         self.client.force_login(u['mod'])
-        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
+        # The moderator confirms the claimant's own report is the same item.
+        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']),
+                         {**APPROVE, 'confirm_linked_report': 'on'})
         self.assertFalse(Match.objects.filter(found_item=found).exists())  # retired, not deleted
         self.client.post(reverse('claims:return', args=[claim.pk]), EXCEPTION)
         lost.refresh_from_db()

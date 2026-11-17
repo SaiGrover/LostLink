@@ -85,6 +85,10 @@ class DecisionForm(forms.Form):
         ('supports', 'Evidence supports ownership'), ('not_conclusive', 'Not conclusive'),
         ('contradicts', 'Evidence contradicts the claim'), ('none_provided', 'None provided')])
 
+    confirm_linked_report = forms.BooleanField(
+        required=False,
+        label="The claimant's own report describes this same physical item; close it too at handover")
+
     def checklist(self):
         return {k: self.cleaned_data[k] for k in
                 ('check_statement', 'check_private', 'check_answers', 'check_evidence')}
