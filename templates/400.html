@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Bad request{% endblock %}
+{% block body %}
+<main class="wrap error-page" id="main-content">
+  <div class="empty__mark" aria-hidden="true"><i></i><b></b><i></i></div>
+  <h1>That request didn't make sense.</h1>
+  <p class="lede">Something in the link or the form was malformed. Go back and try again, or start from the home page.</p>
+  <div class="cluster"><a href="/" class="btn btn-primary">Back to LostLink</a><a href="/search/" class="btn">Search reports</a></div>
+</main>
+{% endblock %}
