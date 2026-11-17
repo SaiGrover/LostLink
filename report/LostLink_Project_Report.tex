@@ -235,7 +235,7 @@ NOIDA (U.P.) NOVEMBER 2026\par}
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 \markboth{Abstract}{Abstract}
-LostLink is a full-stack campus lost-and-found platform that replaces scattered messages and notice-board posts with a searchable, moderated and auditable recovery workflow. Students report lost or found objects with structured details and an optional photograph, and a moderator reviews every report before it is published. A hybrid matching engine compares approved lost and found reports on six signals and stores a per-signal explanation of every score. A similarity score proposes a lead; it never proves ownership. Recovery runs through a separate human-in-the-loop claim process: private verification questions and evidence, an independent moderator decision recorded on an evidence checklist, controlled disclosure of contact details, and a physical handover confirmed with a one-time code held by the owner. Claim approved is not item returned.
+LostLink is a full-stack campus lost-and-found platform that replaces scattered messages and notice-board posts with a searchable, moderated and auditable recovery workflow. Students report lost or found objects with structured details and an optional photograph, and a report is published at once unless the reporter marks it as showing personal details or an automatic check detects an ID card, bank card or personal document, in which case a moderator reviews it first. A hybrid matching engine compares approved lost and found reports on six signals and stores a per-signal explanation of every score. A similarity score proposes a lead; it never proves ownership. Recovery runs through a separate human-in-the-loop claim process: private verification questions and evidence, an independent moderator decision recorded on an evidence checklist, controlled disclosure of contact details, and a physical handover confirmed with a one-time code held by the owner. Claim approved is not item returned.
 
 \textbf{Key contributions}
 \begin{itemize}
@@ -249,7 +249,7 @@ LostLink is a full-stack campus lost-and-found platform that replaces scattered 
 
 \textbf{Technology:} Django 6.1 on Python 3.13, server-rendered templates with progressive JavaScript, SQLite for development and PostgreSQL in production.
 
-\textbf{Verification:} on the merged repository (commit \code{3eda809}), all 364 automated tests pass on SQLite, with one optional pretrained-model test skipped by design. An 11-step first-run test, a 318-check browser sweep, a 65-check mobile layout test and a complete end-to-end recovery journey ending in a one-time-code handover also pass.
+\textbf{Verification:} on the merged repository (commit \code{65aae4a}), all 394 automated tests pass on SQLite, with one optional pretrained-model test skipped by design. An 11-step first-run test, a 318-check browser sweep, a 65-check mobile layout test and a complete end-to-end recovery journey ending in a one-time-code handover also pass.
 
 \textbf{Limitation:} matching accuracy has not yet been measured on independently photographed, human-reviewed campus reports; the bundled pilot set supports engineering checks only.
 
@@ -302,7 +302,7 @@ LostLink is a full-stack campus lost-and-found platform that replaces scattered 
 LostLink gives the campus a single recovery desk.
 \begin{itemize}
   \item A person files a \textbf{lost} or \textbf{found} report with a title, description, category, campus zone, date and an optional photograph.
-  \item A moderator reviews the report; only approved reports become searchable and eligible for matching.
+  \item The report is published at once, unless it may show personal details (ticked by the reporter or detected automatically); then a moderator reviews it first. Only published reports are searchable and matched.
   \item The matching engine compares every eligible lost--found pair and ranks plausible connections, showing how much each signal contributed.
   \item A person who believes an item is theirs opens a private \textbf{claim}; an independent moderator checks the evidence, and approval \textbf{reserves} the item and reveals contact details.
   \item At the meeting the owner creates a \textbf{one-time code} and shares it only after receiving the item; the person handing it over enters the code, which closes both reports and every dependent claim and match.
@@ -341,7 +341,7 @@ Available from a phone at any time & Yes & -- & -- & Yes\\
 \begin{enumerate}
   \item Centralise lost and found reports in a structured, searchable database.
   \item Rank likely pairs using explainable text, visual, location, date and metadata signals.
-  \item Require moderation before a report becomes public or eligible for matching.
+  \item Publish reports immediately, but hold any report that may expose personal details for moderation before it becomes public or eligible for matching.
   \item Verify ownership with private questions, private evidence and an independent staff decision, and confirm the physical return with the owner's one-time code.
   \item Limit accounts to verified campus members and protect contact details, private answers, verification secrets and sensitive photographs.
   \item Give administrators auditable analytics, exports and decision history.
@@ -402,7 +402,7 @@ ID & Requirement & Status\\
 \midrule
 FR-01 & Register a student account, verify the campus email with an expiring single-use link, sign in, reset a forgotten password. & \status{Implemented}\\
 FR-02 & Create, edit, view, withdraw and flag lost/found reports. & \status{Implemented}\\
-FR-03 & Review reports independently (never one's own) and publish only approved, active records. & \status{Implemented}\\
+FR-03 & Publish reports at once; hold those that may show personal details for independent review (never one's own). & \status{Implemented}\\
 FR-04 & Search by keyword, type, category, zone, status, date and sort order. & \status{Implemented}\\
 FR-05 & Compute stable, explainable lost--found similarity with evidence coverage and heuristic tiers. & \status{Implemented}\\
 FR-06 & Start, question, answer, decide (with an evidence checklist), dispute, reconsider and withdraw a claim. & \status{Implemented}\\
@@ -428,8 +428,8 @@ FR-12 & Initialise a fresh production database without demo accounts. & \status{
 \toprule
 ID & Use case & Actor & Main flow and outcome\\
 \midrule
-UC-01 & File a report & Student & Fill the form; report saved as \emph{pending} and queued for review\\
-UC-02 & Review a report & Moderator & Approve (publish and match) or reject with a reason; reporter notified\\
+UC-01 & File a report & Student & Fill the form; published and matched at once, or held as \emph{pending} if it may show personal details\\
+UC-02 & Review a held report & Moderator & Approve (publish and match) or reject with a reason; reporter notified\\
 UC-03 & Inspect a match & Student & Open a report; see candidates with per-signal scores\\
 UC-04 & Claim an item & Student & Submit a statement; finder notified; questions follow\\
 UC-05 & Decide a claim & Moderator & Complete the evidence checklist; approve (item reserved, contacts shared) or reject with a reason\\
@@ -518,7 +518,7 @@ Analytics and exports & No & Limited review context & Yes\\
 Area & Acceptance criterion & Verification evidence\\
 \midrule
 Student access & A student can manage only their own reports and their own claims. & Ownership and role tests\\
-Moderation & Unapproved reports stay non-public and are never matched. & Workflow integration tests\\
+Moderation & Held (pending) reports stay non-public and are never matched. & Workflow integration tests\\
 Matching & Every proposed pair shows its component scores and missing evidence. & Scoring and persistence tests\\
 Recovery & Contact details appear only after an independent, checklist-backed approval. & End-to-end claim test\\
 Handover & Only the owner's valid, unexpired, single-use code marks the item returned. & 15 handover tests + browser journey\\
@@ -777,7 +777,7 @@ Every page follows Django's Model--View--Template flow, with security checks bef
 \begin{itemize}
   \item \textbf{Four processes:} report and search, match and explain, verify and recover, moderate and analyse.
   \item \textbf{One data store} (D1) holds reports, matches, claims, notifications and decisions.
-  \item \textbf{Two external entities:} campus users and staff; only approved reports flow into matching.
+  \item \textbf{Two external entities:} campus users and staff; only published (approved) reports flow into matching.
 \end{itemize}
 \begin{figure}[!htbp]
 \centering
@@ -903,7 +903,7 @@ Reports and claims move through explicit states. Every report transition goes th
 \node[st] (x) at (1.6,-2.8) {Rejected};
 \node[end] (w) at (6.4,-2.8) {Withdrawn};
 \node[end] (rm) at (11.2,-2.8) {Removed};
-\draw[arr] (p) -- node[lab,above,align=center]{moderator\\approves} (a);
+\draw[arr] (p) -- node[lab,above,align=center]{auto-published\\or approved} (a);
 \draw[arr] (a) -- node[lab,above,align=center]{claim\\opened} (c);
 \draw[arr] (c) -- node[lab,above,align=center]{owner's code\\verified} (r);
 \draw[arr] (c.north) to[bend right=30] node[lab,above]{claims closed or withdrawn} (a.north);
@@ -914,6 +914,13 @@ Reports and claims move through explicit states. Every report transition goes th
 \end{tikzpicture}
 \caption{Report (item) lifecycle}
 \end{figure}
+
+\noindent\textbf{Publishing rule} (\code{items/publishing.py}). Every new report is saved as \emph{pending} and decided immediately:
+\begin{itemize}
+  \item \textbf{Held for a moderator} if the reporter ticks ``This report shows personal details'', if the sensitivity check (\code{media.suggests\_sensitive}) finds an ID-card category or words such as ``student ID'', ``Aadhaar'' or ``debit card'', if the photo is already marked sensitive, or if a moderator rejected the report before. The reasons are stored on the report and shown to the reporter and in the review queue.
+  \item \textbf{Otherwise published at once} and matched; the audit log records ``Report published automatically'' with no human actor.
+  \item Edits follow the same rule. Setting \code{LOSTLINK\_AUTO\_PUBLISH=false} restores review of every report.
+\end{itemize}
 
 \begin{figure}[!htbp]
 \centering
@@ -958,17 +965,17 @@ Reports and claims move through explicit states. Every report transition goes th
 \foreach \x/\n in {0/Student A,3.6/Django app,7.2/Moderator,10.8/Matching engine,14.4/Student B}{
   \node[hd] at (\x,0) {\n}; \draw[ink!40,dashed] (\x,0.6) -- (\x,13.4);}
 \draw[msg] (0,1.5) -- node[ml]{submit lost report} (3.6,1.5);
-\draw[ret] (3.6,2.5) -- node[ml]{saved as pending} (0,2.5);
-\draw[msg] (3.6,3.5) -- node[ml]{appears in review queue} (7.2,3.5);
+\draw[ret] (3.6,2.5) -- node[ml]{published (or held)} (0,2.5);
+\draw[msg] (3.6,3.5) -- node[ml]{if held: review queue} (7.2,3.5);
 \draw[msg] (7.2,4.7) -- node[ml]{approve} (3.6,4.7);
 \draw[msg] (3.6,5.9) -- node[ml]{run\_matching(item)} (10.8,5.9);
 \draw[ret] (10.8,7.1) -- node[ml]{scored pairs + components} (3.6,7.1);
 \draw[msg] (3.6,7.9) -- ++(0.7,0) -- ++(0,0.8) -- (3.6,8.7); \node[font=\scriptsize,anchor=west] at (4.4,8.3) {store Match};
-\draw[msg] (3.6,9.5) -- node[ml]{``Report approved'' + match summary} (0,9.5);
+\draw[msg] (3.6,9.5) -- node[ml]{``Report published'' + match summary} (0,9.5);
 \draw[msg] (3.6,10.7) -- node[ml,pos=0.62]{``Similar report'' (strong/moderate only)} (14.4,10.7);
 \draw[msg] (14.4,12.0) -- node[ml,pos=0.38]{open report: see score breakdown} (3.6,12.0);
 \end{tikzpicture}
-\caption{Sequence: report submission, moderation, matching and notification}\label{fig:seqreport}
+\caption{Sequence: report submission, moderation when held, matching and notification}\label{fig:seqreport}
 \end{figure}
 
 \begin{figure}[!htbp]
@@ -1157,7 +1164,7 @@ Role & Never accepted from the registration form; only administrators change it\
 \section{Matching Engine}
 \subsection{Scoring Model}
 \begin{itemize}
-  \item \textbf{Trigger:} runs when a report is approved, edited or rebuilt.
+  \item \textbf{Trigger:} runs when a report is published (automatically or by a moderator), edited or rebuilt.
   \item \textbf{Candidates:} active, approved reports of the opposite type by another person, whose item is not already reserved by an approved claim (\code{Item.objects.matchable()}).
   \item \textbf{Six signals} $s_i \in [0,1]$ with synopsis weights $w_i$; a signal without evidence on both reports is dropped and the weights renormalised, and the share of weight actually compared is recorded as the \textbf{evidence coverage} $C$:
 \end{itemize}
@@ -1193,7 +1200,7 @@ Brand / colour & 0.05 & Brand aliases; colour families compared as sets (Section
 \centering
 \begin{tikzpicture}[scale=0.84,every node/.append style={transform shape},node distance=5mm and 8mm,
   st/.style={box,minimum width=46mm,minimum height=8mm}]
-\node[term] (s) {Report approved};
+\node[term] (s) {Report published};
 \node[st,below=of s] (cand) {Load opposite-type, approved,\\unreserved reports};
 \node[st,below=of cand] (feat) {Reuse cached lexical and image vectors\\(record feature status)};
 \node[st,below=of feat] (comp) {Compute six signals; calibrate image;\\grade chronology};
@@ -1372,7 +1379,7 @@ Claim review & Keep similarity separate from ownership approval & Questions, ans
 \toprule
 Event & Recipient(s) & Kind\\
 \midrule
-Report approved (with number of candidates found) & Reporter & Report\\
+Held report approved by a moderator (with number of candidates found) & Reporter & Report\\
 Report rejected, or removed after a flag & Reporter & Report\\
 New strong or moderate similarity match & Both reporters, once per pair & Match\\
 Someone claims or offers to return an item & Reporter of the item & Claim\\
@@ -1595,7 +1602,7 @@ Two logic audits of the full recovery journey found defects where the stored sta
 
 \section{Module 4: Admin Functionality (\code{dashboard})}
 \begin{itemize}
-  \item Moderators: review queue for reports (own reports listed separately), claims, disputes, handovers awaiting a code, flags and sensitive-photo review; decision log with previous and new state.
+  \item Moderators: review queue for reports held because they may show personal details, with the reason (own reports listed separately), claims, disputes, handovers awaiting a code, flags and sensitive-photo review; decision log with previous and new state.
   \item Administrators: roles and account status, categories and zones, analytics, CSV and PDF exports.
 \end{itemize}
 
@@ -1614,14 +1621,14 @@ Two logic audits of the full recovery journey found defects where the stored sta
 \toprule
 Module & Responsibility & Principal output & Lines & Tests\\
 \midrule
-accounts & Identity and access & Verified user, role predicates, rate limits & 1{,}818 & 70\\
-items & Report lifecycle and discovery & Approved, searchable reports; safe media & 3{,}279 & 70\\
+accounts & Identity and access & Verified user, role predicates, rate limits & 1{,}942 & 80\\
+items & Report lifecycle, publishing and discovery & Published, searchable reports; safe media & 3{,}595 & 87\\
 matching & Text model, features, scoring & Versioned, explained, stable match & 5{,}771 & 120\\
-claims & Ownership verification & Reserved claim; code-confirmed handover & 3{,}017 & 67\\
+claims & Ownership verification & Reserved claim; code-confirmed handover & 3{,}215 & 70\\
 notifications & User attention & Private, de-duplicated events & 261 & 6\\
-dashboard & Governance and insights & Decisions, analytics, exports & 1{,}182 & 23\\
+dashboard & Governance and insights & Decisions, analytics, exports & 1{,}183 & 23\\
 \midrule
-\multicolumn{3}{l}{Total (8 configuration tests included)} & 15{,}328 & 364\\
+\multicolumn{3}{l}{Total (8 configuration tests included)} & 15{,}967 & 394\\
 \bottomrule
 \end{tabularx}
 \par\vspace{2pt}{\footnotesize Python lines include tests and exclude migrations. The interface adds 56 templates, 1{,}409 lines of CSS and 549 of JavaScript.}
@@ -1836,7 +1843,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}182 & 
 
 \section{Staff Pages}
 \begin{itemize}
-  \item Review queue grouped into new reports, claims, disputes, handovers awaiting a code and flags, oldest first; a moderator's own reports are listed separately for someone else.
+  \item Review queue grouped into held reports (with the reason each was held), claims, disputes, handovers awaiting a code and flags, oldest first; a moderator's own reports are listed separately for someone else.
   \item Approve, reject and sensitive-photo controls; every decision goes to the append-only log with its previous and new state.
   \item Administrators manage people and roles; only they can grant staff access.
 \end{itemize}
@@ -1866,6 +1873,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}182 & 
 \end{figure}
 
 \section{Dark Theme and Phone Layout}
+\enlargethispage{\baselineskip}
 \begin{itemize}
   \item Every page supports Light, Dark and System themes from the same tokens.
   \item On phones the masthead collapses and a floating tab bar offers Home, Search, Report, Claims and Alerts.
@@ -1901,7 +1909,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}182 & 
 \textbf{In this chapter:}
 \begin{itemize}[beginpenalty=10000]
   \item the testing strategy, levels and tools;
-  \item thirty representative test cases with their results;
+  \item thirty-two representative test cases with their results;
   \item error handling and the verification evidence for this release.
 \end{itemize}
 
@@ -1929,15 +1937,15 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}182 & 
 \begin{minipage}[c]{0.5\textwidth}
 \centering
 \begin{tikzpicture}[x=0.042cm,y=0.56cm]
-\foreach \n/\v/\i in {accounts/70/0,items/70/1,matching/120/2,claims/67/3,dashboard/23/4,notifications/6/5,config/8/6}{
+\foreach \n/\v/\i in {accounts/80/0,items/87/1,matching/120/2,claims/70/3,dashboard/23/4,notifications/6/5,config/8/6}{
   \node[font=\scriptsize\ttfamily,anchor=east] at (-1,-\i) {\n};
   \fill[llaccent] (0,-\i-0.3) rectangle (\v,-\i+0.3);
   \node[font=\scriptsize,anchor=west] at (\v+1.2,-\i) {\v};}
 \draw[ink!40] (0,0.5) -- (0,-6.5);
-\node[font=\scriptsize\bfseries] at (55,0.95) {Automated tests per app (364)};
+\node[font=\scriptsize\bfseries] at (55,0.95) {Automated tests per app (394)};
 \end{tikzpicture}
 \end{minipage}
-\caption{Test pyramid and the distribution of the 364 automated tests}
+\caption{Test pyramid and the distribution of the 394 automated tests}
 \end{figure}
 
 \begin{table}[H]
@@ -1970,12 +1978,12 @@ Mobile layout & Playwright script & 5 widths $\times$ 7 pages: content and last 
 \section{Functional Testing}
 \begin{itemize}
   \item \textbf{Browser sweep:} fails on HTTP errors, JavaScript errors, horizontal overflow and heading-structure faults.
-  \item \textbf{End-to-end journey:} files a lost and a found report, approves both, checks the match, runs the private question flow, approves the claim with the checklist, has the owner create the code, checks the moderator never sees it, has the finder enter it and verifies that both reports are closed.
+  \item \textbf{End-to-end journey:} files a found report marked as showing personal details (held, then approved by a moderator) and a lost report (published at once), checks the match, runs the private question flow, approves the claim with the checklist, has the owner create the code, checks the moderator never sees it, has the finder enter it and verifies that both reports are closed.
 \end{itemize}
 
 \section{Test Cases and Results}
 \begin{itemize}
-  \item Thirty representative cases: TC-01 to TC-12 cover the core workflow, TC-13 to TC-20 the calibration and first audit, TC-21 to TC-30 the remediation.
+  \item Thirty-two representative cases: TC-01 to TC-12 cover the core workflow, TC-13 to TC-20 the calibration and first audit, TC-21 to TC-30 the remediation, TC-31 and TC-32 the publishing rule.
   \item Every case passes on the current code; each maps to at least one automated test.
 \end{itemize}
 \begin{longtable}{>{\bfseries}P{14mm}P{56mm}P{60mm}P{12mm}}
@@ -1991,7 +1999,7 @@ ID & Scenario & Expected outcome & Result\\
 TC-01 & Register with valid details & Unverified student created; link emailed; not signed in & Pass\\
 TC-02 & Student opens a staff route & Access denied or redirected & Pass\\
 TC-03 & Future-dated report or invalid image & Validation error; nothing saved & Pass\\
-TC-04 & Approve a pending report & Published, matching runs, audit row stored & Pass\\
+TC-04 & Approve a held report & Published, matching runs, audit row stored & Pass\\
 TC-05 & Search with combined filters & Only approved records matching every filter & Pass\\
 TC-06 & Match a report without a photograph & Image dropped; weights renormalised & Pass\\
 TC-07 & Found report dated 5 days before the loss & Stored as suspicious, capped at moderate, warning shown & Pass\\
@@ -2018,6 +2026,8 @@ TC-27 & Roll number typed in a public description & Refused; private details sug
 TC-28 & Upload a photo with GPS EXIF & Stored re-encoded with no metadata & Pass\\
 TC-29 & Another student opens a sensitive photo & Blurred preview only & Pass\\
 TC-30 & Third reconsideration request & Refused after the limit; history intact & Pass\\
+TC-31 & Submit a report with no personal details & Published at once and matched; audit row with no human actor & Pass\\
+TC-32 & Tick ``personal details'' or report a student ID card & Held for a moderator; reason shown & Pass\\
 \bottomrule
 \end{longtable}
 
@@ -2038,7 +2048,7 @@ Check & Recorded outcome\\
 \midrule
 \code{python manage.py check}, \code{makemigrations --check} & No issues; no missing migrations\\
 \code{check --deploy} (production settings) & Only the expected warning that SMTP is not configured in the test environment\\
-Automated suite & 364 passed on SQLite (commit \code{3eda809}); 1 opt-in pretrained test skipped; PostgreSQL 17 run by CI\\
+Automated suite & 394 passed on SQLite (commit \code{65aae4a}); 1 opt-in pretrained test skipped; PostgreSQL 17 run by CI\\
 First-run smoke test & 11 steps passed on an empty database (SMTP delivery not run)\\
 Browser sweep & 318 page checks; no HTTP, overflow, JavaScript or heading faults\\
 Mobile layout & 65 checks at 320--767\,px; content clear of the tab bar\\
@@ -2245,7 +2255,7 @@ Design coherence & Tokens, overlapping match discs and status dots form one visu
   \item The remediation made the system more honest and harder to misuse: pair scores are now stable and labelled as similarity, sparse evidence is visible as coverage, and a dispute can no longer release an item to someone else.
   \item Claim approved is no longer item returned: only the owner's one-time code, shared after they hold the item, closes a case.
   \item Two logic audits closed eighteen gaps where stored state could contradict reality, each now guarded by a test.
-  \item The codebase is modular, tested (364 tests plus browser, mobile and first-run checks) and deployment-ready, and it states its evidence limitations openly.
+  \item The codebase is modular, tested (394 tests plus browser, mobile and first-run checks) and deployment-ready, and it states its evidence limitations openly.
 \end{itemize}
 
 \section{Future Enhancements}
@@ -2361,7 +2371,7 @@ python manage.py runserver            # open http://127.0.0.1:8000/
 \begin{lstlisting}[style=lostlink,language=bash]
 python manage.py check
 python manage.py makemigrations --check --dry-run
-python manage.py test                 # 364 tests; lexical text + histogram, no downloads
+python manage.py test                 # 394 tests; lexical text + histogram, no downloads
 python scripts/smoke_first_run.py     # empty database to code-confirmed handover
 python scripts/browser_check.py --base http://127.0.0.1:8000
 python scripts/e2e_workflow.py --base http://127.0.0.1:8000
