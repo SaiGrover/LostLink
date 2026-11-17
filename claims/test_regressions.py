@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from claims.models import Claim, VerificationQuestion
+from claims.test_support import APPROVE, EXCEPTION
 from config.testing import lightweight_models, make_taxonomy, make_users
 from items.models import Item, ReportFlag
 from matching.models import Match
@@ -50,7 +51,7 @@ class AuditRegressionTests(TestCase):
         self.found.status = 'claimed'
         self.found.save()
         self.client.force_login(self.u['mod'])
-        self.client.post(reverse('claims:return', args=[claim.pk]))
+        self.client.post(reverse('claims:return', args=[claim.pk]), EXCEPTION)
         self.lost.refresh_from_db()
         self.assertEqual(self.lost.status, Item.Status.RETURNED)
         self.assertFalse(self.lost.is_active)
@@ -61,7 +62,7 @@ class AuditRegressionTests(TestCase):
                              engine_version=settings.MATCHING['VERSION'])
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='Mine', status='approved')
         self.client.force_login(self.u['mod'])
-        self.client.post(reverse('claims:return', args=[claim.pk]))
+        self.client.post(reverse('claims:return', args=[claim.pk]), EXCEPTION)
         self.lost.refresh_from_db()
         self.assertEqual(self.lost.status, Item.Status.RETURNED)
 
@@ -71,7 +72,7 @@ class AuditRegressionTests(TestCase):
             description='Blue folding umbrella', category=self.t['others'], location=self.t['cafeteria'])
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='Mine', status='approved')
         self.client.force_login(self.u['mod'])
-        self.client.post(reverse('claims:return', args=[claim.pk]))
+        self.client.post(reverse('claims:return', args=[claim.pk]), EXCEPTION)
         other_lost.refresh_from_db()
         self.lost.refresh_from_db()
         self.assertEqual(other_lost.status, Item.Status.APPROVED)   # no match links it
@@ -84,14 +85,14 @@ class AuditRegressionTests(TestCase):
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='Mine')
         VerificationQuestion.objects.create(claim=claim, asked_by=self.u['mod'], text='Inside?', answer='A card')
         self.client.force_login(self.u['mod'])
-        response = self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']))
+        response = self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
         self.assertEqual(response.status_code, 403)
         claim.refresh_from_db()
         self.assertEqual(claim.status, Claim.Status.SUBMITTED)
         self.assertContains(self.client.get(claim.get_absolute_url()), 'another moderator has to decide')
         # an independent moderator can
         self.client.force_login(self.u['admin'])
-        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']))
+        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
         claim.refresh_from_db()
         self.assertEqual(claim.status, Claim.Status.APPROVED)
 

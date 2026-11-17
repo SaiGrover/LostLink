@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from accounts.models import User
 from items.models import Item, Category, Location
+from claims.test_support import APPROVE
 from claims.models import Claim, VerificationQuestion
 from matching.services import run_matching
 from notifications.models import Notification
@@ -31,12 +32,18 @@ class WorkflowTests(TestCase):
         self.client.force_login(self.owner)
         self.client.post(reverse('claims:answer',args=[claim.pk,question.pk]),{'answer':'A library receipt'})
         self.client.force_login(self.mod)
-        self.client.post(reverse('claims:decide',args=[claim.pk,'approve']),{'note':'Verified private details'})
+        self.client.post(reverse('claims:decide',args=[claim.pk,'approve']),{**APPROVE,'note':'Verified private details'})
         claim.refresh_from_db(); self.item.refresh_from_db()
         self.assertEqual(claim.status,'approved')
         self.assertNotEqual(self.item.status,'returned')
-        self.client.post(reverse('claims:return',args=[claim.pk]))
+        # Approved is not returned: the owner's one-time code completes the handover.
+        self.client.force_login(self.owner)
+        page=self.client.post(reverse('claims:issue_code',args=[claim.pk]))
+        code=page.context['code'].replace(' ','')
+        self.client.force_login(self.finder)
+        self.client.post(reverse('claims:verify_code',args=[claim.pk]),{'code':code})
         claim.refresh_from_db(); self.item.refresh_from_db()
+        self.assertEqual(claim.handover_method,'otp')
         self.assertEqual(claim.status,'returned')
         self.assertFalse(self.item.is_active)
         self.assertEqual(self.item.status,'returned')
@@ -72,7 +79,9 @@ class WorkflowTests(TestCase):
         self.client.force_login(self.owner)
         self.client.post(reverse('claims:dispute',args=[claim.pk]),{'reason':'The identifying mark is different'})
         claim.refresh_from_db()
-        self.assertEqual(claim.status,'disputed')
+        # The dispute is recorded without releasing the approved reservation.
+        self.assertEqual(claim.status,'approved')
+        self.assertTrue(claim.has_open_dispute)
         outsider=User.objects.create_user(username='outsider')
         self.client.force_login(outsider)
         self.assertEqual(self.client.get(claim.get_absolute_url()).status_code,403)

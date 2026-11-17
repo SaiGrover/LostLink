@@ -1,19 +1,50 @@
+import re
 from django import forms
 from django.utils import timezone
 
 from .models import Category, Item, Location, ReportFlag
 
 
+_NUMBER_RUN = re.compile(r'\d[\d -]{5,}\d')
+_DATE_LIKE = re.compile(r'^\d{1,4}[-/ ]\d{1,2}[-/ ]\d{1,4}$')
+_PRIVATE_PATTERNS = [
+    (re.compile(r'(?i)\b(?:s/?n|serial(?:\s*no\.?)?|imei|roll\s*no\.?|enrol+ment\s*no\.?)\b\s*[:#-]?\s*\w+'),
+     'a serial or ID number'),
+    (re.compile(r'[\w.+-]+@[\w-]+\.[\w.]+'), 'an email address'),
+]
+
+
+def _reject_private_identifiers(value, field_label):
+    """Public text must not reveal what ownership verification relies on.
+
+    Flags long digit runs (ID, serial, phone numbers; dates are allowed),
+    labelled serial/IMEI/roll numbers and email addresses.
+    """
+    found = None
+    for run in _NUMBER_RUN.findall(value):
+        run = run.strip()
+        if len(re.sub(r'\D', '', run)) >= 7 and not _DATE_LIKE.match(run):
+            found = 'an ID, serial or phone number'
+            break
+    if found is None:
+        found = next((what for pattern, what in _PRIVATE_PATTERNS if pattern.search(value)), None)
+    if found:
+        raise forms.ValidationError(
+            f'The {field_label} seems to contain {found}. Public reports are visible to everyone, '
+            'so put identifiers like this in "Private verification details" instead.')
+
+
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         fields = ('report_type', 'title', 'category', 'location', 'event_date', 'event_time',
-                  'description', 'brand', 'color', 'image')
+                  'description', 'brand', 'color', 'image', 'private_details')
         widgets = {
             'report_type': forms.RadioSelect(),
             'event_date': forms.DateInput(attrs={'type': 'date'}),
             'event_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
             'description': forms.Textarea(attrs={'rows': 4}),
+            'private_details': forms.Textarea(attrs={'rows': 2}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -35,7 +66,16 @@ class ItemForm(forms.ModelForm):
         self.fields['color'].widget.attrs['placeholder'] = 'e.g. Black (optional)'
         self.fields['title'].widget.attrs['placeholder'] = 'e.g. Black leather wallet'
         self.fields['description'].widget.attrs['placeholder'] = (
-            'Colour, material, brand, distinctive marks — anything that identifies it.')
+            'Colour, material, brand, general condition. Keep serial numbers, names, ID numbers '
+            'and hidden marks for the private box below.')
+        self.fields['private_details'].label = 'Private verification details (optional)'
+        self.fields['private_details'].required = False
+        self.fields['private_details'].help_text = (
+            'Only you and moderators see this. Note something the real owner would know but '
+            'the public report does not show, e.g. the last digits of a serial number, a hidden '
+            'scratch or what is inside. It is used to check claims, never shown publicly or matched.')
+        self.fields['private_details'].widget.attrs['placeholder'] = (
+            'e.g. Sticker inside the lid; serial ends in 4F2; library card inside')
         self.fields['event_time'].label = 'Approximate time'
         self.fields['event_date'].widget.attrs['max'] = timezone.localdate().isoformat()
 
@@ -49,6 +89,7 @@ class ItemForm(forms.ModelForm):
         value = ' '.join(self.cleaned_data['title'].split())
         if len(value) < 3:
             raise forms.ValidationError('Give the item a short, descriptive title.')
+        _reject_private_identifiers(value, 'title')
         return value
 
     def clean_description(self):
@@ -56,7 +97,11 @@ class ItemForm(forms.ModelForm):
         if len(value) < 10:
             raise forms.ValidationError(
                 'Describe the item in at least 10 characters so it can be matched.')
+        _reject_private_identifiers(value, 'description')
         return value
+
+    def clean_private_details(self):
+        return (self.cleaned_data.get('private_details') or '').strip()[:1000]
 
     def clean_event_date(self):
         value = self.cleaned_data['event_date']

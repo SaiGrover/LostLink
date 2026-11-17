@@ -1,143 +1,85 @@
-"""Claim verification and recovery workflow (synopsis Section 4.12).
+"""Claim verification and recovery workflow.
 
-    Potential match -> Claim submitted -> Verification questions -> Moderator
-    review -> Approved / Rejected -> Physical handover -> Returned
+    Match → Claim submitted → Private questions / evidence → Independent
+    moderator review (checklist) → Approved: item reserved, handover pending
+    → Owner's one-time code entered by the person handing over → Returned
 
-Two use cases share the model but are kept distinct in copy and permissions:
+Two use cases share the model but keep distinct copy and permissions:
 
 * a **found** report is *claimed* by its owner ("this is mine");
 * a **lost** report receives a *return offer* from a finder ("I found this").
 
-AI never approves anything here. Scores are shown to moderators as context
-only; every state change below is a human action with an audit record.
+The owner always holds the handover code. Rules live in ``claims.services``;
+these views authenticate, lock rows, call the service and render.
 """
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db import IntegrityError, transaction
+from django.db import transaction
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import moderator_required
-from dashboard.models import ModerationDecision, record_decision
 from items.models import Item
 from matching.models import Match
-from matching.services import clear_matches
-from notifications.utils import notify_user
 
-from .forms import AnswerForm, ClaimForm, DecisionForm, QuestionForm
-from .models import Claim, VerificationQuestion
+from . import services
+from .forms import (AnswerForm, AppealForm, ClaimForm, DecisionForm, DisputeResolutionForm,
+                    EvidenceForm, ExceptionHandoverForm, HandoverCodeForm, QuestionForm, RejectForm)
+from .models import Claim, ClaimEvidence, VerificationQuestion
+from .services import ClaimError, close_claims  # noqa: F401  (re-exported for older imports)
 
 OPEN = list(Claim.OPEN_STATUSES)
 
 
-def close_claims(item, actor, note, statuses=None):
-    """Reject every unfinished claim on ``item`` and tell each claimant why.
-
-    Used when a report leaves the platform (removed by a moderator) or is
-    resolved another way, so no claim is left open on a report nobody can act
-    on any more. Returns the number of claims closed.
-    """
-    statuses = statuses or OPEN + [Claim.Status.APPROVED]
-    closed = 0
-    for claim in item.claims.filter(status__in=statuses).select_related('claimant'):
-        claim.status = Claim.Status.REJECTED
-        claim.reviewed_by = actor
-        claim.decision_note = note[:280]
-        claim.save(update_fields=['status', 'reviewed_by', 'decision_note', 'updated_at'])
-        record_decision(actor, ModerationDecision.Action.CLAIM_REJECTED, item=item, claim=claim, note=note)
-        notify_user(claim.claimant, kind='claim', title=f'Claim closed — “{item.title}”',
-                    body=note, url=claim.get_absolute_url(), item=item)
-        closed += 1
-    return closed
-
-
-def _claimants_own_report(claim):
-    """The claimant's own report of the same item, if it can be identified.
-
-    A claim started from a match names it directly; otherwise the claimant's
-    report is used only when exactly one current match links it to this item,
-    so an unrelated report is never closed by guesswork.
-    """
-    item = claim.item
-    if claim.match_id:
-        match = claim.match
-    else:
-        if item.is_found:
-            candidates = Match.objects.filter(found_item=item, lost_item__reporter=claim.claimant,
-                                              engine_version=settings.MATCHING['VERSION'])
-        else:
-            candidates = Match.objects.filter(lost_item=item, found_item__reporter=claim.claimant,
-                                              engine_version=settings.MATCHING['VERSION'])
-        candidates = list(candidates[:2])
-        match = candidates[0] if len(candidates) == 1 else None
-    if match is None:
-        return None
-    own = match.lost_item if item.is_found else match.found_item
-    if own.reporter_id != claim.claimant_id or own.pk == item.pk:
-        return None
-    return own
+def _fail(request, claim, error):
+    messages.error(request, str(error))
+    return redirect(claim.get_absolute_url())
 
 
 @login_required
-@transaction.atomic
 def start_claim(request, item_id):
-    item = get_object_or_404(Item.objects.select_for_update(), pk=item_id, is_active=True,
-                             status__in=[Item.Status.APPROVED, Item.Status.CLAIMED])
-    if item.reporter_id == request.user.id:
-        messages.warning(request, 'You cannot respond to an item you reported.')
+    item = get_object_or_404(Item, pk=item_id)
+    user = request.user
+    if not item.is_public and not (item.reporter_id == user.id or user.is_staff_role):
+        raise Http404('Report not found.')
+    elig = services.claim_eligibility(item, user)
+    if not elig['can_claim']:
+        # A link to an unavailable action explains why instead of failing.
+        if elig['existing'] is not None:
+            if elig['state'] == 'appealable':
+                messages.info(request, elig['reason'])
+            return redirect(elig['existing'].get_absolute_url())
+        messages.warning(request, elig['reason'])
         return redirect(item.get_absolute_url())
-
-    existing = item.claims.filter(claimant=request.user).first()
-    if existing:
-        return redirect(existing.get_absolute_url())
-    if item.claims.filter(status__in=['approved', 'returned']).exists():
-        raise PermissionDenied('This item already has a verified claimant.')
-
-    is_found = item.is_found
 
     match_id = request.GET.get('match')
     if match_id and not match_id.isdecimal():
         raise PermissionDenied('Invalid match reference.')
     match = get_object_or_404(Match, pk=match_id) if match_id else None
-    if match and not ((match.found_item_id == item.id and match.lost_item.reporter_id == request.user.id)
-                      or (match.lost_item_id == item.id and match.found_item.reporter_id == request.user.id)):
+    if match and not ((match.found_item_id == item.id and match.lost_item.reporter_id == user.id)
+                      or (match.lost_item_id == item.id and match.found_item.reporter_id == user.id)):
         raise PermissionDenied('This match does not belong to your report.')
 
-    if request.method == 'POST':
-        form = ClaimForm(request.POST, found=is_found)
-        if form.is_valid():
-            claim = form.save(commit=False)
-            claim.item = item
-            claim.claimant = request.user
-            claim.match = match
-            if not claim.contact_email:
-                claim.contact_email = request.user.email
-            if not claim.contact_phone:
-                claim.contact_phone = request.user.phone
-            claim.save()
-
-            if item.status == Item.Status.APPROVED:
-                item.status = Item.Status.CLAIMED
-                item.save(update_fields=['status'])
-
-            verb = 'claimed' if is_found else 'offered to return'
-            notify_user(item.reporter, kind='claim',
-                        title=f'Someone {verb} “{item.title}”',
-                        body=f'{request.user.display_name()} responded. Ask verification questions '
-                             'to confirm before anything changes hands.',
-                        url=claim.get_absolute_url(), item=item)
-            messages.success(request, 'Submitted. Verification questions will follow before any decision.')
-            return redirect(claim.get_absolute_url())
-    else:
-        form = ClaimForm(found=is_found,
-                         initial={'contact_email': request.user.email,
-                                  'contact_phone': request.user.phone})
+    form = ClaimForm(request.POST or None, found=item.is_found,
+                     initial={'contact_email': request.user.email, 'contact_phone': request.user.phone})
+    if request.method == 'POST' and form.is_valid():
+        try:
+            with transaction.atomic():
+                locked = Item.objects.select_for_update().get(pk=item.pk)
+                claim = services.start_claim(
+                    locked, request.user, statement=form.cleaned_data['statement'],
+                    contact_phone=form.cleaned_data['contact_phone'],
+                    contact_email=form.cleaned_data['contact_email'], match=match)
+        except ClaimError:
+            raise
+        messages.success(request, 'Submitted. Private verification follows before any decision.')
+        return redirect(claim.get_absolute_url())
     return render(request, 'claims/start_claim.html',
-                  {'form': form, 'item': item, 'match': match, 'is_found': is_found})
+                  {'form': form, 'item': item, 'match': match, 'is_found': item.is_found})
 
 
 @login_required
@@ -146,16 +88,21 @@ def claim_detail(request, pk):
         Claim.objects.select_related('item', 'claimant', 'item__reporter', 'item__category',
                                      'item__location', 'reviewed_by'), pk=pk)
     user = request.user
+    item = claim.item
     is_claimant = claim.claimant_id == user.id
-    is_finder = claim.item.reporter_id == user.id
+    is_finder = item.reporter_id == user.id
     can_moderate = user.is_staff_role
     if not (is_claimant or is_finder or can_moderate):
         raise PermissionDenied('You cannot view this claim.')
+    independent = can_moderate and not (is_claimant or is_finder)
 
     questions = list(claim.questions.select_related('asked_by'))
-    # Private answers are only visible to the claimant who wrote them, the
-    # reporter who must verify them, and moderators. Nobody else reaches
-    # this view, but the template still only renders answers for these roles.
+    for q in questions:
+        # The expected answer is private to whoever asked and to moderators.
+        q.show_expected = bool(q.expected_answer) and (can_moderate or q.asked_by_id == user.id)
+    session = services.active_session(claim) if claim.status == Claim.Status.APPROVED else None
+    blocker = services.handover_blocker(claim, item) if claim.status == Claim.Status.APPROVED else ''
+    appeal_ok, appeal_reason = services.can_appeal(claim) if claim.status == 'rejected' else (False, '')
     return render(request, 'claims/claim_detail.html', {
         'claim': claim,
         'questions': questions,
@@ -163,20 +110,38 @@ def claim_detail(request, pk):
         'is_claimant': is_claimant,
         'is_finder': is_finder,
         'can_moderate': can_moderate,
-        'contacts_visible': claim.status in ('approved', 'returned'),
+        'independent': independent,
+        'is_recipient': claim.recipient.id == user.id,
+        'is_provider': claim.provider.id == user.id,
+        'contacts_visible': claim.status in Claim.VERIFIED_STATUSES,
         'assessment': build_ai_assessment(claim) if (can_moderate or is_finder) else None,
+        'private_details': item.private_details if (can_moderate or is_finder) else '',
         'question_form': QuestionForm(),
         'answer_form': AnswerForm(),
         'decision_form': DecisionForm(),
+        'appeal_form': AppealForm(initial={'statement': claim.statement}),
+        'evidence_form': EvidenceForm(),
+        'dispute_form': DisputeResolutionForm(),
+        'code_form': HandoverCodeForm(),
+        'exception_form': ExceptionHandoverForm(),
+        'evidence': list(claim.evidence.all()) if services.can_view_evidence(claim, user) else [],
+        'revisions': list(claim.revisions.all()) if (is_claimant or can_moderate) else [],
+        'open_dispute': claim.open_dispute,
+        'session': session,
+        'handover_blocker': blocker,
+        'sessions': list(claim.handover_sessions.all()[:6]) if can_moderate else [],
+        'appeal_ok': appeal_ok,
+        'appeal_reason': appeal_reason,
         'timeline': claim.timeline(),
         'decisions': claim.moderation_decisions.select_related('actor') if can_moderate else [],
+        'max_appeals': getattr(settings, 'CLAIM_MAX_APPEALS', 2),
     })
 
 
 def build_ai_assessment(claim):
-    """AI context for a moderator (synopsis Sections 4.11 and 8): the best
-    stored match linking the claimant's own report to this item, plus a
-    lightweight statement-vs-description similarity. Decision support only."""
+    """Matching context for the reviewer: the best current match between the
+    claimant's own report and this item, plus statement-vs-description text
+    similarity. Decision support only — never an approval signal."""
     from matching.engine import text_similarity
 
     item = claim.item
@@ -197,59 +162,69 @@ def build_ai_assessment(claim):
     }
 
 
+def _locked(pk):
+    try:
+        return services.lock_claim(pk)
+    except Claim.DoesNotExist:
+        raise Http404('Claim not found.')
+
+
 @login_required
 @require_POST
+@transaction.atomic
 def add_question(request, pk):
-    claim = get_object_or_404(Claim, pk=pk)
+    claim, item = _locked(pk)
     if not claim.is_open:
-        raise PermissionDenied('This claim is closed.')
-    if not (request.user.is_staff_role or claim.item.reporter_id == request.user.id):
-        raise PermissionDenied('Only the reporter or a moderator can ask questions.')
+        raise ClaimError('This claim is closed.')
+    if not (request.user.is_staff_role or item.reporter_id == request.user.id):
+        raise ClaimError('Only the reporter or a moderator can ask questions.')
+    if request.user.id == claim.claimant_id:
+        raise ClaimError('You cannot question your own claim.')
     form = QuestionForm(request.POST)
-    if form.is_valid():
-        q = form.save(commit=False)
-        q.claim = claim
-        q.asked_by = request.user
-        q.save()
-        if claim.status in (Claim.Status.SUBMITTED, Claim.Status.ANSWERED):
-            claim.status = Claim.Status.QUESTIONS
-            claim.save(update_fields=['status', 'updated_at'])
-        notify_user(claim.claimant, kind='claim',
-                    title='Verification question added',
-                    body=f'Please answer to verify “{claim.item.title}”.',
-                    url=claim.get_absolute_url(), item=claim.item)
-        messages.success(request, 'Verification question added.')
-    else:
-        messages.error(request, 'Write a question before adding it.')
+    if not form.is_valid():
+        return _fail(request, claim, 'Write a question before adding it.')
+    q = form.save(commit=False)
+    q.claim = claim
+    q.asked_by = request.user
+    q.save()
+    if claim.status in (Claim.Status.SUBMITTED, Claim.Status.ANSWERED):
+        claim.status = Claim.Status.QUESTIONS
+        claim.save(update_fields=['status', 'updated_at'])
+    from notifications.utils import notify_user
+    notify_user(claim.claimant, kind='claim', title='Verification question added',
+                body=f'Please answer to verify “{item.title}”.',
+                url=claim.get_absolute_url(), item=item, dedupe=True)
+    messages.success(request, 'Verification question added.')
     return redirect(claim.get_absolute_url())
 
 
 @login_required
 @require_POST
+@transaction.atomic
 def answer_question(request, pk, qid):
-    claim = get_object_or_404(Claim, pk=pk)
+    claim, item = _locked(pk)
     if not claim.is_open:
-        raise PermissionDenied('This claim is closed.')
-    question = get_object_or_404(VerificationQuestion, pk=qid, claim=claim)
+        raise ClaimError('This claim is closed.')
     if claim.claimant_id != request.user.id:
-        raise PermissionDenied('Only the claimant can answer.')
+        raise ClaimError('Only the claimant can answer.')
+    question = get_object_or_404(VerificationQuestion.objects.select_for_update(), pk=qid, claim=claim)
     if question.answer:
-        raise PermissionDenied('This question has already been answered.')
+        raise ClaimError('This question has already been answered.')
     form = AnswerForm(request.POST)
-    if form.is_valid():
-        question.answer = form.cleaned_data['answer']
-        question.answered_at = timezone.now()
-        question.save(update_fields=['answer', 'answered_at'])
-        if claim.all_answered and claim.status != Claim.Status.DISPUTED:
-            claim.status = Claim.Status.ANSWERED
-            claim.save(update_fields=['status', 'updated_at'])
-            notify_user(claim.item.reporter, kind='claim',
-                        title='Verification answers submitted',
-                        body=f'“{claim.item.title}” is ready for moderator review.',
-                        url=claim.get_absolute_url(), item=claim.item)
-        messages.success(request, 'Answer saved.')
-    else:
-        messages.error(request, 'Write an answer before submitting.')
+    if not form.is_valid():
+        return _fail(request, claim, 'Write an answer before submitting.')
+    from django.utils import timezone
+    from notifications.utils import notify_user
+    question.answer = form.cleaned_data['answer']
+    question.answered_at = timezone.now()
+    question.save(update_fields=['answer', 'answered_at'])
+    if claim.all_answered:
+        claim.status = Claim.Status.ANSWERED
+        claim.save(update_fields=['status', 'updated_at'])
+        notify_user(item.reporter, kind='claim', title='Verification answers submitted',
+                    body=f'“{item.title}” is ready for moderator review.',
+                    url=claim.get_absolute_url(), item=item, dedupe=True)
+    messages.success(request, 'Answer saved.')
     return redirect(claim.get_absolute_url())
 
 
@@ -257,72 +232,186 @@ def answer_question(request, pk, qid):
 @require_POST
 @transaction.atomic
 def decide_claim(request, pk, decision):
-    claim = get_object_or_404(Claim.objects.select_for_update(), pk=pk)
-    item = Item.objects.select_for_update().get(pk=claim.item_id)
+    claim, item = _locked(pk)
     if decision not in ('approve', 'reject'):
-        raise PermissionDenied('Unknown decision.')
+        raise ClaimError('Unknown decision.')
+    # Authority and state first, so a stale or forged request is refused outright.
+    services._require_independent_moderator(claim, request.user)
     if not claim.is_open:
-        raise PermissionDenied('This claim has already been decided.')
-    if not item.is_active or item.status not in ('approved', 'claimed'):
-        raise PermissionDenied('This report is no longer available for claims.')
-    if claim.claimant_id == request.user.id:
-        raise PermissionDenied('You cannot decide your own claim.')
-    if item.reporter_id == request.user.id:
-        # The reporter is a party to the claim; an independent moderator decides.
-        raise PermissionDenied('You reported this item, so another moderator has to decide the claim.')
+        raise ClaimError('This claim has already been decided.')
+    try:
+        if decision == 'approve':
+            form = DecisionForm(request.POST)
+            if not form.is_valid():
+                return _fail(request, claim, 'Complete every checklist item and give a reason before approving.')
+            services.approve_claim(claim, item, request.user, note=form.cleaned_data['note'],
+                                   checklist=form.checklist())
+            messages.success(request, 'Claim approved. The item is reserved; the handover is confirmed '
+                                      'with the owner\'s one-time code.')
+        else:
+            form = RejectForm(request.POST)
+            if not form.is_valid():
+                return _fail(request, claim, 'Give the claimant a reason for the rejection.')
+            checklist = DecisionForm(request.POST)
+            services.reject_claim(claim, item, request.user, note=form.cleaned_data['note'],
+                                  checklist=checklist.checklist() if checklist.is_valid() else {})
+            messages.info(request, 'Claim rejected.')
+    except ClaimError:
+        raise
+    return redirect(claim.get_absolute_url())
 
-    form = DecisionForm(request.POST)
-    note = form.cleaned_data.get('note', '') if form.is_valid() else ''
-    claim.reviewed_by = request.user
-    claim.decision_note = note
 
-    if decision == 'approve':
-        if not claim.all_answered:
-            messages.error(request, 'Complete the private verification questions before approval.')
-            return redirect(claim.get_absolute_url())
-        if item.claims.filter(status__in=['approved', 'returned']).exclude(pk=claim.pk).exists():
-            raise PermissionDenied('Another claim on this item has already been verified.')
-        claim.status = Claim.Status.APPROVED
-        try:
-            with transaction.atomic():
-                claim.save()
-        except IntegrityError:
-            raise PermissionDenied('Another claim on this item was verified concurrently.')
-        item.status = Item.Status.CLAIMED
-        item.is_active = True
-        item.save(update_fields=['status', 'is_active'])
-        # Any other open claim on the same item loses; its claimant is told why.
-        for other in item.claims.exclude(pk=claim.pk).filter(status__in=OPEN):
-            other.status = Claim.Status.REJECTED
-            other.reviewed_by = request.user
-            other.decision_note = 'The item was verified as belonging to another claimant.'
-            other.save(update_fields=['status', 'reviewed_by', 'decision_note', 'updated_at'])
-            notify_user(other.claimant, kind='claim',
-                        title=f'Claim closed — “{item.title}”',
-                        body=other.decision_note, url=other.get_absolute_url(), item=item)
-        record_decision(request.user, ModerationDecision.Action.CLAIM_APPROVED,
-                        item=item, claim=claim, note=note)
-        for user in (claim.claimant, item.reporter):
-            notify_user(user, kind='claim',
-                        title=f'Claim approved — “{item.title}”',
-                        body='Contact details are now shared. Arrange the handover; a moderator '
-                             'confirms completion afterwards.',
-                        url=claim.get_absolute_url(), item=item)
-        messages.success(request, 'Claim approved. Confirm the handover once collection is complete.')
-    else:
-        claim.status = Claim.Status.REJECTED
-        claim.save()
-        if item.status == Item.Status.CLAIMED and not item.claims.exclude(pk=claim.pk) \
-                .filter(status__in=OPEN + ['approved']).exists():
-            item.status = Item.Status.APPROVED
-            item.save(update_fields=['status'])
-        record_decision(request.user, ModerationDecision.Action.CLAIM_REJECTED,
-                        item=item, claim=claim, note=note)
-        notify_user(claim.claimant, kind='claim',
-                    title=f'Claim rejected — “{item.title}”',
-                    body=note or 'The claim could not be verified.',
-                    url=claim.get_absolute_url(), item=item)
-        messages.info(request, 'Claim rejected.')
+@login_required
+@require_POST
+@transaction.atomic
+def withdraw_claim(request, pk):
+    claim, item = _locked(pk)
+    try:
+        services.withdraw_claim(claim, item, request.user, note=request.POST.get('note', '')[:280])
+    except ClaimError:
+        raise
+    messages.info(request, 'Your claim has been withdrawn.')
+    return redirect(claim.get_absolute_url())
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def appeal_claim(request, pk):
+    claim, item = _locked(pk)
+    form = AppealForm(request.POST)
+    if not form.is_valid():
+        return _fail(request, claim, 'Explain your request in at least 20 characters.')
+    try:
+        services.appeal_claim(claim, item, request.user, statement=form.cleaned_data['statement'],
+                              additional_details=form.cleaned_data['additional_details'],
+                              files=request.FILES.getlist('evidence'))
+    except ClaimError:
+        raise
+    messages.success(request, 'Reconsideration requested. A moderator will review the new information.')
+    return redirect(claim.get_absolute_url())
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def add_evidence(request, pk):
+    claim, item = _locked(pk)
+    form = EvidenceForm(request.POST)
+    try:
+        count = services.add_evidence(claim, item, request.user, files=request.FILES.getlist('evidence'),
+                                      note=form.data.get('note', ''))
+    except ClaimError:
+        raise
+    messages.success(request, f'{count} photo{"s" if count != 1 else ""} added privately to your claim.')
+    return redirect(claim.get_absolute_url())
+
+
+@login_required
+def evidence_file(request, pk, eid):
+    """Serve private evidence to the claimant and moderators only."""
+    claim = get_object_or_404(Claim, pk=pk)
+    evidence = get_object_or_404(ClaimEvidence, pk=eid, claim=claim)
+    if not services.can_view_evidence(claim, request.user):
+        raise PermissionDenied('This evidence is private.')
+    if not evidence.file:
+        raise Http404('Evidence not found.')
+    response = FileResponse(evidence.file.open('rb'), content_type='image/jpeg')
+    response['Cache-Control'] = 'private, no-store'
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Content-Disposition'] = f'inline; filename="claim-{claim.pk}-evidence-{evidence.pk}.jpg"'
+    return response
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def dispute_claim(request, pk):
+    claim, item = _locked(pk)
+    try:
+        services.raise_dispute(claim, item, request.user, reason=request.POST.get('reason', ''))
+    except ClaimError:
+        raise
+    messages.success(request, 'Dispute sent to the moderator review queue.')
+    return redirect(claim.get_absolute_url())
+
+
+@moderator_required
+@require_POST
+@transaction.atomic
+def resolve_dispute(request, pk):
+    claim, item = _locked(pk)
+    services._require_independent_moderator(claim, request.user, what='resolve this dispute')
+    if not claim.has_open_dispute:
+        raise ClaimError('There is no open dispute on this claim.')
+    form = DisputeResolutionForm(request.POST)
+    if not form.is_valid():
+        return _fail(request, claim, 'Choose an outcome and record the reason (at least 10 characters).')
+    try:
+        services.resolve_dispute(claim, item, request.user, outcome=form.cleaned_data['outcome'],
+                                 note=form.cleaned_data['note'])
+    except ClaimError:
+        raise
+    messages.success(request, 'Dispute resolved.')
+    return redirect(claim.get_absolute_url())
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def issue_code(request, pk):
+    """Create the recipient's one-time handover code and show it once."""
+    claim, item = _locked(pk)
+    try:
+        session, code = services.issue_handover_code(claim, item, request.user)
+    except ClaimError:
+        raise
+    response = render(request, 'claims/handover_code.html', {
+        'claim': claim, 'item': item, 'code': f'{code[:3]} {code[3:]}', 'session': session})
+    response['Cache-Control'] = 'private, no-store'
+    return response
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def verify_code(request, pk):
+    claim, item = _locked(pk)
+    form = HandoverCodeForm(request.POST)
+    if not form.is_valid():
+        return _fail(request, claim, 'Enter the 6-digit code.')
+    try:
+        result = services.verify_handover_code(claim, item, request.user, form.cleaned_data['code'])
+    except ClaimError:
+        raise
+    (messages.success if result.ok else messages.error)(request, result.message)
+    return redirect(claim.get_absolute_url())
+
+
+@moderator_required
+@require_POST
+@transaction.atomic
+def confirm_return(request, pk):
+    """Exceptional, documented moderator completion of a handover.
+
+    The normal path is the owner's one-time code. This requires a reason and
+    written evidence, an independent moderator, and is recorded as an
+    exception — distinguishable from a code-confirmed handover.
+    """
+    claim, item = _locked(pk)
+    services._require_independent_moderator(claim, request.user, what='record this handover')
+    blocker = services.handover_blocker(claim, item)
+    if blocker:
+        raise ClaimError(blocker)
+    form = ExceptionHandoverForm(request.POST)
+    if not form.is_valid():
+        return _fail(request, claim, 'Choose a reason and document the evidence (at least 20 characters).')
+    try:
+        services.exception_handover(claim, item, request.user, reason=form.cleaned_data['reason'],
+                                    note=form.cleaned_data['note'])
+    except ClaimError:
+        raise
+    messages.success(request, 'Handover recorded as a documented exception. The item is returned.')
     return redirect(claim.get_absolute_url())
 
 
@@ -333,9 +422,9 @@ def my_claims(request):
     if status == 'open':
         qs = qs.filter(status__in=OPEN)
     elif status == 'approved':
-        qs = qs.filter(status__in=['approved', 'returned'])
+        qs = qs.filter(status__in=Claim.VERIFIED_STATUSES)
     elif status == 'closed':
-        qs = qs.filter(status__in=['rejected', 'returned'])
+        qs = qs.filter(status__in=['rejected', 'returned', 'withdrawn'])
     page = Paginator(qs, 12).get_page(request.GET.get('page'))
     incoming = (Claim.objects.filter(item__reporter=request.user)
                 .select_related('item', 'claimant').order_by('-updated_at')[:12])
@@ -344,69 +433,5 @@ def my_claims(request):
     })
 
 
-@moderator_required
-@require_POST
-@transaction.atomic
-def confirm_return(request, pk):
-    claim = get_object_or_404(Claim.objects.select_for_update(), pk=pk)
-    if claim.status != Claim.Status.APPROVED:
-        raise PermissionDenied('Only an approved claim can be marked returned.')
-    item = Item.objects.select_for_update().get(pk=claim.item_id)
-    note = request.POST.get('note', '').strip()[:280]
-    claim.status = Claim.Status.RETURNED
-    if not claim.reviewed_by_id:
-        claim.reviewed_by = request.user
-    claim.save(update_fields=['status', 'reviewed_by', 'updated_at'])
-    item.status = Item.Status.RETURNED
-    item.is_active = False
-    item.save(update_fields=['status', 'is_active'])
-    record_decision(request.user, ModerationDecision.Action.HANDOVER_CONFIRMED,
-                    item=item, claim=claim, note=note)
-
-    # The claimant's own report of the same item (their lost report when a
-    # found item is returned, or their found report when they returned a lost
-    # one) is resolved too, so it stops appearing in search and matching.
-    own = _claimants_own_report(claim)
-    if own is not None and own.is_active and own.status != Item.Status.RETURNED:
-        own = Item.objects.select_for_update().get(pk=own.pk)
-        own.status = Item.Status.RETURNED
-        own.is_active = False
-        own.save(update_fields=['status', 'is_active'])
-        clear_matches(own)
-        close_claims(own, request.user,
-                     'This item has been returned through another report, so this claim is closed.')
-        record_decision(request.user, ModerationDecision.Action.HANDOVER_CONFIRMED,
-                        item=own, claim=claim, note=f'Resolved with report #{item.pk}.')
-    for user in (claim.claimant, item.reporter):
-        notify_user(user, kind='claim', title=f'Handover completed — “{item.title}”',
-                    body='The item is recorded as returned. Thank you for using LostLink.',
-                    url=claim.get_absolute_url(), item=item)
-    messages.success(request, 'Handover confirmed. This item is now recorded as returned.')
-    return redirect(claim.get_absolute_url())
-
-
-@login_required
-@require_POST
-@transaction.atomic
-def dispute_claim(request, pk):
-    claim = get_object_or_404(Claim.objects.select_for_update(), pk=pk)
-    user = request.user
-    if user.id not in (claim.claimant_id, claim.item.reporter_id) and not user.is_staff_role:
-        raise PermissionDenied('You cannot dispute this claim.')
-    if claim.is_finalised:
-        raise PermissionDenied('This claim cannot be disputed.')
-    reason = request.POST.get('reason', '').strip()
-    if not reason:
-        messages.error(request, 'Explain the concern so a moderator can review it.')
-        return redirect(claim.get_absolute_url())
-    claim.status = Claim.Status.DISPUTED
-    claim.decision_note = reason[:280]
-    claim.save(update_fields=['status', 'decision_note', 'updated_at'])
-    record_decision(user, ModerationDecision.Action.DISPUTE_RAISED,
-                    item=claim.item, claim=claim, note=reason)
-    other = claim.item.reporter if user.id == claim.claimant_id else claim.claimant
-    notify_user(other, kind='claim', title=f'Dispute raised — “{claim.item.title}”',
-                body='A concern was raised about this claim; a moderator will review it.',
-                url=claim.get_absolute_url(), item=claim.item)
-    messages.success(request, 'Dispute sent to the moderator review queue.')
-    return redirect(claim.get_absolute_url())
+# Kept for imports elsewhere (e.g. tests referencing the old helper name).
+_claimants_own_report = services.counterpart_report

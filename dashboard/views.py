@@ -15,6 +15,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Avg, Count, Q
+from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,8 +26,9 @@ from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required, moderator_required
 from accounts.models import User
-from claims.models import Claim
+from claims.models import Claim, ClaimDispute
 from items.forms import CategoryForm, LocationForm
+from items import lifecycle
 from items.models import Category, Item, Location, ReportFlag
 from matching.features import manifest
 from matching.models import Match, ScoreSnapshot
@@ -62,14 +64,19 @@ def _safe_next(request, default):
 # ---------------------------------------------------------------------------
 @moderator_required
 def moderation(request):
-    pending_items = (Item.objects.filter(status=Item.Status.PENDING, is_active=True)
-                     .select_related('category', 'location', 'reporter', 'duplicate_of')
-                     .order_by('created_at'))
+    # Independent review: a moderator's own reports are not actionable for
+    # them (another moderator decides), so they are listed separately.
+    all_pending = (Item.objects.filter(status=Item.Status.PENDING, is_active=True)
+                   .select_related('category', 'location', 'reporter', 'duplicate_of')
+                   .order_by('created_at'))
+    pending_items = all_pending.exclude(reporter=request.user)
+    own_pending = all_pending.filter(reporter=request.user)
     pending_page = Paginator(pending_items, 20).get_page(request.GET.get('page'))
     open_claims = (Claim.objects.filter(status__in=OPEN_CLAIMS)
                    .select_related('item', 'claimant').order_by('updated_at'))
-    disputes = (Claim.objects.filter(status=Claim.Status.DISPUTED)
-                .select_related('item', 'claimant').order_by('updated_at'))
+    disputes = (ClaimDispute.objects.filter(status=ClaimDispute.Status.OPEN)
+                .select_related('claim', 'claim__item', 'claim__claimant', 'raised_by')
+                .order_by('created_at'))
     handovers = (Claim.objects.filter(status=Claim.Status.APPROVED)
                  .select_related('item', 'claimant').order_by('updated_at'))
     flagged = (Item.objects.annotate(flag_count=Count('flags', filter=Q(flags__resolved_at__isnull=True)))
@@ -86,6 +93,7 @@ def moderation(request):
     return render(request, 'dashboard/moderation.html', {
         'pending_items': pending_page, 'page_obj': pending_page,
         'pending_count': pending_items.count(),
+        'own_pending': own_pending,
         'open_claims': open_claims, 'claim_count': open_claims.count(),
         'disputes': disputes, 'dispute_count': disputes.count(),
         'handovers': handovers, 'handover_count': handovers.count(),
@@ -97,33 +105,36 @@ def moderation(request):
 
 @moderator_required
 @require_POST
+@transaction.atomic
 def review_report(request, pk, decision):
-    item = get_object_or_404(Item, pk=pk)
+    item = get_object_or_404(Item.objects.select_for_update(), pk=pk)
     note = request.POST.get('note', '').strip()[:280]
     next_url = _safe_next(request, 'dashboard:moderation')
+    if item.reporter_id == request.user.id:
+        # Independent moderation: nobody approves or rejects their own report,
+        # whichever page or endpoint the request comes from.
+        messages.error(request, 'You reported this item, so another moderator has to review it.')
+        return redirect(next_url)
     if item.status != Item.Status.PENDING or not item.is_active:
         messages.error(request, 'Only active reports awaiting review can be moderated here.')
         return redirect(next_url)
     if decision == 'approve':
-        item.status = Item.Status.APPROVED
-        item.save(update_fields=['status'])
+        lifecycle.transition(item, Item.Status.APPROVED, actor=request.user,
+                             action=ModerationDecision.Action.REPORT_APPROVED, note=note, rematch=False)
         matches = run_matching(item)
-        record_decision(request.user, ModerationDecision.Action.REPORT_APPROVED, item=item, note=note)
         notify_user(item.reporter, kind='report',
                     title=f'Report approved — “{item.title}”',
                     body='Your report is now visible in search and matching.' +
                          (f' {len(matches)} candidate match(es) were found.' if matches else ''),
-                    url=item.get_absolute_url(), item=item)
+                    url=item.get_absolute_url(), item=item, dedupe=True)
         messages.success(request, f'Approved “{item.title}”.')
     elif decision == 'reject':
-        item.status = Item.Status.REJECTED
-        item.save(update_fields=['status'])
-        clear_matches(item)
-        record_decision(request.user, ModerationDecision.Action.REPORT_REJECTED, item=item, note=note)
+        lifecycle.transition(item, Item.Status.REJECTED, actor=request.user,
+                             action=ModerationDecision.Action.REPORT_REJECTED, note=note)
         notify_user(item.reporter, kind='report',
                     title=f'Report rejected — “{item.title}”',
                     body=note or 'A moderator rejected this report. You can edit and resubmit it.',
-                    url=item.get_absolute_url(), item=item)
+                    url=item.get_absolute_url(), item=item, dedupe=True)
         messages.info(request, f'Rejected “{item.title}”.')
     else:
         messages.error(request, 'Unknown decision.')
@@ -132,25 +143,30 @@ def review_report(request, pk, decision):
 
 @moderator_required
 @require_POST
+@transaction.atomic
 def resolve_flag(request, pk, decision):
-    """Resolve every open flag on a report: dismiss them, or reject the report."""
-    item = get_object_or_404(Item, pk=pk)
+    """Resolve every open flag on a report: dismiss them, or remove the report."""
+    item = get_object_or_404(Item.objects.select_for_update(), pk=pk)
     note = request.POST.get('note', '').strip()[:280]
+    if item.reporter_id == request.user.id:
+        messages.error(request, 'You reported this item, so another moderator has to review its flags.')
+        return redirect('dashboard:moderation')
     open_flags = item.flags.filter(resolved_at__isnull=True)
     if not open_flags.exists():
         messages.info(request, 'No open flags on this report.')
         return redirect('dashboard:moderation')
     if decision == 'reject':
-        from claims.views import close_claims
-        item.status = Item.Status.REJECTED
-        item.is_active = False
-        item.save(update_fields=['status', 'is_active'])
-        clear_matches(item)
+        from claims.services import close_claims
+        if item.status in lifecycle.TERMINAL:
+            messages.info(request, 'This report is already closed.')
+            return redirect('dashboard:moderation')
+        open_flags.update(resolved_at=timezone.now(), resolved_by=request.user)
         # Claims on a removed report could never be decided; close them and
         # tell each claimant, instead of leaving them stuck in the queue.
         close_claims(item, request.user, 'This report was removed by a moderator, so the claim is closed.')
-        record_decision(request.user, ModerationDecision.Action.REPORT_REJECTED, item=item,
-                        note=note or 'Removed after user flags.')
+        lifecycle.transition(item, Item.Status.REMOVED, actor=request.user,
+                             action=ModerationDecision.Action.REPORT_REMOVED,
+                             note=note or 'Removed after user flags.')
         notify_user(item.reporter, kind='report', title=f'Report removed — “{item.title}”',
                     body=note or 'A moderator removed this report after reviewing user flags.',
                     url=item.get_absolute_url(), item=item)
@@ -217,8 +233,9 @@ def _weekly_trends(items, returned_claims, weeks=12):
         day = timezone.localtime(created).date()
         week = day - datetime.timedelta(days=day.weekday())
         (lost if rtype == Item.Type.LOST else found)[week] += 1
-    for updated in returned_claims.filter(updated_at__date__gte=first).values_list('updated_at', flat=True):
-        day = timezone.localtime(updated).date()
+    # The handover time (returned_at) is the recovery date; older rows fall back to updated_at.
+    for returned_at, updated in returned_claims.filter(updated_at__date__gte=first)             .values_list('returned_at', 'updated_at'):
+        day = timezone.localtime(returned_at or updated).date()
         returned[day - datetime.timedelta(days=day.weekday())] += 1
     rows = [{'week': w, 'label': w.strftime('%d %b'), 'lost': lost[w], 'found': found[w],
              'returned': returned[w]} for w in buckets]
@@ -295,9 +312,15 @@ def analytics_context(request):
             'high': tier_counts.get('high', 0), 'medium': tier_counts.get('medium', 0),
             'low': tier_counts.get('low', 0),
             'claims': claims.count(),
-            'claims_pending': sum(claim_status.get(s, 0) for s in ('submitted', 'questions', 'answered', 'disputed')),
+            'claims_pending': sum(claim_status.get(s, 0) for s in ('submitted', 'questions', 'answered')),
             'claims_approved': claim_status.get('approved', 0) + claim_status.get('returned', 0),
             'claims_rejected': claim_status.get('rejected', 0),
+            'claims_withdrawn': claim_status.get('withdrawn', 0),
+            'handovers_pending': claim_status.get('approved', 0),
+            'disputes_open': ClaimDispute.objects.filter(status=ClaimDispute.Status.OPEN).count(),
+            'recoveries': returned_claims.count(),
+            'recoveries_by_code': returned_claims.filter(handover_method='otp').count(),
+            'recoveries_by_exception': returned_claims.filter(handover_method='exception').count(),
             'returned': returned_total,
             'recovery_rate': recovery_rate,
             'flags_open': ReportFlag.objects.filter(resolved_at__isnull=True).count(),
@@ -593,7 +616,7 @@ def export_pdf(request):
         ['  High / medium / low confidence', f"{tier.get('high', 0)} / {tier.get('medium', 0)} / {tier.get('low', 0)}"],
         ['Claims submitted', claims.count()],
         ['  Pending / approved / rejected',
-         f"{sum(cstat.get(s, 0) for s in ('submitted', 'questions', 'answered', 'disputed'))} / "
+         f"{sum(cstat.get(s, 0) for s in ('submitted', 'questions', 'answered'))} / "
          f"{cstat.get('approved', 0) + cstat.get('returned', 0)} / {cstat.get('rejected', 0)}"],
         ['Items returned (handover confirmed)', returned.count()],
         ['Registered users (all time)', User.objects.count()],

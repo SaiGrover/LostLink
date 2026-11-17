@@ -11,6 +11,9 @@ from matching.models import Match
 from notifications.models import Notification
 
 
+from claims.test_support import APPROVE
+
+
 @lightweight_models
 class ClaimWorkflowTests(TestCase):
     def setUp(self):
@@ -63,9 +66,14 @@ class ClaimWorkflowTests(TestCase):
         response = self.client.post(reverse('claims:start', args=[self.found.pk]), {'statement': ''})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Claim.objects.count(), 0)
-        # a second verified claimant is blocked
+        # a second verified claimant is blocked: the item is reserved (handover
+        # pending), so the link explains why instead of opening a claim form
         Claim.objects.create(item=self.found, claimant=self.u['other'], statement='mine', status='approved')
-        self.assertEqual(self.start(self.u['owner'], self.found).status_code, 403)
+        self.found.status = 'claimed'
+        self.found.save()
+        response = self.start(self.u['owner'], self.found)
+        self.assertRedirects(response, self.found.get_absolute_url())
+        self.assertEqual(Claim.objects.filter(claimant=self.u['owner']).count(), 0)
 
     def test_match_link_must_belong_to_the_claimant(self):
         match = Match.objects.create(lost_item=self.lost, found_item=self.found, score=.9, tier='high')
@@ -124,7 +132,7 @@ class ClaimWorkflowTests(TestCase):
         page = self.client.get(claim.get_absolute_url())
         self.assertNotContains(page, 'finder@x.edu')
         self.client.force_login(self.u['mod'])
-        response = self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), {'note': 'Verified'})
+        response = self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
         self.assertRedirects(response, claim.get_absolute_url())
         claim.refresh_from_db()
         rival.refresh_from_db()
@@ -143,12 +151,12 @@ class ClaimWorkflowTests(TestCase):
     def test_approval_requires_answers_and_moderators_cannot_decide_own_claims(self):
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='mine')
         self.client.force_login(self.u['mod'])
-        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']))
+        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
         claim.refresh_from_db()
         self.assertEqual(claim.status, 'submitted')
         own = Claim.objects.create(item=self.lost, claimant=self.u['mod'], statement='I found it')
         VerificationQuestion.objects.create(claim=own, asked_by=self.u['owner'], text='?', answer='!')
-        self.assertEqual(self.client.post(reverse('claims:decide', args=[own.pk, 'approve'])).status_code, 403)
+        self.assertEqual(self.client.post(reverse('claims:decide', args=[own.pk, 'approve']), APPROVE).status_code, 403)
         self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'bogus'])).status_code, 403)
         self.assertEqual(self.client.get(reverse('claims:decide', args=[claim.pk, 'approve'])).status_code, 405)
 
@@ -162,7 +170,7 @@ class ClaimWorkflowTests(TestCase):
         self.assertEqual(self.found.status, 'approved')
         self.assertIn('Answers did not match', Notification.objects.get(user=self.u['owner'], kind='claim').body)
         # finalised: no re-decision, no answers, no dispute
-        self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'approve'])).status_code, 403)
+        self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE).status_code, 403)
         self.client.force_login(self.u['owner'])
         self.assertEqual(self.client.post(reverse('claims:dispute', args=[claim.pk]), {'reason': 'x'}).status_code, 403)
         q = claim.questions.first()
@@ -171,32 +179,42 @@ class ClaimWorkflowTests(TestCase):
     def test_double_approval_is_prevented(self):
         claim = self._answered_claim()
         self.client.force_login(self.u['mod'])
-        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']))
-        self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'approve'])).status_code, 403)
-        self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'reject'])).status_code, 403)
+        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
+        self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE).status_code, 403)
+        self.assertEqual(self.client.post(reverse('claims:decide', args=[claim.pk, 'reject']), {'note': 'x'}).status_code, 403)
         self.assertEqual(ModerationDecision.objects.filter(claim=claim).count(), 1)
 
-    def test_handover_confirmation_completes_recovery(self):
+    def test_handover_exception_requires_evidence_and_completes_recovery(self):
+        """The normal handover is the owner's code (claims.test_handover); a
+        moderator can only record a documented exception."""
         claim = self._answered_claim()
+        exception = {'reason': 'desk_collection', 'note': 'Collected at the desk after an ID check'}
         self.client.force_login(self.u['mod'])
         # cannot confirm before approval, students never can
-        self.assertEqual(self.client.post(reverse('claims:return', args=[claim.pk])).status_code, 403)
-        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']))
+        self.assertEqual(self.client.post(reverse('claims:return', args=[claim.pk]), exception).status_code, 403)
+        self.client.post(reverse('claims:decide', args=[claim.pk, 'approve']), APPROVE)
         self.client.force_login(self.u['owner'])
-        self.assertEqual(self.client.post(reverse('claims:return', args=[claim.pk])).status_code, 403)
+        self.assertEqual(self.client.post(reverse('claims:return', args=[claim.pk]), exception).status_code, 403)
         self.client.force_login(self.u['mod'])
         self.assertEqual(self.client.get(reverse('claims:return', args=[claim.pk])).status_code, 405)
-        self.client.post(reverse('claims:return', args=[claim.pk]), {'note': 'Collected at the desk'})
+        # an undocumented exception is refused
+        self.client.post(reverse('claims:return', args=[claim.pk]), {'reason': 'desk_collection', 'note': 'ok'})
+        claim.refresh_from_db()
+        self.assertEqual(claim.status, 'approved')
+        self.client.post(reverse('claims:return', args=[claim.pk]), exception)
         claim.refresh_from_db()
         self.found.refresh_from_db()
         self.assertEqual(claim.status, 'returned')
+        self.assertEqual(claim.handover_method, 'exception')
         self.assertEqual(self.found.status, 'returned')
         self.assertFalse(self.found.is_active)
-        self.assertTrue(ModerationDecision.objects.filter(action='handover_confirmed', note='Collected at the desk').exists())
+        self.assertTrue(ModerationDecision.objects.filter(action='handover_exception',
+                                                          note=exception['note']).exists())
+        self.assertFalse(ModerationDecision.objects.filter(action='handover_confirmed').exists())
         self.assertEqual(Notification.objects.filter(title__icontains='Handover completed').count(), 2)
-        self.assertEqual(self.client.post(reverse('claims:return', args=[claim.pk])).status_code, 403)
-        # history and analytics reflect it
-        self.assertEqual([s['state'] for s in claim.timeline()], ['done'] * 5)
+        self.assertEqual(self.client.post(reverse('claims:return', args=[claim.pk]), exception).status_code, 403)
+        # history reflects it
+        self.assertEqual([s['state'] for s in claim.timeline()], ['done'] * 6)
 
     def test_dispute_flow(self):
         claim = self._answered_claim()
@@ -206,16 +224,18 @@ class ClaimWorkflowTests(TestCase):
         self.assertEqual(claim.status, 'answered')
         self.client.post(reverse('claims:dispute', args=[claim.pk]), {'reason': 'The scratch is on the other side'})
         claim.refresh_from_db()
-        self.assertEqual(claim.status, 'disputed')
+        # A dispute is recorded alongside the claim; it never replaces its status.
+        self.assertEqual(claim.status, 'answered')
+        self.assertTrue(claim.has_open_dispute)
         self.assertTrue(claim.is_open)
         self.assertTrue(Notification.objects.filter(user=self.u['owner'], title__icontains='Dispute').exists())
         self.assertTrue(ModerationDecision.objects.filter(action='dispute_raised').exists())
-        self.assertEqual([s['key'] for s in claim.timeline()][2], 'disputed')
         self.client.force_login(self.u['mod'])
         self.assertContains(self.client.get(reverse('dashboard:moderation')), 'other side')
         self.client.post(reverse('claims:decide', args=[claim.pk, 'reject']), {'note': 'Not the owner'})
         claim.refresh_from_db()
         self.assertEqual(claim.status, 'rejected')
+        self.assertFalse(claim.has_open_dispute)  # rejecting the claim settles the dispute
         self.client.force_login(self.u['other'])
         self.assertEqual(self.client.get(claim.get_absolute_url()).status_code, 403)
 

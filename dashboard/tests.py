@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import User
-from claims.models import Claim
+from claims.models import Claim, ClaimDispute
 from config.testing import lightweight_models, make_taxonomy, make_users
 from dashboard.models import ModerationDecision
 from items.models import Category, Item, Location, ReportFlag
@@ -56,8 +56,9 @@ class ModerationTests(TestCase):
 
     def test_queue_shows_pending_claims_disputes_flags_and_history(self):
         claim = Claim.objects.create(item=self.found, claimant=self.u['owner'], statement='mine')
-        Claim.objects.create(item=self.found, claimant=self.u['other'], statement='no, mine', status='disputed',
-                             decision_note='Both say silver logo')
+        disputed = Claim.objects.create(item=self.found, claimant=self.u['other'], statement='no, mine',
+                                        status='answered')
+        ClaimDispute.objects.create(claim=disputed, raised_by=self.u['finder'], reason='Both say silver logo')
         ReportFlag.objects.create(item=self.found, reporter=self.u['other'], reason='duplicate', note='Seen twice')
         self.pending.duplicate_of = self.found
         self.pending.save()
@@ -65,8 +66,9 @@ class ModerationTests(TestCase):
         page = self.client.get(reverse('dashboard:moderation'))
         self.assertEqual(page.status_code, 200)
         ctx = page.context
+        # The disputed claim keeps its review status, so it is also an open claim.
         self.assertEqual((ctx['pending_count'], ctx['claim_count'], ctx['dispute_count'],
-                          ctx['flag_count'], ctx['duplicate_count']), (1, 1, 1, 1, 1))
+                          ctx['flag_count'], ctx['duplicate_count']), (1, 2, 1, 1, 1))
         self.assertContains(page, 'Seen twice')
         self.assertContains(page, 'Possible duplicate')
         self.assertIn(claim, list(ctx['open_claims']))
@@ -81,7 +83,7 @@ class ModerationTests(TestCase):
         ReportFlag.objects.create(item=self.found, reporter=self.u['owner'], reason='inappropriate')
         self.client.post(reverse('dashboard:resolve_flag', args=[self.found.pk, 'reject']), {'note': 'Not an item'})
         self.found.refresh_from_db()
-        self.assertEqual(self.found.status, 'rejected')
+        self.assertEqual(self.found.status, 'removed')  # explicit lifecycle state
         self.assertFalse(self.found.is_active)
         self.assertEqual(ModerationDecision.objects.filter(action='flag_resolved').count(), 2)
         self.assertTrue(Notification.objects.filter(user=self.u['finder'], title__icontains='removed').exists())

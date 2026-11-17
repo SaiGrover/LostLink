@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': Path(os.environ.get('LOSTLINK_SQLITE_PATH', BASE_DIR / 'db.sqlite3')),
     }
 }
 
@@ -253,3 +253,14 @@ MATCHING['TIER_MEDIUM'] = MATCHING_PROFILE['medium']
 MATCHING['TIER_HIGH'] = MATCHING_PROFILE['high']
 # Chance-level image similarity per vision model (see matching/profile.json).
 MATCHING['IMAGE_CHANCE'] = MATCHING_PROFILE.get('image_chance', {})
+
+# --- Claims: ownership reservation, appeals, evidence, OTP handover ---
+HANDOVER_CODE_TTL_MINUTES = int(os.environ.get('LOSTLINK_HANDOVER_CODE_TTL_MINUTES', 10))
+HANDOVER_CODE_MAX_ATTEMPTS = int(os.environ.get('LOSTLINK_HANDOVER_CODE_MAX_ATTEMPTS', 5))
+HANDOVER_CODES_PER_HOUR = int(os.environ.get('LOSTLINK_HANDOVER_CODES_PER_HOUR', 5))
+HANDOVER_VERIFY_PER_10_MIN = int(os.environ.get('LOSTLINK_HANDOVER_VERIFY_PER_10_MIN', 10))
+CLAIM_MAX_APPEALS = int(os.environ.get('LOSTLINK_CLAIM_MAX_APPEALS', 2))
+CLAIM_APPEALS_PER_DAY = int(os.environ.get('LOSTLINK_CLAIM_APPEALS_PER_DAY', 3))
+CLAIM_EVIDENCE_MAX_FILES = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_MAX_FILES', 5))
+CLAIM_EVIDENCE_MAX_BYTES = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_MAX_BYTES', 5 * 1024 * 1024))
+CLAIM_EVIDENCE_RETENTION_DAYS = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_RETENTION_DAYS', 180))

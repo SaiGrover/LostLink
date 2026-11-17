@@ -5,10 +5,10 @@
 {% block main %}
 {% with item=claim.item %}
 <header class="page-head page-head--tight">
-  <nav class="crumbs" aria-label="Breadcrumb"><a href="{% if can_moderate and not is_claimant and not is_finder %}{% url 'dashboard:moderation' %}{% else %}{% url 'claims:mine' %}{% endif %}">{% if can_moderate and not is_claimant and not is_finder %}Review queue{% else %}Claims{% endif %}</a>{% icon 'chevron-right' %}<span class="num">{{ claim.pk|claim_id }}</span></nav>
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="{% if independent %}{% url 'dashboard:moderation' %}{% else %}{% url 'claims:mine' %}{% endif %}">{% if independent %}Review queue{% else %}Claims{% endif %}</a>{% icon 'chevron-right' %}<span class="num">{{ claim.pk|claim_id }}</span></nav>
   <div class="page-head__row">
     <h1 style="font-size:var(--t-40)">{% if item.is_found %}Is “{{ item.title }}” theirs?{% else %}Did they find “{{ item.title }}”?{% endif %}</h1>
-    {% include 'partials/status_badge.html' with tone=claim.status_tone label=claim.get_status_display %}
+    {% include 'partials/status_badge.html' with tone=claim.status_tone label=claim.status_label %}
   </div>
   <p class="muted">
     {% if item.is_found %}Ownership claim{% else %}Offer to return{% endif %},
@@ -16,12 +16,16 @@
   </p>
 </header>
 
-{% if claim.status == 'approved' %}
-  <div class="notice notice--ok" style="margin-bottom:var(--s8)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Approved, not yet returned</span><span>Contact details are now visible below. Meet somewhere staffed, ideally the campus desk. A moderator records the return once the item has been handed over.</span></div></div>
-{% elif claim.status == 'disputed' %}
-  <div class="notice notice--warn" style="margin-bottom:var(--s8)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Disputed</span><span>{{ claim.decision_note }} A moderator will review the evidence before anything else happens.</span></div></div>
+{% if open_dispute %}
+  <div class="notice notice--warn" style="margin-bottom:var(--s8)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Dispute under review</span><span>{% if is_claimant or is_finder or can_moderate %}“{{ open_dispute.reason }}”{% endif %} A moderator reviews the evidence.{% if claim.status == 'approved' %} The item stays reserved for this claimant and the handover is paused meanwhile.{% endif %}</span></div></div>
+{% elif claim.status == 'approved' %}
+  <div class="notice notice--ok" style="margin-bottom:var(--s8)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Approved · handover pending</span><span>{% if is_recipient %}Meet somewhere staffed, ideally the campus desk. When you have the item in your hands and have checked it, create your one-time code below and tell it to the other person.{% elif is_provider %}Meet somewhere staffed, ideally the campus desk. Hand the item over, then ask the owner for their one-time code and enter it below.{% else %}The item is reserved for this claimant. It is recorded as returned only when the owner's one-time code is entered by the person handing it over.{% endif %}</span></div></div>
 {% elif claim.status == 'rejected' %}
   <div class="notice notice--bad" style="margin-bottom:var(--s8)">{% icon 'x' %}<div class="notice__body"><span class="notice__title">Rejected</span><span>{{ claim.decision_note|default:"The claim could not be verified." }}</span></div></div>
+{% elif claim.status == 'withdrawn' %}
+  <div class="notice" style="margin-bottom:var(--s8)">{% icon 'info' %}<div class="notice__body"><span class="notice__title">Withdrawn</span><span>The claimant withdrew this claim.</span></div></div>
+{% elif claim.status == 'returned' %}
+  <div class="notice notice--ok" style="margin-bottom:var(--s8)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Returned</span><span>{% if claim.handover_method == 'exception' %}Recorded by a moderator exception with documented evidence{% else %}Confirmed with the owner's one-time code{% endif %}{% if claim.returned_at %}, {{ claim.returned_at|date:"j M Y, H:i" }}{% endif %}.</span></div></div>
 {% elif is_claimant and unanswered %}
   <div class="notice notice--here" style="margin-bottom:var(--s8)">{% icon 'question' %}<div class="notice__body"><span class="notice__title">{{ unanswered }} question{{ unanswered|pluralize }} waiting for you</span><span>Answer below so a moderator can decide.</span></div></div>
 {% endif %}
@@ -60,20 +64,104 @@
   </aside>
 
   <div>
+    {% if claim.status == 'approved' %}
+    <section class="panel panel--here" aria-labelledby="handover-title">
+      <h2 id="handover-title">Handover</h2>
+      {% if handover_blocker %}
+        <p class="muted">{{ handover_blocker }}</p>
+      {% elif is_recipient %}
+        <p class="muted" style="margin-bottom:var(--s4)">You are receiving the item, so the one-time code is yours. <strong>Share it only after you have received and checked the item.</strong> It works once and expires after a few minutes.</p>
+        {% if session %}<p class="small muted" style="margin-bottom:var(--s4)">{% icon 'clock' %} Code #{{ session.generation_number }} is active until {{ session.expires_at|time:"H:i" }}. Creating a new code cancels it.</p>{% endif %}
+        <form method="post" action="{% url 'claims:issue_code' claim.pk %}">{% csrf_token %}<button class="btn btn-here btn-lg" type="submit">{% icon 'key' %}{% if session %}Create a new code{% else %}Show my handover code{% endif %}</button></form>
+      {% elif is_provider %}
+        <p class="muted" style="margin-bottom:var(--s4)">You are handing the item over. After the owner has the item and has checked it, they tell you their 6-digit code. Enter it here to complete the return.</p>
+        <form method="post" action="{% url 'claims:verify_code' claim.pk %}" class="stack" style="--gap:var(--s3);max-width:24rem">
+          {% csrf_token %}
+          <label class="label" for="{{ code_form.code.id_for_label }}">Owner's handover code</label>
+          {{ code_form.code }}
+          <div><button class="btn btn-ok btn-lg" type="submit">{% icon 'check' %}Verify &amp; complete handover</button></div>
+          {% if not session %}<span class="hint">No code is active yet. The owner creates it on their claim page when you meet.</span>{% endif %}
+        </form>
+      {% else %}
+        <p class="muted">Waiting for the owner's one-time code to be entered by the person handing the item over.</p>
+      {% endif %}
+
+      {% if can_moderate %}
+      <div class="mt-6 stack" style="--gap:var(--s3)">
+        <h3 class="h4">Code status</h3>
+        {% if sessions %}
+        <ul class="rows" style="border-top:0">
+          {% for s in sessions %}<li class="r"><div class="r__main"><span>Code #{{ s.generation_number }} · {{ s.get_status_display }}</span><span class="r__meta"><span>created {{ s.created_at|date:"j M, H:i" }}</span><span>expires {{ s.expires_at|time:"H:i" }}</span><span>{{ s.failed_attempts }} failed attempt{{ s.failed_attempts|pluralize }}</span>{% if s.verified_at %}<span>verified {{ s.verified_at|date:"j M, H:i" }}</span>{% endif %}</span></div></li>{% endfor %}
+        </ul>
+        {% else %}<p class="small muted">No code created yet. Codes are never visible to moderators.</p>{% endif %}
+        {% if independent and not handover_blocker %}
+        <details class="disclosure">
+          <summary>{% icon 'alert' %}Record a handover by exception{% icon 'chevron-down' 'chev' %}</summary>
+          <form method="post" action="{% url 'claims:return' claim.pk %}" class="stack disclosure__body" style="--gap:var(--s3);max-width:60ch" data-confirm="Record this handover as an exception?" data-confirm-text="Use only when the owner's code cannot be used. It is logged as an exception with your evidence, separately from code-confirmed handovers." data-confirm-tone="danger" data-confirm-label="Record exception">
+            {% csrf_token %}
+            <label class="label" for="{{ exception_form.reason.id_for_label }}">Why the code could not be used</label>{{ exception_form.reason }}
+            <label class="label" for="{{ exception_form.note.id_for_label }}">Evidence</label>{{ exception_form.note }}
+            <div><button class="btn btn-sm" type="submit">Record exception</button></div>
+          </form>
+        </details>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
     <section class="panel" aria-labelledby="statement-title">
       <h2 id="statement-title">{% if item.is_found %}Why they say it's theirs{% else %}How it was found{% endif %}</h2>
       <blockquote class="quote">{{ claim.statement }}</blockquote>
+      {% if revisions|length > 1 %}
+      <details class="disclosure mt-4">
+        <summary>{% icon 'clock' %}Statement history ({{ revisions|length }}){% icon 'chevron-down' 'chev' %}</summary>
+        <ol class="qa disclosure__body">
+          {% for r in revisions %}<li><p class="qa__q">{{ r.get_kind_display }} {{ r.number }} · {{ r.created_at|date:"j M Y, H:i" }}</p>{% if r.responds_to_decision %}<span class="qa__who">Responding to: “{{ r.responds_to_decision }}”</span>{% endif %}<p class="qa__a">{{ r.statement }}</p>{% if r.additional_details %}<span class="qa__who">New information: {{ r.additional_details }}</span>{% endif %}</li>{% endfor %}
+        </ol>
+      </details>
+      {% endif %}
     </section>
+
+    {% if private_details %}
+    <section class="panel" aria-labelledby="private-title">
+      <h2 id="private-title">{% icon 'lock' %} Private verification details</h2>
+      <p class="small muted" style="margin:calc(var(--s2) * -1) 0 var(--s4)">Recorded by the reporter. Never shown to the claimant or the public. Compare, don't reveal.</p>
+      <p class="prose">{{ private_details }}</p>
+    </section>
+    {% endif %}
+
+    {% if is_claimant or can_moderate %}
+    <section class="panel" aria-labelledby="evidence-title">
+      <h2 id="evidence-title">Ownership evidence</h2>
+      <p class="small muted" style="margin:calc(var(--s2) * -1) 0 var(--s4)">{% icon 'lock' %} Visible only to the claimant and moderators. Photos are re-encoded and their metadata removed.</p>
+      {% if evidence %}
+      <ul class="cluster" style="--gap:var(--s3)">
+        {% for e in evidence %}<li>{% if e.file %}<a class="link small" href="{% url 'claims:evidence_file' claim.pk e.pk %}" target="_blank" rel="noopener">Photo {{ forloop.counter }}</a>{% else %}<span class="small faint">Photo {{ forloop.counter }} (deleted after retention period)</span>{% endif %}{% if e.note %}<span class="small muted"> · {{ e.note }}</span>{% endif %}</li>{% endfor %}
+      </ul>
+      {% else %}<p class="small muted">No evidence uploaded.</p>{% endif %}
+      {% if is_claimant and claim.is_open %}
+      <form method="post" action="{% url 'claims:add_evidence' claim.pk %}" enctype="multipart/form-data" class="stack mt-4" style="--gap:var(--s2)">
+        {% csrf_token %}
+        <label class="label" for="evidence-files">Add a photo (receipt, a hidden mark, the box)</label>
+        <input class="field-file" id="evidence-files" type="file" name="evidence" accept="image/jpeg,image/png,image/webp" multiple required>
+        {{ evidence_form.note }}
+        <div><button class="btn btn-sm" type="submit">Upload privately</button></div>
+      </form>
+      {% endif %}
+    </section>
+    {% endif %}
 
     <section class="panel" aria-labelledby="interview-title">
       <h2 id="interview-title">Private questions</h2>
-      <p class="small muted" style="margin:calc(var(--s2) * -1) 0 var(--s5)">{% icon 'lock' %} Only the two people involved and moderators can see these.</p>
+      <p class="small muted" style="margin:calc(var(--s2) * -1) 0 var(--s5)">{% icon 'lock' %} Only the two people involved and moderators can see these. Expected answers are visible only to whoever asked and to moderators.</p>
       {% if questions %}
       <ol class="qa">
         {% for q in questions %}
         <li>
           <p class="qa__q">{{ q.text }}</p>
           <span class="qa__who">Asked by {% if q.asked_by_id == claim.item.reporter_id %}the {% if item.is_found %}finder{% else %}owner{% endif %}{% elif q.asked_by %}a moderator{% else %}someone{% endif %}, {{ q.created_at|naturaltime }}</span>
+          {% if q.show_expected %}<span class="qa__who">{% icon 'lock' %} Expected: {{ q.expected_answer }}</span>{% endif %}
           {% if q.answer %}
             <p class="qa__a">{{ q.answer }}</p>
             <span class="qa__who">Answered {{ q.answered_at|naturaltime }}</span>
@@ -93,12 +181,14 @@
       {% else %}
         {% include 'partials/empty.html' with compact=True title='No questions yet' text='The person who reported the item, or a moderator, asks something only the real owner would know: a scratch, a sticker, what is inside.' %}
       {% endif %}
-      {% if is_finder or can_moderate %}{% if claim.is_open %}
+      {% if is_finder or can_moderate and not is_claimant %}{% if claim.is_open %}
       <form method="post" action="{% url 'claims:add_question' claim.pk %}" class="stack mt-6" style="--gap:var(--s2)">
         {% csrf_token %}
         <label class="label" for="{{ question_form.text.id_for_label }}">Ask a private question</label>
-        <div class="row" style="align-items:stretch">{{ question_form.text }}<button class="btn btn-primary" type="submit">Ask</button></div>
-        <span class="hint">Ask about details that aren't in the public report. Avoid yes or no questions.</span>
+        {{ question_form.text }}
+        <label class="label" for="{{ question_form.expected_answer.id_for_label }}">{{ question_form.expected_answer.label }}</label>
+        <div class="row" style="align-items:stretch">{{ question_form.expected_answer }}<button class="btn btn-primary" type="submit">Ask</button></div>
+        <span class="hint">Ask about details that aren't in the public report. Avoid yes or no questions. The expected answer is a guide for the reviewer, not an automatic check.</span>
       </form>
       {% endif %}{% endif %}
     </section>
@@ -110,34 +200,62 @@
         <p class="muted">You submitted this claim, so another moderator has to decide it.</p>
       {% elif is_finder %}
         <p class="muted">You reported this item, so another moderator has to decide this claim. You can still ask private questions.</p>
+      {% elif open_dispute %}
+        <p class="muted">Resolve the open dispute below before deciding this claim.</p>
       {% else %}
         {% if not claim.all_answered %}<div class="notice notice--warn" style="margin-bottom:var(--s4)">{% icon 'alert' %}<div class="notice__body"><span>Approval needs at least one private question, with every question answered.</span></div></div>{% endif %}
-        <div class="cluster">
-          <form method="post" action="{% url 'claims:decide' claim.pk 'approve' %}" data-confirm="Approve this {% if item.is_found %}claim{% else %}offer to return{% endif %}?" data-confirm-text="Both people see each other's contact details. Other open claims on this item close. The item isn't marked returned until you confirm the handover." data-confirm-tone="success" data-confirm-label="Approve" data-confirm-note="Optional note to the claimant">
-            {% csrf_token %}<button class="btn btn-ok btn-lg" type="submit" {% if not claim.all_answered %}disabled{% endif %}>{% icon 'check' %}Approve after verification</button>
-          </form>
-          <form method="post" action="{% url 'claims:decide' claim.pk 'reject' %}" data-confirm="Reject this {% if item.is_found %}claim{% else %}offer to return{% endif %}?" data-confirm-text="The claimant sees your note. The report goes back into search if no other claim is active." data-confirm-tone="danger" data-confirm-label="Reject" data-confirm-note="Reason shared with the claimant">
-            {% csrf_token %}<button class="btn btn-danger btn-lg" type="submit">{% icon 'x' %}Reject</button>
-          </form>
-        </div>
+        <form method="post" action="{% url 'claims:decide' claim.pk 'approve' %}" class="stack" style="--gap:var(--s3)" data-confirm="Approve this {% if item.is_found %}claim{% else %}offer to return{% endif %}?" data-confirm-text="The item is reserved for this claimant and contact details are shared. Other open claims close. It is returned only when the owner's one-time code is entered at the handover." data-confirm-tone="success" data-confirm-label="Approve">
+          {% csrf_token %}
+          <p class="small muted">Record what each independent check showed. Free-text answers are never treated as automatically correct; approval needs at least one supporting check and none that contradicts the claim.</p>
+          <div class="form-grid form-grid--2">
+            {% for f in decision_form %}{% if f.name != 'note' %}<div class="field"><label class="label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}</div>{% endif %}{% endfor %}
+            <div class="field span-2"><label class="label" for="{{ decision_form.note.id_for_label }}">Reason (shared with the claimant)</label>{{ decision_form.note }}</div>
+          </div>
+          <div><button class="btn btn-ok btn-lg" type="submit" {% if not claim.all_answered %}disabled{% endif %}>{% icon 'check' %}Approve after verification</button></div>
+        </form>
+        <form method="post" action="{% url 'claims:decide' claim.pk 'reject' %}" class="mt-4" data-confirm="Reject this {% if item.is_found %}claim{% else %}offer to return{% endif %}?" data-confirm-text="The claimant sees your reason and may request reconsideration with more information." data-confirm-tone="danger" data-confirm-label="Reject" data-confirm-note="Reason shared with the claimant (required)">
+          {% csrf_token %}<button class="btn btn-danger" type="submit">{% icon 'x' %}Reject</button>
+        </form>
       {% endif %}
     </section>
     {% endif %}
 
-    {% if can_moderate and claim.status == 'approved' %}
-    <section class="panel panel--here" aria-labelledby="handover-title">
-      <h2 id="handover-title">Handover</h2>
-      <p class="muted" style="margin-bottom:var(--s4)">Confirm only once the item has been handed over in person. This closes the claim and marks the report returned.</p>
-      <form method="post" action="{% url 'claims:return' claim.pk %}" data-confirm="Confirm the item was handed over?" data-confirm-text="The report is marked returned and leaves search and matching. Both people are told, and it's added to the decision log." data-confirm-tone="success" data-confirm-label="Mark item returned" data-confirm-note="Where and how was it handed over? (optional)">
-        {% csrf_token %}<button class="btn btn-primary btn-lg" type="submit">Mark item returned</button>
+    {% if open_dispute and independent %}
+    <section class="panel panel--here" aria-labelledby="dispute-title">
+      <h2 id="dispute-title">Resolve the dispute</h2>
+      <p class="muted" style="margin-bottom:var(--s4)">Raised by {{ open_dispute.raised_by.display_name|default:"someone" }} {{ open_dispute.created_at|naturaltime }}: “{{ open_dispute.reason }}”</p>
+      {% if open_dispute.raised_by_id == request.user.id %}<p class="muted">You raised this dispute, so another moderator has to resolve it.</p>{% else %}
+      <form method="post" action="{% url 'claims:resolve_dispute' claim.pk %}" class="stack" style="--gap:var(--s3);max-width:60ch" data-confirm="Resolve this dispute?" data-confirm-text="Revoking an approval releases the reservation so the item can be claimed again. Every outcome is recorded with your reason." data-confirm-tone="danger" data-confirm-label="Resolve">
+        {% csrf_token %}
+        <label class="label" for="{{ dispute_form.outcome.id_for_label }}">Outcome</label>{{ dispute_form.outcome }}
+        <label class="label" for="{{ dispute_form.note.id_for_label }}">Reason and evidence considered</label>{{ dispute_form.note }}
+        <div><button class="btn" type="submit">Record resolution</button></div>
       </form>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if is_claimant and claim.status == 'rejected' %}
+    <section class="panel" aria-labelledby="appeal-title">
+      <h2 id="appeal-title">Request reconsideration</h2>
+      {% if appeal_ok %}
+      <p class="muted" style="margin-bottom:var(--s4)">Correct or expand your statement and add evidence. A moderator reviews it again; the earlier decision stays on record. {{ claim.appeal_count }} of {{ max_appeals }} requests used.</p>
+      <form method="post" action="{% url 'claims:appeal' claim.pk %}" enctype="multipart/form-data" class="stack" style="--gap:var(--s3)">
+        {% csrf_token %}
+        <label class="label" for="{{ appeal_form.statement.id_for_label }}">{{ appeal_form.statement.label }}</label>{{ appeal_form.statement }}
+        <label class="label" for="{{ appeal_form.additional_details.id_for_label }}">{{ appeal_form.additional_details.label }}</label>{{ appeal_form.additional_details }}
+        <label class="label" for="appeal-files">Evidence photos <span class="opt">optional</span></label>
+        <input class="field-file" id="appeal-files" type="file" name="evidence" accept="image/jpeg,image/png,image/webp" multiple>
+        <div><button class="btn btn-primary" type="submit">Send for reconsideration</button></div>
+      </form>
+      {% else %}<p class="muted">{{ appeal_reason }}</p>{% endif %}
     </section>
     {% endif %}
 
     {% if assessment %}
     <section class="panel" aria-labelledby="ai-title">
       <h2 id="ai-title">Matching evidence</h2>
-      <p class="small muted" style="margin:calc(var(--s2) * -1) 0 var(--s5)">Context for the moderator. Scores rank evidence; people decide ownership.</p>
+      <p class="small muted" style="margin:calc(var(--s2) * -1) 0 var(--s5)">Context for the reviewer. A similarity score ranks reports; it is not evidence of ownership.</p>
       {% if assessment.match %}
         <div class="cluster" style="margin-bottom:var(--s4)"><span class="score" style="font-size:var(--t-40)">{{ assessment.match.percent }}<small>/100</small></span>{% include 'partials/tier_badge.html' with tier=assessment.match.tier %}</div>
         <p class="small muted" style="margin-bottom:var(--s4)">Similarity between the {{ claim.role_label|lower }}'s own report and this one.</p>
@@ -150,7 +268,7 @@
           </tbody>
         </table>
       {% else %}
-        <p class="muted">The {{ claim.role_label|lower }} has no matching report on file. Rely on the statement and the private answers.</p>
+        <p class="muted">The {{ claim.role_label|lower }} has no matching report on file. Rely on the statement, private details and answers.</p>
       {% endif %}
       <table class="why mt-5">
         <tbody><tr class="sig-text"><td><span class="sig"><i aria-hidden="true"></i>Statement fit</span><div class="small faint">Text similarity between the statement and the report</div></td><td class="bar" aria-hidden="true"><span style="width:{{ assessment.statement_sim }}%"></span></td><td class="n">{{ assessment.statement_sim }}%</td></tr></tbody>
@@ -162,22 +280,28 @@
     <section class="panel" aria-labelledby="audit-title">
       <h2 id="audit-title">Decision record</h2>
       <ul class="rows" style="border-top:0">
-        {% for d in decisions %}<li class="r"><div class="r__main"><span>{% include 'partials/status_badge.html' with tone=d.tone label=d.get_action_display %}</span><span class="r__meta"><span>{{ d.actor.display_name|default:"System" }}</span><span class="num">{{ d.created_at|date:"j M Y, H:i" }}</span></span>{% if d.note %}<span>{{ d.note }}</span>{% endif %}</div></li>{% endfor %}
+        {% for d in decisions %}<li class="r"><div class="r__main"><span>{% include 'partials/status_badge.html' with tone=d.tone label=d.get_action_display %}</span><span class="r__meta"><span>{{ d.actor.display_name|default:"System" }}</span><span class="num">{{ d.created_at|date:"j M Y, H:i" }}</span>{% if d.from_state or d.to_state %}<span>{{ d.from_state|default:"—" }} → {{ d.to_state|default:"—" }}</span>{% endif %}</span>{% if d.note %}<span>{{ d.note }}</span>{% endif %}</div></li>{% endfor %}
       </ul>
     </section>
     {% endif %}
 
-    {% if not claim.is_finalised %}
+    {% if is_claimant and claim.status in 'submitted questions answered approved' %}
+    <form method="post" action="{% url 'claims:withdraw' claim.pk %}" class="mt-8" data-confirm="Withdraw your claim?" data-confirm-text="{% if claim.status == 'approved' %}The reservation is released and the item becomes available to others again.{% else %}The claim closes. You can't reopen a withdrawn claim.{% endif %}" data-confirm-tone="danger" data-confirm-label="Withdraw claim">
+      {% csrf_token %}<button class="btn btn-plain" type="submit">{% icon 'trash' %}Withdraw my claim</button>
+    </form>
+    {% endif %}
+
+    {% if not claim.is_finalised and not open_dispute %}{% if is_claimant or is_finder or can_moderate %}
     <details class="disclosure mt-8">
       <summary>{% icon 'flag' %}Raise a concern about this claim{% icon 'chevron-down' 'chev' %}</summary>
-      <form method="post" action="{% url 'claims:dispute' claim.pk %}" class="stack disclosure__body" style="--gap:var(--s3);max-width:60ch" data-confirm="Send this claim for dispute review?" data-confirm-text="The claim pauses for a moderator and the other person is told a concern was raised." data-confirm-tone="danger" data-confirm-label="Raise dispute">
+      <form method="post" action="{% url 'claims:dispute' claim.pk %}" class="stack disclosure__body" style="--gap:var(--s3);max-width:60ch" data-confirm="Send this claim for dispute review?" data-confirm-text="A moderator reviews it. {% if claim.status == 'approved' %}The reservation stays in place and the handover pauses meanwhile.{% else %}The other person is told a concern was raised.{% endif %}" data-confirm-tone="danger" data-confirm-label="Raise dispute">
         {% csrf_token %}
         <label class="label" for="dispute-reason">What's wrong?</label>
-        <textarea class="input" id="dispute-reason" name="reason" maxlength="280" rows="3" required placeholder="For example: the scratch they describe is on the other side"></textarea>
+        <textarea class="input" id="dispute-reason" name="reason" maxlength="500" rows="3" required placeholder="For example: the item handed over was not mine"></textarea>
         <div><button class="btn btn-sm" type="submit">Send to moderators</button></div>
       </form>
     </details>
-    {% endif %}
+    {% endif %}{% endif %}
   </div>
 </div>
 {% endwith %}

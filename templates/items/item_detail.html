@@ -12,9 +12,13 @@
 {% elif item.status == 'rejected' %}
   <div class="notice notice--bad" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">This report was rejected</span><span>It's hidden from search and matching.{% if is_owner and item.is_active %} You can edit it and send it for review again.{% endif %}</span></div></div>
 {% elif item.status == 'returned' %}
-  <div class="notice notice--ok" style="margin-bottom:var(--s7)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Returned to its owner</span><span>A moderator confirmed the handover. This report is closed.</span></div></div>
+  <div class="notice notice--ok" style="margin-bottom:var(--s7)">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Returned to its owner</span><span>The handover was confirmed. This report is closed.</span></div></div>
+{% elif item.status == 'removed' %}
+  <div class="notice notice--bad" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Removed by a moderator</span><span>Hidden from search and matching.</span></div></div>
 {% elif not item.is_active %}
   <div class="notice" style="margin-bottom:var(--s7)">{% icon 'info' %}<div class="notice__body"><span class="notice__title">Withdrawn by the reporter</span><span>Hidden from search and matching.</span></div></div>
+{% elif item.is_handover_pending %}
+  <div class="notice notice--ok" style="margin-bottom:var(--s7)">{% icon 'clock' %}<div class="notice__body"><span class="notice__title">Handover pending</span><span>A moderator verified ownership. The item is reserved until the handover is confirmed, so it is not accepting new claims.</span></div></div>
 {% endif %}
 
 <div class="case">
@@ -28,7 +32,7 @@
 
   <div class="stack" style="--gap:var(--s6)">
     <div class="stack" style="--gap:var(--s3)">
-      <div class="cluster">{% include 'partials/type_badge.html' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}</div>
+      <div class="cluster">{% include 'partials/type_badge.html' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.display_status %}</div>
       <h1 class="case__title">{{ item.title }}</h1>
       <p class="prose" style="font-size:var(--t-18)">{{ item.description }}</p>
     </div>
@@ -39,6 +43,7 @@
       <dt>Category</dt><dd>{{ item.category.name }}</dd>
       {% if item.brand %}<dt>Brand</dt><dd>{{ item.brand }}</dd>{% endif %}
       {% if item.color %}<dt>Colour</dt><dd>{{ item.color }}</dd>{% endif %}
+      {% if item.private_details and is_owner or item.private_details and can_review %}<dt>{% icon 'lock' %} Private details</dt><dd>{{ item.private_details }}<span class="small muted" style="display:block;font-weight:500">Only you and moderators see this. Used to check claims.</span></dd>{% endif %}
       <dt>Reported by</dt><dd>{% if is_owner %}You{% elif can_review %}{{ item.reporter.display_name }}{% else %}A campus member{% endif %}, {{ item.created_at|naturaltime }}</dd>
     </dl>
 
@@ -55,8 +60,11 @@
       <div class="panel panel--here">
         {% if existing_claim %}
           <h2 class="h3">Your {% if item.is_found %}claim{% else %}offer to return it{% endif %}</h2>
-          <p class="muted mt-2">{{ existing_claim.get_status_display }}.</p>
+          <p class="muted mt-2">{{ existing_claim.status_label }}.{% if eligibility.state == 'appealable' %} {{ eligibility.reason }}{% endif %}</p>
           <a href="{% url 'claims:detail' existing_claim.pk %}" class="btn btn-primary mt-4">Open claim {{ existing_claim.pk|claim_id }}</a>
+        {% elif not eligibility.can_claim %}
+          <h2 class="h3">{% if eligibility.state == 'handover_pending' %}Handover pending{% else %}Not accepting claims{% endif %}</h2>
+          <p class="muted mt-2">{{ eligibility.reason }}</p>
         {% elif item.is_found %}
           <h2 class="h3">Is this yours?</h2>
           <p class="muted mt-2">Start a claim. You'll answer private questions only the owner would know, and a moderator approves it before contact details are shared.</p>
@@ -95,7 +103,7 @@
         <div class="stack" style="--gap:var(--s2)">
           <h3 class="h4">Claims on this report</h3>
           <ul class="rows" style="border-top-width:1px">
-            {% for c in claims %}<li><div class="r r--link"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><div class="r__main"><span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.claimant.display_name }}</a></span><span class="r__meta"><span class="num">{{ c.pk|claim_id }}</span><span>{{ c.created_at|naturaltime }}</span></span></div><div class="r__side r__side--keep">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</div></div></li>{% endfor %}
+            {% for c in claims %}<li><div class="r r--link"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><div class="r__main"><span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.claimant.display_name }}</a></span><span class="r__meta"><span class="num">{{ c.pk|claim_id }}</span><span>{{ c.created_at|naturaltime }}</span></span></div><div class="r__side r__side--keep">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.status_label %}</div></div></li>{% endfor %}
           </ul>
         </div>
       {% endif %}
@@ -110,7 +118,7 @@
     <section class="panel" aria-labelledby="responses-title">
       <h2 id="responses-title">Responses to your report</h2>
       <ul class="rows" style="border-top-width:1px">
-        {% for c in claims %}<li><div class="r r--link"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><div class="r__main"><span class="r__title"><a href="{% url 'claims:detail' c.pk %}">Claim {{ c.pk|claim_id }}</a></span><span class="r__meta">{{ c.created_at|naturaltime }}</span></div><div class="r__side r__side--keep">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.get_status_display %}</div></div></li>{% endfor %}
+        {% for c in claims %}<li><div class="r r--link"><span class="avatar" aria-hidden="true">{{ c.claimant.initials }}</span><div class="r__main"><span class="r__title"><a href="{% url 'claims:detail' c.pk %}">Claim {{ c.pk|claim_id }}</a></span><span class="r__meta">{{ c.created_at|naturaltime }}</span></div><div class="r__side r__side--keep">{% include 'partials/status_badge.html' with tone=c.status_tone label=c.status_label %}</div></div></li>{% endfor %}
       </ul>
     </section>
     {% endif %}

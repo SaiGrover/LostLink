@@ -23,3 +23,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_filter = ('report_type', 'status', 'category', 'location')
     search_fields = ('title', 'description', 'brand', 'color')
     date_hierarchy = 'created_at'
+    # Lifecycle fields change only through the audited workflow
+    # (items.lifecycle), never by editing a row in the admin.
+    readonly_fields = ('reporter', 'status', 'is_active', 'duplicate_of', 'text_vector',
+                       'image_vector', 'feature_version')

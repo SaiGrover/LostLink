@@ -4,7 +4,7 @@
       {% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy" decoding="async">
       {% else %}<span class="photo__none" aria-hidden="true">{{ item.category.icon }}</span>{% endif %}
     </div>
-    {% if item.status == 'claimed' or item.status == 'pending' or item.status == 'rejected' or item.status == 'returned' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.get_status_display %}{% endif %}
+    {% if item.status == 'claimed' or item.status == 'pending' or item.status == 'rejected' or item.status == 'returned' or item.status == 'withdrawn' or item.status == 'removed' %}{% include 'partials/status_badge.html' with tone=item.status_tone label=item.display_status %}{% endif %}
     <span class="item__ink item__ink--{{ item.report_type }}" aria-hidden="true"></span>
   </div>
   <div class="stack" style="--gap:6px">
