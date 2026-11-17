@@ -7,7 +7,7 @@
   <div class="page-head__row">
     <div class="stack" style="--gap:var(--s3)">
       <h1>Review queue</h1>
-      <p class="lede">Nothing is published, and nothing is handed over, until a moderator has looked at the evidence.</p>
+      <p class="lede">Reports that may show personal details wait here before they are published, and nothing is handed over until a moderator has looked at the evidence.</p>
     </div>
     <a class="btn" href="{% url 'dashboard:decisions' %}">{% icon 'history' %}Decision log</a>
   </div>
@@ -33,6 +33,7 @@
           <a class="review__title quiet-link" href="{{ item.get_absolute_url }}">{{ item.title }}</a>
           <p class="clamp-3" style="max-width:68ch">{{ item.description }}</p>
           <p class="r__meta"><span>{{ item.category.name }}</span><span>{{ item.location.name }}</span><span class="num">{{ item.event_date|date:"j M" }}</span><span>{{ item.reporter.display_name }}</span><span>Sent {{ item.created_at|naturaltime }}</span></p>
+          {% if item.review_reasons %}<div class="notice">{% icon 'lock' %}<div class="notice__body"><span><b>Why it needs review:</b> {{ item.review_reasons|join:" " }}</span></div></div>{% endif %}
           {% if item.duplicate_of %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span><b>Possible duplicate</b> of <a class="link" href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }}, {{ item.duplicate_of.title }}</a></span></div></div>{% endif %}
         </div>
         <div class="review__decide">
@@ -42,7 +43,7 @@
         </div>
       </article>
     {% empty %}
-      {% include 'partials/empty.html' with title='No reports waiting' text='New reports arrive here, oldest first.' %}
+      {% include 'partials/empty.html' with title='No reports waiting' text='Reports that may show personal details arrive here, oldest first. Everything else is published automatically.' %}
     {% endfor %}
     </div>
     {% include 'partials/pagination.html' %}

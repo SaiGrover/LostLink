@@ -12,9 +12,9 @@ and SQLite. PostgreSQL 17 is exercised by the GitHub Actions workflow on push
 | `python manage.py makemigrations --check --dry-run` | No changes |
 | `python manage.py check --deploy` (DEBUG off, production env) | Only `accounts.W001`: email delivery not configured in that test environment (expected until SMTP is set) |
 | `python manage.py migrate` on a copy of the populated demo database | All new migrations applied; data kept; legacy disputes and inactive reports migrated; existing accounts marked verified (legacy) |
-| `python manage.py test` on SQLite | 364 tests, all passing, 1 skipped (pretrained smoke test, opt-in) |
-| `scripts/smoke_first_run.py` on an empty database | 11 steps passed (registration + email verification, taxonomy seeding, reports, moderation, matching, checklist approval, one-time-code handover, notifications); real SMTP delivery not run |
-| `scripts/e2e_workflow.py` | Full journey through the real UI passes, ending with the owner's one-time code entered by the finder |
+| `python manage.py test` on SQLite | 394 tests, all passing, 1 skipped (pretrained smoke test, opt-in) |
+| `scripts/smoke_first_run.py` on an empty database | 11 steps passed (registration + email verification, taxonomy seeding, reports (one published automatically, one held for a moderator), moderation, matching, checklist approval, one-time-code handover, notifications); real SMTP delivery not run |
+| `scripts/e2e_workflow.py` | Full journey through the real UI passes: the ticked found report waits for a moderator, the plain lost report is published at once, ending with the owner's one-time code entered by the finder |
 | `scripts/browser_check.py` (4 roles, 24 routes, 390/768/1440 px, light and dark) | 318 page checks, no HTTP errors, overflow, JS errors or heading faults |
 | `scripts/mobile_nav_check.py` (320–767 px, 7 pages) | 65 checks, content and last controls clear of the tab bar |
 | `rebuild_matches` (ResNet-50, engine `synopsis-v3`) on a copy of the demo database | 6 true lost/found pairs scored 71–92 (2 strong, 4 moderate), evidence coverage 1.0; second run changed nothing |

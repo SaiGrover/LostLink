@@ -38,10 +38,11 @@ def _reject_private_identifiers(value, field_label):
 
 class ItemForm(forms.ModelForm):
     declare_sensitive = forms.BooleanField(
-        required=False, label='This photo shows personal details',
-        help_text='For example an ID or bank card, a name, number, phone number or QR code. '
-                  'Others then see only a blurred preview; you, moderators and the verified '
-                  'owner see the full photo.')
+        required=False, label='This report shows personal details',
+        help_text='For example an ID or bank card, or a photo with a name, number, phone number '
+                  'or QR code. A moderator checks the report before it is published, and others '
+                  'see only a blurred photo. Without this, the report is published straight away '
+                  '(ID and bank cards are detected automatically too).')
 
     class Meta:
         model = Item
@@ -91,7 +92,8 @@ class ItemForm(forms.ModelForm):
             self.fields['declare_sensitive'].initial = True
             self.fields['declare_sensitive'].disabled = True
             self.fields['declare_sensitive'].help_text = (
-                'This photo is shown to others as a blurred preview. Only a moderator can change that.')
+                'This report is checked by a moderator and its photo is shown to others as a blurred '
+                'preview. Only a moderator can change that.')
 
     # --- upload hardening (see items/media.py) ----------------------------
     MAX_IMAGE_MB = media.DEFAULT_MAX_BYTES // (1024 * 1024)

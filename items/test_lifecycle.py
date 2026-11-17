@@ -103,15 +103,25 @@ class LifecycleTests(TestCase):
         page = self.client.get(reverse('items:mine') + '?status=withdrawn')
         self.assertContains(page, 'Black wallet')
 
-    def test_editing_sends_report_back_to_review(self):
+    def _edit_found(self, **extra):
         self.client.force_login(self.u['finder'])
         self.client.post(reverse('items:edit', args=[self.found.pk]), {
             'report_type': 'found', 'title': 'Black wallet', 'category': self.t['bags'].pk,
             'location': self.t['library'].pk, 'event_date': '2026-11-01',
-            'description': 'Black leather wallet, silver logo', 'private_details': 'Coin pocket zip broken'})
+            'description': 'Black leather wallet, silver logo', 'private_details': 'Coin pocket zip broken',
+            **extra})
         self.found.refresh_from_db()
-        self.assertEqual(self.found.status, 'pending')
+
+    def test_editing_a_plain_report_keeps_it_published_and_audited(self):
+        self._edit_found()
+        self.assertEqual(self.found.status, 'approved')
         self.assertEqual(self.found.private_details, 'Coin pocket zip broken')
+        self.assertTrue(ModerationDecision.objects.filter(action='report_auto_published', from_state='approved',
+                                                          to_state='approved', item=self.found).exists())
+
+    def test_editing_to_declare_personal_details_sends_report_back_to_review(self):
+        self._edit_found(declare_sensitive='on')
+        self.assertEqual(self.found.status, 'pending')
         self.assertTrue(ModerationDecision.objects.filter(action='report_resubmitted', from_state='approved',
                                                           to_state='pending').exists())
 

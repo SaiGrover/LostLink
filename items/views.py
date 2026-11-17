@@ -142,9 +142,20 @@ def report_item(request):
                     item.duplicate_of = recent[best]
             item.save()
             from matching.features import prepare
+            from matching.services import run_matching
+            from . import publishing
             prepare(item)  # features once at submission time (Section 4.4)
-            messages.success(request, 'Report submitted. A moderator will review it before it '
-                                      'appears in search and matching.')
+            with transaction.atomic():
+                locked = Item.objects.select_for_update().get(pk=item.pk)
+                published = publishing.submit_new(locked)
+            if published:
+                matches = run_matching(locked)
+                messages.success(request, 'Report published. It is now in search and matching.' +
+                                 (f' {len(matches)} possible match{"es" if len(matches) != 1 else ""} '
+                                  'found.' if matches else ''))
+            else:
+                messages.success(request, 'Report submitted. Because it may show personal details, '
+                                          'a moderator checks it before it is published.')
             return redirect(item.get_absolute_url())
     else:
         form = ItemForm(initial=initial)
@@ -420,10 +431,7 @@ def search_api(request):
 @login_required
 @verified_required
 def edit_item(request, pk):
-    from dashboard.models import ModerationDecision
-    from items import lifecycle
-
-    item = get_object_or_404(Item, pk=pk, reporter=request.user, is_active=True)
+    item =get_object_or_404(Item, pk=pk, reporter=request.user, is_active=True)
     if item.claims.exclude(status__in=['rejected', 'withdrawn']).exists():
         messages.error(request, 'A report with an ongoing claim cannot be edited. Contact a moderator.')
         return redirect(item.get_absolute_url())
@@ -434,18 +442,26 @@ def edit_item(request, pk):
             if locked.claims.exclude(status__in=['rejected', 'withdrawn']).exists():
                 messages.error(request, 'A claim arrived while you were editing. Contact a moderator.')
                 return redirect(item.get_absolute_url())
+            from . import publishing
+            previous = locked.status
             item = form.save(commit=False)
             item.status = locked.status  # status changes only through the lifecycle
             item.feature_version = ''
             item.save()
-            # Any edit (including private verification details) goes back to review.
-            lifecycle.transition(item, Item.Status.PENDING, actor=request.user,
-                                 action=ModerationDecision.Action.REPORT_RESUBMITTED,
-                                 note='Edited by the reporter.')
             clear_matches(item)  # content changed: stale scores must not survive
+            # Published again at once unless it may show personal details (or
+            # a moderator rejected it before); see items/publishing.py.
+            published = publishing.resubmit_edited(item, previous_status=previous,
+                                                   actor=request.user)
         from matching.features import prepare
+        from matching.services import run_matching
         prepare(item)
-        messages.success(request, 'Changes saved and sent for moderator review.')
+        if published:
+            run_matching(item)
+            messages.success(request, 'Changes saved and published.')
+        else:
+            messages.success(request, 'Changes saved. A moderator checks the report before it is '
+                                      'published again.')
         return redirect(item.get_absolute_url())
     return render(request, 'items/report_form.html', {'form': form, 'editing': True, 'item': item})
 

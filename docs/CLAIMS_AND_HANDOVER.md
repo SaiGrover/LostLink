@@ -30,7 +30,16 @@ Report:  pending → approved ⇄ claimed → returned
   audit log and retires or reruns matching.
 * Returned, withdrawn and removed are terminal and inactive: the report leaves
   search, matching and claim intake.
-* Editing a report sends it back to `pending` (audited as "resubmitted").
+* A new report is published at once (audited as "published automatically",
+  with no human actor) unless it may show personal details: the reporter
+  ticked "This report shows personal details", or `media.suggests_sensitive`
+  detects an ID card, bank card or personal document from the category, title
+  or description. Those stay `pending` for a moderator, with the reasons stored
+  on the report (`Item.review_reasons`) and shown in the queue. See
+  `items/publishing.py`; `LOSTLINK_AUTO_PUBLISH=false` reviews every report.
+* Editing a report applies the same rule: it stays published, or goes back to
+  `pending` (audited as "resubmitted") if it now may show personal details. A
+  report a moderator rejected always goes back to a moderator.
 
 ## Independent review
 

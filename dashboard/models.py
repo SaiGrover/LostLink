@@ -15,6 +15,7 @@ class ModerationDecision(models.Model):
 
     class Action(models.TextChoices):
         REPORT_APPROVED = 'report_approved', 'Report approved'
+        REPORT_AUTO_PUBLISHED = 'report_auto_published', 'Report published automatically'
         REPORT_REJECTED = 'report_rejected', 'Report rejected'
         REPORT_WITHDRAWN = 'report_withdrawn', 'Report withdrawn'
         REPORT_REMOVED = 'report_removed', 'Report removed'
@@ -70,7 +71,7 @@ class ModerationDecision(models.Model):
     @property
     def tone(self):
         return {
-            'report_approved': 'success', 'claim_approved': 'success', 'handover_confirmed': 'success',
+            'report_approved': 'success', 'report_auto_published': 'success', 'claim_approved': 'success', 'handover_confirmed': 'success',
             'handover_exception': 'warning', 'report_rejected': 'danger', 'claim_rejected': 'danger',
             'claim_revoked': 'danger', 'report_removed': 'danger', 'dispute_raised': 'warning',
             'handover_code_failed': 'warning', 'handover_suspended': 'warning',

@@ -382,6 +382,12 @@ PASSWORD_RESET_TIMEOUT = int(os.environ.get('LOSTLINK_PASSWORD_RESET_TIMEOUT') o
 # accounts.policy.DEFAULT_RATE_LIMITS can be overridden here.
 LOSTLINK_AUTH_RATE_LIMITS = {}
 
+# Publishing (items/publishing.py): reports go live immediately unless the
+# reporter says they show personal details or the sensitivity check flags
+# them; those wait for a moderator. Set to false to review every report.
+LOSTLINK_AUTO_PUBLISH = os.environ.get(
+    'LOSTLINK_AUTO_PUBLISH', 'true').strip().lower() in ('1', 'true', 'yes', 'on')
+
 # --- Review follow-ups: production identity checks, proxy trust, shared cache ---
 # Decided when settings load (the test runner later forces DEBUG off, so checks
 # must not read DEBUG itself).

@@ -52,16 +52,18 @@ class ReportingTests(TestCase):
         data.update(overrides)
         return data
 
-    def test_create_lost_report_with_photo_is_pending_and_featurised(self):
+    def test_create_lost_report_with_photo_is_published_and_featurised(self):
+        # No personal details ticked or detected: published at once
+        # (items/test_auto_publish.py covers the reports held for review).
         response = self.client.post(reverse('items:report'), self.payload(image=png_upload()))
         item = Item.objects.get()
         self.assertRedirects(response, item.get_absolute_url())
-        self.assertEqual(item.status, Item.Status.PENDING)
+        self.assertEqual(item.status, Item.Status.APPROVED)
         self.assertEqual(item.reporter, self.users['owner'])
         self.assertTrue(item.image)
         self.assertIsNotNone(item.image_vector)
         self.assertTrue(item.feature_version)
-        self.assertFalse(item.is_public)
+        self.assertTrue(item.is_public)
 
     def test_create_found_report_without_photo(self):
         self.client.post(reverse('items:report'), self.payload(report_type='found'))
@@ -96,7 +98,7 @@ class ReportingTests(TestCase):
         second = Item.objects.order_by('-pk').first()
         self.assertIsNotNone(second.duplicate_of)
 
-    def test_owner_edit_returns_report_to_review_and_clears_matches(self):
+    def test_owner_edit_keeps_plain_report_published_and_rescores_matches(self):
         item = Item.objects.create(reporter=self.users['owner'], report_type='lost', title='Wallet',
                                    description='Black leather wallet', category=self.tax['bags'],
                                    location=self.tax['library'], status='approved')
@@ -107,6 +109,23 @@ class ReportingTests(TestCase):
         response = self.client.post(reverse('items:edit', args=[item.pk]),
                                     self.payload(description='Black leather wallet, now with more detail'))
         self.assertRedirects(response, item.get_absolute_url())
+        item.refresh_from_db()
+        self.assertEqual(item.status, Item.Status.APPROVED)
+        # The stale hand-written score does not survive: the pair is re-scored
+        # from the edited text (or retired if it no longer qualifies).
+        self.assertFalse(Match.objects.filter(lost_item=item, score=.9).exists())
+
+    def test_owner_edit_declaring_personal_details_returns_report_to_review(self):
+        item = Item.objects.create(reporter=self.users['owner'], report_type='lost', title='Wallet',
+                                   description='Black leather wallet', category=self.tax['bags'],
+                                   location=self.tax['library'], status='approved')
+        found = Item.objects.create(reporter=self.users['finder'], report_type='found', title='Wallet',
+                                    description='Black leather wallet', category=self.tax['bags'],
+                                    location=self.tax['library'], status='approved')
+        Match.objects.create(lost_item=item, found_item=found, score=.9, tier='high')
+        self.client.post(reverse('items:edit', args=[item.pk]),
+                         self.payload(description='Black leather wallet, now with more detail',
+                                      declare_sensitive='on'))
         item.refresh_from_db()
         self.assertEqual(item.status, Item.Status.PENDING)
         self.assertEqual(Match.objects.count(), 0)

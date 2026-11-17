@@ -8,7 +8,7 @@
 </nav>
 
 {% if item.status == 'pending' %}
-  <div class="notice notice--warn" style="margin-bottom:var(--s7)">{% icon 'clock' %}<div class="notice__body"><span class="notice__title">Waiting for a moderator</span><span>Only you and moderators can see this report. It becomes searchable and is matched once it's approved.</span></div></div>
+  <div class="notice notice--warn" style="margin-bottom:var(--s7)">{% icon 'clock' %}<div class="notice__body"><span class="notice__title">Waiting for a moderator</span><span>Only you and moderators can see this report. It becomes searchable and is matched once it's approved.{% if item.review_reasons and is_owner or item.review_reasons and can_review %} Why it is checked: {{ item.review_reasons|join:" " }}{% endif %}</span></div></div>
 {% elif item.status == 'rejected' %}
   <div class="notice notice--bad" style="margin-bottom:var(--s7)">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">This report was rejected</span><span>It's hidden from search and matching.{% if is_owner and item.is_active %} You can edit it and send it for review again.{% endif %}</span></div></div>
 {% elif item.status == 'returned' %}

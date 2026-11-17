@@ -95,7 +95,7 @@
       </fieldset>
 
       <div class="report__submit">
-        <button type="submit" class="btn btn-here btn-lg">{% if editing %}Save and send for review{% else %}Send for review{% endif %}</button>
+        <button type="submit" class="btn btn-here btn-lg">{% if editing %}Save changes{% else %}Submit report{% endif %}</button>
         <a class="btn btn-plain btn-lg" href="{% if editing %}{{ item.get_absolute_url }}{% else %}{% url 'items:dashboard' %}{% endif %}">Cancel</a>
         <span class="hint" style="margin-left:auto">{% icon 'lock' %} Your contact details are never shown on a report.</span>
       </div>

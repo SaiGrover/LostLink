@@ -20,7 +20,7 @@ Built with Django for the JIIT Full Stack Development Lab (project-based learnin
 | Area | What is implemented |
 | --- | --- |
 | Roles and accounts | Student, Moderator, Administrator. Server-side checks on every restricted view and action; self-registration is always Student. Email verification with expiring single-use links and an optional institutional-domain policy (`LOSTLINK_ALLOWED_EMAIL_DOMAINS`); unverified accounts can browse but not report or claim. Password reset by email. Login, registration, resend and reset are rate limited and never reveal whether an address exists. |
-| Reporting | Lost or found; title, category, campus zone, event date, approximate time, description, brand, colour, one photo. Validation of dates, text length and real image content (format, size, pixel count). Edit sends the report back to review; withdraw removes it from search and matching. |
+| Reporting | Lost or found; title, category, campus zone, event date, approximate time, description, brand, colour, one photo. Validation of dates, text length and real image content (format, size, pixel count). Reports are published and matched straight away unless the reporter ticks "This report shows personal details" or the sensitivity check detects an ID card, bank card or personal document; those wait for a moderator, with the reason shown (`items/publishing.py`). Withdraw removes a report from search and matching. |
 | Moderation | Independent review: nobody approves, rejects or removes their own report or decides a claim they are part of. Possible-duplicate warnings, user flags, sensitive-photo review, dispute resolution (dismiss / revoke / reject), documented handover exceptions, and an append-only decision log with previous and new state. Every report status change goes through one validated lifecycle (`items/lifecycle.py`). |
 | Discovery | AJAX search with keyword, type, category, zone, status, date range, sort and pagination; shareable URLs; a no-JavaScript fallback and a `?study=manual` baseline for the usability study. Only approved, active reports are public. |
 | Matching | TF-IDF or Sentence-BERT text, ResNet-50 or CLIP image embeddings, zone adjacency, compatible categories, date decay, brand/colour. Synopsis weights 0.30/0.30/0.15/0.10/0.10/0.05; tiers above 85% high, 70–85% medium, below 70% low. |
@@ -105,6 +105,7 @@ These are created by `seed_demo` and shown on the sign-in page only while
 | `LOSTLINK_IMAGE_MODEL` | Override `resnet`, `clip` or `histogram`. |
 | `LOSTLINK_LOG_LEVEL` | Log level for the `lostlink` logger (default `INFO`). |
 | `LOSTLINK_UPLOAD_MAX_MB` / `LOSTLINK_UPLOAD_MAX_PIXELS` / `LOSTLINK_UPLOAD_MAX_EDGE` | Upload limits: 5 MB, 40 megapixels, and the long edge photos are scaled to (2048 px). |
+| `LOSTLINK_AUTO_PUBLISH` | `true` (default): publish reports without personal details immediately; `false`: every report waits for a moderator. |
 | `LOSTLINK_SQLITE_PATH` | Alternative SQLite file for local runs (ignored when `DATABASE_URL` is set). |
 | `DJANGO_SECURE_SSL_REDIRECT`, `DJANGO_HSTS_SECONDS` | Production only; default `true` and one year. |
 
@@ -270,8 +271,12 @@ docs/           evaluation, frontend, PostgreSQL, deployment, study protocol, im
 - Matching accuracy on real campus reports is unmeasured. No independently
   photographed, human-reviewed pair set or participant study exists yet.
 - One photo per report.
-- Matching runs synchronously when a moderator approves a report. With
-  pretrained models on CPU this adds noticeable latency per approval at scale.
+- Matching runs synchronously when a report is published (automatically or by
+  a moderator). With pretrained models on CPU this adds noticeable latency per
+  submission at scale.
+- The sensitivity check is a keyword and category heuristic, not image
+  recognition: an ID card photographed without a tick or a telling title or
+  category is published, and relies on community flags and moderators.
 - Email is used only for account verification and password reset (an SMTP
   server must be configured in production); match and claim notifications are
   in-app. SMS, GPS, payments and native apps are out of scope (synopsis Section 3.3).

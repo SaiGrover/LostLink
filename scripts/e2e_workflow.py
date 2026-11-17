@@ -1,7 +1,9 @@
 """Drive the complete recovery journey through the real UI.
 
-Student A reports a found item, student B reports the matching lost item, a
-moderator approves both, B sees the match and claims the item, A asks a
+Student A reports a found item and ticks "This report shows personal
+details", so it waits for a moderator; student B's matching lost report is
+published at once. A moderator approves A's report, B sees the match and
+claims the item, A asks a
 private question, B answers, an independent moderator approves with the
 evidence checklist, B (the owner) creates the one-time handover code and A
 enters it to complete the return. Every step goes through forms and
@@ -41,7 +43,7 @@ def login(browser, base, user, password):
     return page
 
 
-def report(page, base, rtype, title, description):
+def report(page, base, rtype, title, description, *, sensitive=False):
     page.goto(base + '/report/')
     page.locator('.choice label', has=page.locator(f'input[value={rtype}]')).click()
     expect(page.locator(f'input[name=report_type][value={rtype}]')).to_be_checked()
@@ -51,10 +53,16 @@ def report(page, base, rtype, title, description):
     page.fill('textarea[name=description]', description)
     page.fill('[name=color]', 'blue')
     page.set_input_files('input[type=file]', photo())
+    if sensitive:
+        page.check('input[name=declare_sensitive]', force=True)
     expect(page.locator('[data-preview] [data-p=title]')).to_have_text(title)
-    page.click('button[type=submit]')
+    page.click('.report__submit button[type=submit]')
     page.wait_for_url(re.compile(r'/item/\d+/$'))
-    expect(page.locator('.notice--warn')).to_contain_text('Waiting for a moderator')
+    if sensitive:
+        expect(page.locator('.notice--warn')).to_contain_text('Waiting for a moderator')
+    else:
+        expect(page.locator('body')).to_contain_text('Report published')
+        expect(page.locator('.notice--warn')).to_have_count(0)
     return int(re.search(r'/item/(\d+)/', page.url).group(1))
 
 
@@ -78,18 +86,22 @@ def main():
         mod = login(browser, base, 'moderator', 'mod12345')
 
         found_id = report(finder, base, 'found', f'Blue umbrella {TAG}',
-                          'Navy blue folding umbrella with a yellow square patch and a wooden handle')
+                          'Navy blue folding umbrella with a yellow square patch and a wooden handle',
+                          sensitive=True)
         lost_id = report(owner, base, 'lost', f'Lost blue umbrella {TAG}',
                          'Blue folding umbrella, yellow square patch on the canopy, wooden handle')
-        steps.append(f'reports created: found LL-{found_id:04d}, lost LL-{lost_id:04d} (pending)')
+        steps.append(f'reports created: found LL-{found_id:04d} (personal details ticked, waiting), '
+                     f'lost LL-{lost_id:04d} (published automatically)')
 
-        for item_id in (found_id, lost_id):
-            mod.goto(f'{base}/item/{item_id}/')
-            mod.click('form[action*="/approve/"] button')
-            confirm(mod, note='Clear report')
-            mod.wait_for_url(f'**/item/{item_id}/')
-            expect(mod.locator('.badge--info').first).to_contain_text('Approved')
-        steps.append('moderator approved both reports through the confirmation dialog')
+        mod.goto(f'{base}/manage/moderation/')
+        expect(mod.locator('#q-reports')).to_contain_text(f'Blue umbrella {TAG}')
+        expect(mod.locator('#q-reports')).not_to_contain_text(f'Lost blue umbrella {TAG}')
+        mod.goto(f'{base}/item/{found_id}/')
+        mod.click('form[action*="/approve/"] button')
+        confirm(mod, note='Clear report')
+        mod.wait_for_url(f'**/item/{found_id}/')
+        expect(mod.locator('.badge--info').first).to_contain_text('Approved')
+        steps.append('only the ticked report was queued; moderator approved it through the confirmation dialog')
 
         owner.goto(f'{base}/item/{lost_id}/')
         match = owner.locator('.match').first

@@ -121,42 +121,56 @@ def step_report_requires_taxonomy(ctx):
     return 'report without category/zone rejected'
 
 
-def _report(ctx, user, rtype, title, photo_color):
+def _report(ctx, user, rtype, title, photo_color, *, sensitive=False):
     from django.utils import timezone
 
     from items.models import Item
     client = _client(user)
-    response = client.post('/report/', {
+    data = {
         'report_type': rtype, 'title': title, 'category': ctx['category'].pk,
         'location': ctx['zone'].pk, 'event_date': timezone.localdate().isoformat(),
         'description': 'Blue Apple iPhone in a clear case with a cracked corner and a sticker',
-        'brand': 'Apple', 'color': 'Blue', 'image': _photo(photo_color)})
+        'brand': 'Apple', 'color': 'Blue', 'image': _photo(photo_color)}
+    if sensitive:
+        data['declare_sensitive'] = 'on'
+    response = client.post('/report/', data)
     item = Item.objects.filter(reporter=user, title=title).first()
     check(response.status_code == 302 and item is not None, f'{rtype} report was not created')
-    check(item.status == Item.Status.PENDING, 'new report is not pending review')
+    if sensitive:
+        check(item.status == Item.Status.PENDING and item.review_reasons,
+              'a report declared sensitive was not held for a moderator')
+    else:
+        check(item.status == Item.Status.APPROVED and not item.review_reasons,
+              'a report with no personal details was not published automatically')
     check(item.image and item.image.name.endswith('.jpg') and 'phone-photo' not in item.image.name,
           'uploaded photo was not re-encoded under a random name')
     return item
 
 
 def step_submit_reports(ctx):
-    ctx['found'] = _report(ctx, ctx['finder'], 'found', 'Blue iPhone found in cafeteria', (40, 90, 200))
+    # The finder says the photo shows personal details (lock screen), so it
+    # waits for a moderator; the owner's plain lost report goes live at once.
+    ctx['found'] = _report(ctx, ctx['finder'], 'found', 'Blue iPhone found in cafeteria', (40, 90, 200),
+                           sensitive=True)
     ctx['lost'] = _report(ctx, ctx['owner'], 'lost', 'Lost my blue iPhone', (42, 92, 198))
     anon = _client()
     check(anon.get(ctx['found'].image.url).status_code == 403, 'pending photo visible to the public')
-    return 'found + lost reports pending review, photos private'
+    check(anon.get(ctx['lost'].image.url).status_code == 200, 'published photo not visible')
+    return 'lost report published automatically; sensitive found report held, photo private'
 
 
 def step_moderation_approval(ctx):
     from items.models import Item
     mod = _client(ctx['moderator'])
-    for item in (ctx['found'], ctx['lost']):
-        response = mod.post(f'/manage/moderation/report/{item.pk}/approve/', {'note': ''})
-        check(response.status_code == 302, 'approval request failed')
-        item.refresh_from_db()
-        check(item.status == Item.Status.APPROVED, 'report not approved')
-    check(_client().get(ctx['found'].image.url).status_code == 200, 'approved photo not public')
-    return 'both reports approved and public'
+    item = ctx['found']
+    response = mod.post(f'/manage/moderation/report/{item.pk}/approve/', {'note': ''})
+    check(response.status_code == 302, 'approval request failed')
+    item.refresh_from_db()
+    check(item.status == Item.Status.APPROVED, 'report not approved')
+    check(_client().get(item.image.url).status_code == 200, 'approved photo not visible')
+    check(_client().get(item.image.url)['X-Photo-Variant'] == 'restricted-preview',
+          'a sensitive photo was shown in full to the public')
+    return 'sensitive report approved by a moderator; public sees a blurred preview'
 
 
 def step_matching(ctx):

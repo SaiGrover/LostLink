@@ -130,6 +130,9 @@ class Item(models.Model):
 
     status = models.CharField(max_length=12, choices=Status.choices,
                               default=Status.PENDING)
+    # Why the report waits for a moderator (items/publishing.py); empty when
+    # it was published automatically.
+    review_reasons = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(
         default=True,
         help_text='Inactive once returned or withdrawn — excluded from matching.')

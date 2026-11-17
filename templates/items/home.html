@@ -150,7 +150,7 @@
         {% if featured %}
           {% include 'partials/match_card.html' with match=featured mine=featured.lost_item other=featured.found_item open=True size='lg' %}
         {% else %}
-          {% include 'partials/empty.html' with title='No matches yet' text='As soon as two reviewed reports resemble each other, the strongest pair appears here with its real score and breakdown.' %}
+          {% include 'partials/empty.html' with title='No matches yet' text='As soon as two published reports resemble each other, the strongest pair appears here with its real score and breakdown.' %}
         {% endif %}
       </div>
     </div>
@@ -164,7 +164,7 @@
       </div>
       <ol class="route route--lg">
         <li class="is-done"><span class="route__dot" aria-hidden="true">1</span><div><p class="route__title">Someone reports it</p><p class="route__text">The owner reports what they lost, or a finder what they picked up: what it looks like, where, when, and a photo if they have one.</p></div></li>
-        <li class="is-done"><span class="route__dot" aria-hidden="true">2</span><div><p class="route__title">A moderator reviews it</p><p class="route__text">Reports are published only after review, so search stays free of duplicates and spam.</p></div></li>
+        <li class="is-done"><span class="route__dot" aria-hidden="true">2</span><div><p class="route__title">It goes live, or to a moderator</p><p class="route__text">Reports are published straight away. Anything showing personal details, like an ID card, is checked by a moderator first.</p></div></li>
         <li class="is-done"><span class="route__dot" aria-hidden="true">3</span><div><p class="route__title">LostLink finds the overlap</p><p class="route__text">Language and image models compare descriptions and photos, then weigh zone, category, date, brand and colour. Both people are notified, with the reasons.</p></div></li>
         <li class="is-done"><span class="route__dot" aria-hidden="true">4</span><div><p class="route__title">The owner answers private questions</p><p class="route__text">The finder or a moderator asks what only the owner would know. A moderator reads the answers and decides; nobody can approve their own claim.</p></div></li>
         <li class="is-current"><span class="route__dot" aria-hidden="true">5</span><div><p class="route__title">The handover is confirmed</p><p class="route__text">Contact details are shared only after approval. A moderator confirms the item changed hands and the report closes.</p></div></li>
