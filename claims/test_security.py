@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from accounts.models import User
+from config.testing import make_user
 from items.models import Item, Category, Location
 from claims.models import Claim
 from matching.models import Match
@@ -8,8 +9,9 @@ from matching.models import Match
 
 class VerificationBoundaryTests(TestCase):
     def setUp(self):
-        self.owner = User.objects.create_user(username='owner')
-        self.other = User.objects.create_user(username='other')
+        # Students who confirmed their campus email (claiming requires it).
+        self.owner = make_user('owner', password=None)
+        self.other = make_user('other', password=None)
         self.mod = User.objects.create_user(username='mod', role='moderator')
         self.category = Category.objects.create(name='Bags', slug='bags')
         self.location = Location.objects.create(name='Library', slug='library')

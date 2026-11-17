@@ -45,6 +45,23 @@ The fixture contains private application data and must remain local. Compare
 record counts and re-exported records before switching the app. Uploads continue
 to use the existing `media/` directory.
 
+## First run on an empty PostgreSQL database
+
+A fresh database has no categories or campus zones, and the report form needs
+both. After migrating, create the defaults (idempotent, no accounts):
+
+```powershell
+python scripts/local_postgres.py manage migrate
+python scripts/local_postgres.py manage seed_taxonomy --if-empty
+python scripts/local_postgres.py manage createsuperuser
+```
+
+Hosted databases usually require TLS: add `?sslmode=require` to `DATABASE_URL`
+when connecting over a public network (the default is `prefer`). Persistent
+connections are health-checked before reuse (`CONN_HEALTH_CHECKS`).
+`scripts/smoke_first_run.py` deliberately refuses to run while `DATABASE_URL` is
+set; it always uses a temporary SQLite database.
+
 ## Docker alternative
 
 `docker compose up -d db` provides PostgreSQL on the same port; stop the standalone

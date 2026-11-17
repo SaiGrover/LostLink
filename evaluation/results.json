@@ -1,66 +1,410 @@
 {
-  "dataset_sha256": "2ecb488b5f044b5dd6d5b414a872a201c088e3e1f3ab9055a245adc462f32f94",
-  "provenance": "Project-constructed source-identity pilot; automatic labels, not human-reviewed campus reports.",
-  "limitations": [
-    "Positive pairs reuse the same photograph with brightness/compression changes.",
-    "Source titles generate descriptions; lexical overlap makes this an optimistic sanity benchmark.",
-    "Negatives use different source files, which are not guaranteed different physical objects.",
-    "Do not interpret metrics as real-world accuracy."
-  ],
-  "model_versions": {
+  "schema_version": 2,
+  "generated_at": "2026-11-17T09:50:50+00:00",
+  "code_commit": "f44403700b5dc861d1d76ddca60514768d775642",
+  "code_uncommitted_changes": false,
+  "dataset": {
+    "path": "evaluation/pilot/dataset.json",
+    "sha256": "0c7a18126819e0466767573b46fefbb5b13b381f3d212740ebbf48d3e23940d3",
+    "sha256_note": "SHA-256 of the file with LF line endings (identical on every checkout)",
+    "dataset_kind": "constructed",
+    "evidence_class": "engineering check (constructed or unreviewed data)",
+    "research_ready": false,
+    "provenance": "Project-constructed source-identity pilot; automatic labels, not human-reviewed campus reports.",
+    "pairs": 180,
+    "splits": {
+      "test": 90,
+      "validation": 90
+    },
+    "labels": {
+      "0": 120,
+      "1": 60
+    },
+    "conditions": {},
+    "validation_errors": [
+      "Pair 1 query needs a non-empty physical_id.",
+      "Pair 1 candidate needs a non-empty physical_id.",
+      "Pair 1 changes the content of report 108964100.",
+      "Pair 1 duplicates a pair or compares a report with itself.",
+      "Pair 1 needs an approved manual label.",
+      "Pair 1 needs a reviewer identifier.",
+      "Pair 1 needs independently authored descriptions confirmed by a reviewer.",
+      "Pair 1 needs independently captured photos confirmed by a reviewer.",
+      "Pair 2 query needs a non-empty physical_id.",
+      "Pair 2 changes the content of report 108964100."
+    ]
+  },
+  "engine": {
+    "engine_version": "synopsis-v3",
+    "profile_version": "synopsis-v3",
     "text": "tfidf",
+    "text_model": {
+      "release": "lexical-v1",
+      "sha256": "c580920fc4d84f56",
+      "lexicon_sha256": "19ba6d8939d42600"
+    },
     "image": "resnet",
-    "text_revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
-    "clip_revision": "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268",
-    "resnet_revision": "34c2154c194f829b11125337b98c8f5f9965ff19",
+    "image_model": "microsoft/resnet-50@34c2154c194f829b11125337b98c8f5f9965ff19",
+    "image_chance": {
+      "resnet": 0.275,
+      "clip": 0.568,
+      "histogram": 0.574
+    },
     "weights": {
-      "text": 0.2,
-      "image": 0.4,
+      "text": 0.3,
+      "image": 0.3,
       "location": 0.15,
       "category": 0.1,
       "date": 0.1,
       "attribute": 0.05
     },
-    "version": "pilot-v4"
+    "thresholds": {
+      "medium": 0.7,
+      "high": 0.85,
+      "min_score": 0.4
+    },
+    "coverage_rules": {
+      "STRONG_MIN": 0.7,
+      "MODERATE_MIN": 0.5
+    },
+    "chronology": {
+      "HALF_LIFE_DAYS": 10,
+      "APPROXIMATE_DAYS": 1,
+      "TIME_TOLERANCE_HOURS": 3,
+      "CONTRADICTORY_DAYS": 7,
+      "PENALTY": {
+        "plausible": 1.0,
+        "approximate": 0.9,
+        "suspicious": 0.5,
+        "contradictory": 0.0
+      },
+      "TIER_CAP": {
+        "suspicious": "medium",
+        "contradictory": "low"
+      }
+    },
+    "scoring_function": "matching.engine.score_evidence"
+  },
+  "environment": {
+    "python": "3.13.11",
+    "django": "6.1",
+    "platform": "Windows-11",
+    "PIL": "11.3.0",
+    "torch": "2.11.0+cpu",
+    "transformers": "4.57.6",
+    "sentence_transformers": "5.7.0"
+  },
+  "protocol": {
+    "tuning": "weights and threshold selected on the validation split only (F1, then precision, then MRR; ties -> lower threshold)",
+    "test": "test split scored once with the selected setting",
+    "weight_candidates": {
+      "profile": {
+        "text": 0.3,
+        "image": 0.3,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      },
+      "text0.2-image0.4": {
+        "text": 0.2,
+        "image": 0.4,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      },
+      "text0.4-image0.2": {
+        "text": 0.4,
+        "image": 0.2,
+        "location": 0.15,
+        "category": 0.1,
+        "date": 0.1,
+        "attribute": 0.05
+      }
+    },
+    "thresholds_tried": [
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "leakage_checks": "report ids, physical-object ids and image bytes are split-disjoint"
   },
   "experiments": [
     {
       "text": "tfidf",
       "image": "resnet",
+      "weights_key": "profile",
       "weights": {
-        "text": 0.2,
-        "image": 0.39999999999999997,
+        "text": 0.3,
+        "image": 0.3,
         "location": 0.15,
         "category": 0.1,
         "date": 0.1,
         "attribute": 0.05
       },
-      "threshold": 0.8,
+      "threshold": 0.75,
       "validation": {
+        "threshold": 0.75,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 0,
+          "fn": 0,
+          "tn": 60
+        },
         "precision": 1.0,
         "recall": 1.0,
         "f1": 1.0,
         "roc_auc": 1.0,
         "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
       },
       "test": {
-        "precision": 1.0,
+        "threshold": 0.75,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 6,
+          "fn": 0,
+          "tn": 54
+        },
+        "precision": 0.8333333333333334,
         "recall": 1.0,
-        "f1": 1.0,
+        "f1": 0.9090909090909091,
         "roc_auc": 1.0,
         "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_as_deployed": {
+        "weights": "profile",
+        "threshold": 0.7,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 6,
+          "fn": 0,
+          "tn": 54
+        },
+        "precision": 0.8333333333333334,
+        "recall": 1.0,
+        "f1": 0.9090909090909091,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_without_images": {
+        "threshold": 0.75,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 19,
+          "fn": 0,
+          "tn": 41
+        },
+        "precision": 0.6122448979591837,
+        "recall": 1.0,
+        "f1": 0.759493670886076,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_tiers": {
+        "high": 32,
+        "medium": 4,
+        "low": 54
+      },
+      "test_mean_coverage": 0.95,
+      "test_errors": {
+        "false_positives": [
+          {
+            "query_id": "183494508",
+            "candidate_id": "190017180",
+            "label": 0,
+            "score": 0.9104,
+            "tier": "high",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8452,
+              "image": 0.8935,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Bottle of Water. Please help locate it.",
+            "found_text": "Found: A bottle of cold water with droplets"
+          },
+          {
+            "query_id": "190017180",
+            "candidate_id": "183494508",
+            "label": 0,
+            "score": 0.9078,
+            "tier": "high",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8452,
+              "image": 0.8852,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing A bottle of cold water with droplets. Please help locate it.",
+            "found_text": "Found: Bottle of Water"
+          },
+          {
+            "query_id": "87189438",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.8118,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.4648,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          },
+          {
+            "query_id": "87189439",
+            "candidate_id": "87189442",
+            "label": 0,
+            "score": 0.8084,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.454,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 02. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 04"
+          },
+          {
+            "query_id": "185973701",
+            "candidate_id": "183494508",
+            "label": 0,
+            "score": 0.8051,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8,
+              "image": 0.6053,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Short water bottles. Please help locate it.",
+            "found_text": "Found: Bottle of Water"
+          },
+          {
+            "query_id": "87189442",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.7963,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.4158,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 04. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          }
+        ],
+        "false_negatives": [],
+        "false_positive_count": 6,
+        "false_negative_count": 0
       }
     },
     {
       "text": "tfidf",
       "image": "clip",
+      "weights_key": "profile",
       "weights": {
-        "text": 0.2,
-        "image": 0.39999999999999997,
+        "text": 0.3,
+        "image": 0.3,
         "location": 0.15,
         "category": 0.1,
         "date": 0.1,
@@ -68,116 +412,721 @@
       },
       "threshold": 0.8,
       "validation": {
+        "threshold": 0.8,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 0,
+          "fn": 0,
+          "tn": 60
+        },
         "precision": 1.0,
         "recall": 1.0,
         "f1": 1.0,
         "roc_auc": 1.0,
         "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
       },
       "test": {
-        "precision": 0.967741935483871,
+        "threshold": 0.8,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 3,
+          "fn": 0,
+          "tn": 57
+        },
+        "precision": 0.9090909090909091,
         "recall": 1.0,
-        "f1": 0.9836065573770492,
+        "f1": 0.9523809523809523,
         "roc_auc": 1.0,
         "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_as_deployed": {
+        "weights": "profile",
+        "threshold": 0.7,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 6,
+          "fn": 0,
+          "tn": 54
+        },
+        "precision": 0.8333333333333334,
+        "recall": 1.0,
+        "f1": 0.9090909090909091,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_without_images": {
+        "threshold": 0.8,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 17,
+          "fn": 0,
+          "tn": 43
+        },
+        "precision": 0.6382978723404256,
+        "recall": 1.0,
+        "f1": 0.7792207792207793,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_tiers": {
+        "high": 33,
+        "medium": 3,
+        "low": 54
+      },
+      "test_mean_coverage": 0.95,
+      "test_errors": {
+        "false_positives": [
+          {
+            "query_id": "190017180",
+            "candidate_id": "183494508",
+            "label": 0,
+            "score": 0.8997,
+            "tier": "high",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8452,
+              "image": 0.8595,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing A bottle of cold water with droplets. Please help locate it.",
+            "found_text": "Found: Bottle of Water"
+          },
+          {
+            "query_id": "183494508",
+            "candidate_id": "190017180",
+            "label": 0,
+            "score": 0.8935,
+            "tier": "high",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8452,
+              "image": 0.8398,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Bottle of Water. Please help locate it.",
+            "found_text": "Found: A bottle of cold water with droplets"
+          },
+          {
+            "query_id": "87189438",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.8631,
+            "tier": "high",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.6273,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          }
+        ],
+        "false_negatives": [],
+        "false_positive_count": 3,
+        "false_negative_count": 0
       }
     },
     {
-      "text": "sbert",
-      "image": "resnet",
+      "text": "tfidf",
+      "image": "histogram",
+      "weights_key": "text0.4-image0.2",
       "weights": {
-        "text": 0.2,
-        "image": 0.39999999999999997,
+        "text": 0.4,
+        "image": 0.2,
         "location": 0.15,
         "category": 0.1,
         "date": 0.1,
         "attribute": 0.05
       },
-      "threshold": 0.85,
+      "threshold": 0.75,
       "validation": {
-        "precision": 1.0,
+        "threshold": 0.75,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 5,
+          "fn": 0,
+          "tn": 55
+        },
+        "precision": 0.8571428571428571,
         "recall": 1.0,
-        "f1": 1.0,
-        "roc_auc": 1.0,
-        "mrr": 1.0,
+        "f1": 0.923076923076923,
+        "roc_auc": 0.9833333333333333,
+        "mrr": 0.9833333333333333,
+        "queries_ranked": 30,
+        "precision_at_1": 0.9666666666666667,
+        "hit_rate_at_1": 0.9666666666666667,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
       },
       "test": {
-        "precision": 1.0,
+        "threshold": 0.75,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 9,
+          "fn": 0,
+          "tn": 51
+        },
+        "precision": 0.7692307692307693,
         "recall": 1.0,
-        "f1": 1.0,
+        "f1": 0.8695652173913044,
+        "roc_auc": 0.9677777777777777,
+        "mrr": 0.9666666666666667,
+        "queries_ranked": 30,
+        "precision_at_1": 0.9333333333333333,
+        "hit_rate_at_1": 0.9333333333333333,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_as_deployed": {
+        "weights": "profile",
+        "threshold": 0.7,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 20,
+          "fp": 7,
+          "fn": 10,
+          "tn": 53
+        },
+        "precision": 0.7407407407407407,
+        "recall": 0.6666666666666666,
+        "f1": 0.7017543859649122,
+        "roc_auc": 0.9527777777777777,
+        "mrr": 0.9666666666666667,
+        "queries_ranked": 30,
+        "precision_at_1": 0.9333333333333333,
+        "hit_rate_at_1": 0.9333333333333333,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_without_images": {
+        "threshold": 0.75,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 17,
+          "fn": 0,
+          "tn": 43
+        },
+        "precision": 0.6382978723404256,
+        "recall": 1.0,
+        "f1": 0.7792207792207793,
         "roc_auc": 1.0,
         "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_tiers": {
+        "high": 21,
+        "medium": 19,
+        "low": 50
+      },
+      "test_mean_coverage": 0.95,
+      "test_errors": {
+        "false_positives": [
+          {
+            "query_id": "190017180",
+            "candidate_id": "183494508",
+            "label": 0,
+            "score": 0.9017,
+            "tier": "high",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8452,
+              "image": 0.8765,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing A bottle of cold water with droplets. Please help locate it.",
+            "found_text": "Found: Bottle of Water"
+          },
+          {
+            "query_id": "185973701",
+            "candidate_id": "183494508",
+            "label": 0,
+            "score": 0.846,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8,
+              "image": 0.7019,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Short water bottles. Please help locate it.",
+            "found_text": "Found: Bottle of Water"
+          },
+          {
+            "query_id": "87189439",
+            "candidate_id": "87189442",
+            "label": 0,
+            "score": 0.83,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.303,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 02. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 04"
+          },
+          {
+            "query_id": "179038257",
+            "candidate_id": "183494508",
+            "label": 0,
+            "score": 0.8296,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8,
+              "image": 0.6239,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Camelbak water bottle. Please help locate it.",
+            "found_text": "Found: Bottle of Water"
+          },
+          {
+            "query_id": "183494508",
+            "candidate_id": "190017180",
+            "label": 0,
+            "score": 0.7895,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8452,
+              "image": 0.3435,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Bottle of Water. Please help locate it.",
+            "found_text": "Found: A bottle of cold water with droplets"
+          },
+          {
+            "query_id": "87189438",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.7894,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.1099,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          },
+          {
+            "query_id": "80611330",
+            "candidate_id": "150078918",
+            "label": 0,
+            "score": 0.7731,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.8269,
+              "image": 0.3019,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Military backpack 01. Please help locate it.",
+            "found_text": "Found: Wikimedia swag backpack"
+          },
+          {
+            "query_id": "87189442",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.7662,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": 0.0,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 04. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          },
+          {
+            "query_id": "103191834",
+            "candidate_id": "80611330",
+            "label": 0,
+            "score": 0.7585,
+            "tier": "medium",
+            "coverage": 0.95,
+            "missing": [
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.6989,
+              "image": 0.4884,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Google-Maps-Backpack-NYC. Please help locate it.",
+            "found_text": "Found: Military backpack 01"
+          }
+        ],
+        "false_negatives": [],
+        "false_positive_count": 9,
+        "false_negative_count": 0
       }
     },
     {
-      "text": "sbert",
-      "image": "clip",
+      "text": "tfidf",
+      "image": null,
+      "weights_key": "profile",
       "weights": {
-        "text": 0.2,
-        "image": 0.39999999999999997,
+        "text": 0.3,
+        "image": 0.3,
         "location": 0.15,
         "category": 0.1,
         "date": 0.1,
         "attribute": 0.05
       },
-      "threshold": 0.85,
+      "threshold": 0.95,
       "validation": {
-        "precision": 1.0,
+        "threshold": 0.95,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 3,
+          "fn": 0,
+          "tn": 57
+        },
+        "precision": 0.9090909090909091,
         "recall": 1.0,
-        "f1": 1.0,
-        "roc_auc": 1.0,
-        "mrr": 1.0,
+        "f1": 0.9523809523809523,
+        "roc_auc": 0.9833333333333333,
+        "mrr": 0.9833333333333333,
+        "queries_ranked": 30,
+        "precision_at_1": 0.9666666666666667,
+        "hit_rate_at_1": 0.9666666666666667,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
       },
       "test": {
-        "precision": 0.967741935483871,
+        "threshold": 0.95,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 3,
+          "fn": 0,
+          "tn": 57
+        },
+        "precision": 0.9090909090909091,
         "recall": 1.0,
-        "f1": 0.9836065573770492,
+        "f1": 0.9523809523809523,
         "roc_auc": 1.0,
         "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
         "precision_at_3": 0.3333333333333333,
-        "pairs": 90
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_as_deployed": {
+        "weights": "profile",
+        "threshold": 0.7,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 22,
+          "fn": 0,
+          "tn": 38
+        },
+        "precision": 0.5769230769230769,
+        "recall": 1.0,
+        "f1": 0.7317073170731707,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_without_images": {
+        "threshold": 0.95,
+        "pairs": 90,
+        "positives": 30,
+        "negatives": 60,
+        "confusion": {
+          "tp": 30,
+          "fp": 3,
+          "fn": 0,
+          "tn": 57
+        },
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "f1": 0.9523809523809523,
+        "roc_auc": 1.0,
+        "mrr": 1.0,
+        "queries_ranked": 30,
+        "precision_at_1": 1.0,
+        "hit_rate_at_1": 1.0,
+        "precision_at_3": 0.3333333333333333,
+        "hit_rate_at_3": 1.0,
+        "undefined": {}
+      },
+      "test_tiers": {
+        "high": 0,
+        "medium": 52,
+        "low": 38
+      },
+      "test_mean_coverage": 0.65,
+      "test_errors": {
+        "false_positives": [
+          {
+            "query_id": "87189439",
+            "candidate_id": "87189442",
+            "label": 0,
+            "score": 0.9719,
+            "tier": "medium",
+            "coverage": 0.65,
+            "missing": [
+              "image",
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": null,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 02. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 04"
+          },
+          {
+            "query_id": "87189442",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.9719,
+            "tier": "medium",
+            "coverage": 0.65,
+            "missing": [
+              "image",
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": null,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 04. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          },
+          {
+            "query_id": "87189438",
+            "candidate_id": "87189439",
+            "label": 0,
+            "score": 0.9719,
+            "tier": "medium",
+            "coverage": 0.65,
+            "missing": [
+              "image",
+              "attribute"
+            ],
+            "chronology": "plausible",
+            "components": {
+              "text": 0.9615,
+              "image": null,
+              "location": 1.0,
+              "category": 1.0,
+              "date": 0.933,
+              "attribute": null
+            },
+            "conditions": [],
+            "lost_text": "Missing Flap Boy Slim Wallet from JAIMIE JACOBS 03. Please help locate it.",
+            "found_text": "Found: Flap Boy Slim Wallet from JAIMIE JACOBS 02"
+          }
+        ],
+        "false_negatives": [],
+        "false_positive_count": 3,
+        "false_negative_count": 0
       }
     }
   ],
   "selected_by_validation": {
     "text": "tfidf",
     "image": "resnet",
+    "weights_key": "profile",
     "weights": {
-      "text": 0.2,
-      "image": 0.39999999999999997,
+      "text": 0.3,
+      "image": 0.3,
       "location": 0.15,
       "category": 0.1,
       "date": 0.1,
       "attribute": 0.05
     },
-    "threshold": 0.8,
-    "validation": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "roc_auc": 1.0,
-      "mrr": 1.0,
-      "precision_at_3": 0.3333333333333333,
-      "pairs": 90
-    },
-    "test": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1": 1.0,
-      "roc_auc": 1.0,
-      "mrr": 1.0,
-      "precision_at_3": 0.3333333333333333,
-      "pairs": 90
-    }
-  }
+    "threshold": 0.75
+  },
+  "limitations": [
+    "ENGINEERING CHECK ONLY: this dataset is constructed or not independently reviewed; these metrics are not evidence of real-world accuracy.",
+    "Positive pairs reuse the same photograph with brightness/compression changes.",
+    "Source titles generate descriptions; lexical overlap makes this an optimistic sanity benchmark.",
+    "Negatives use different source files, which are not guaranteed different physical objects.",
+    "Do not interpret metrics as real-world accuracy.",
+    "Scores are weighted similarity scores, not calibrated probabilities; tiers are heuristic thresholds."
+  ]
 }

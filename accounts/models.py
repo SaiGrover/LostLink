@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -25,6 +26,20 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     avatar_color = models.CharField(max_length=7, default='#E8623C')
 
+    # --- campus identity ---------------------------------------------------
+    class VerificationMethod(models.TextChoices):
+        EMAIL = 'email', 'Email link'
+        PASSWORD_RESET = 'password_reset', 'Password reset link'
+        ADMIN = 'admin', 'Confirmed by an administrator'
+        LEGACY = 'legacy', 'Existing account (before verification)'
+
+    # When the account's current email address was proven to belong to its
+    # owner. Cleared whenever the email address changes. Pre-existing accounts
+    # were marked by migration 0003 with method ``legacy``.
+    email_verified_at = models.DateTimeField(null=True, blank=True)
+    email_verification_method = models.CharField(
+        max_length=20, choices=VerificationMethod.choices, blank=True)
+
     # --- role predicates -------------------------------------------------
     @property
     def is_student(self):
@@ -43,6 +58,37 @@ class User(AbstractUser):
     def is_staff_role(self):
         """Moderator or Administrator — i.e. anyone with review powers."""
         return self.is_moderator or self.is_administrator
+
+    @property
+    def is_email_verified(self):
+        return self.email_verified_at is not None
+
+    @property
+    def is_campus_verified(self):
+        """May this account perform campus-restricted actions (reporting,
+        editing reports, flagging, claiming)?
+
+        Self-registered accounts must prove ownership of their email address.
+        Staff accounts (moderators, administrators, Django staff and
+        superusers) are provisioned by an administrator, who vouches for them,
+        so they are never locked out.
+        """
+        if not self.is_active:
+            return False
+        if self.is_staff or self.is_staff_role:
+            return True
+        return self.email_verified_at is not None
+
+    def mark_email_verified(self, method, save=True):
+        self.email_verified_at = timezone.now()
+        self.email_verification_method = method
+        if save:
+            self.save(update_fields=['email_verified_at', 'email_verification_method'])
+
+    def clear_email_verification(self):
+        """Forget the proof of ownership (the email address changed)."""
+        self.email_verified_at = None
+        self.email_verification_method = ''
 
     @property
     def initials(self):

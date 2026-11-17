@@ -10,6 +10,7 @@
 
 <form method="post" novalidate class="stack" style="--gap:var(--s5)" data-validate>
   {% csrf_token %}
+  {% if rate_limited %}<div class="notice notice--bad" role="alert">{% icon 'alert' %}<div class="notice__body"><span>Too many sign-up attempts. Wait a while, then try again.</span></div></div>{% endif %}
   {% if form.non_field_errors %}<div class="notice notice--bad" role="alert">{% icon 'alert' %}<div class="notice__body">{% for e in form.non_field_errors %}<span>{{ e }}</span>{% endfor %}</div></div>{% endif %}
   <div class="form-grid form-grid--2">
     <div class="field{% if form.first_name.errors %} has-error{% endif %}"><label class="label" for="id_first_name">First name</label><input class="input" id="id_first_name" name="first_name" value="{{ form.first_name.value|default:'' }}" autocomplete="given-name" required maxlength="60">{{ form.first_name.errors }}</div>
@@ -24,6 +25,7 @@
   <div class="field{% if form.email.errors %} has-error{% endif %}">
     <label class="label" for="id_email">College email</label>
     <input class="input" id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="email" required>
+    <span class="hint">{% if domains %}Use your campus address ({{ domains }}). {% endif %}We'll email you a link to confirm it.</span>
     <span class="error" id="id_email-live-error" aria-live="polite"></span>
     {{ form.email.errors }}
   </div>

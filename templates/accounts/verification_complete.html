@@ -1,0 +1,16 @@
+{% extends 'accounts/auth_base.html' %}
+{% load ui %}
+{% block title %}Email confirmed{% endblock %}
+
+{% block form %}
+<div class="stack" style="--gap:var(--s3)">
+  <h1>Email confirmed</h1>
+  <p class="muted">Your campus identity is verified. You can now report, flag and claim items.</p>
+</div>
+<div class="notice notice--ok" role="status">{% icon 'check' %}<div class="notice__body"><span class="notice__title">Verification complete</span><span>This confirmation link can't be used again.</span></div></div>
+{% if user.is_authenticated %}
+<a class="btn btn-primary btn-lg btn-block" href="{% url 'items:dashboard' %}">Continue to LostLink</a>
+{% else %}
+<a class="btn btn-primary btn-lg btn-block" href="{% url 'accounts:login' %}">Sign in</a>
+{% endif %}
+{% endblock %}

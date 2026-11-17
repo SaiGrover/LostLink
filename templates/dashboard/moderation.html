@@ -36,8 +36,9 @@
           {% if item.duplicate_of %}<div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span><b>Possible duplicate</b> of <a class="link" href="{{ item.duplicate_of.get_absolute_url }}">{{ item.duplicate_of.pk|report_id }}, {{ item.duplicate_of.title }}</a></span></div></div>{% endif %}
         </div>
         <div class="review__decide">
-          <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve “{{ item.title }}”?" data-confirm-text="It becomes searchable and is compared with reports of the other type. People with strong matches are notified." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<button class="btn btn-ok w-full" type="submit">{% icon 'check' %}Approve</button></form>
+          <form method="post" action="{% url 'dashboard:review_report' item.pk 'approve' %}" data-confirm="Approve “{{ item.title }}”?" data-confirm-text="It becomes searchable and is compared with reports of the other type. Reporters of pairs with moderate or strong similarity are notified once." data-confirm-tone="success" data-confirm-label="Approve report" data-confirm-note="Optional note to the reporter">{% csrf_token %}<button class="btn btn-ok w-full" type="submit">{% icon 'check' %}Approve</button></form>
           <form method="post" action="{% url 'dashboard:review_report' item.pk 'reject' %}" data-confirm="Reject “{{ item.title }}”?" data-confirm-text="It stays hidden. The reporter sees your reason and can edit and resubmit it." data-confirm-tone="danger" data-confirm-label="Reject report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn w-full" type="submit">{% icon 'x' %}Reject</button></form>
+          {% include 'partials/photo_privacy_control.html' with next=request.get_full_path %}
         </div>
       </article>
     {% empty %}
@@ -45,6 +46,10 @@
     {% endfor %}
     </div>
     {% include 'partials/pagination.html' %}
+    {% if own_pending %}
+    <p class="small muted mt-6">{% icon 'info' %} Your own report{{ own_pending|length|pluralize }} waiting for another moderator:
+      {% for item in own_pending %}<a class="link" href="{{ item.get_absolute_url }}">{{ item.title }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+    {% endif %}
   </section>
 
   <section id="q-claims" role="tabpanel" aria-labelledby="t-claims">
@@ -71,25 +76,25 @@
     <p class="muted" style="margin-bottom:var(--s3)">Resolve them on the claim page.</p>
     {% if disputes %}
     <ul class="rows">
-      {% for c in disputes %}
+      {% for d in disputes %}{% with c=d.claim %}
       <li><div class="r r--link">
         {% include 'partials/thumb.html' with item=c.item cls='thumb--lg' %}
         <div class="r__main">
           <span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.item.title }}</a></span>
-          <span class="r__meta"><span class="num">{{ c.pk|claim_id }}</span><span>{{ c.claimant.display_name }}</span></span>
-          <span class="small" style="color:var(--bad-text)">{{ c.decision_note }}</span>
+          <span class="r__meta"><span class="num">{{ c.pk|claim_id }}</span><span>{{ c.claimant.display_name }}</span><span>{{ c.get_status_display }}</span><span>raised {{ d.created_at|naturaltime }}</span></span>
+          <span class="small" style="color:var(--bad-text)">{{ d.reason }}</span>
         </div>
-        <div class="r__side"><span class="badge badge--danger">Needs review</span></div>
+        <div class="r__side"><span class="badge badge--danger">{% if c.status == 'approved' %}Handover paused{% else %}Needs review{% endif %}</span></div>
       </div></li>
-      {% endfor %}
+      {% endwith %}{% endfor %}
     </ul>
     {% else %}
-      {% include 'partials/empty.html' with title='No disputes' text='Either person in a claim, or a moderator, can raise a concern. It pauses the claim and puts it here.' %}
+      {% include 'partials/empty.html' with title='No disputes' text='Either person in a claim, or a moderator, can raise a concern. An approved claim keeps its reservation while the dispute is reviewed.' %}
     {% endif %}
   </section>
 
   <section id="q-handovers" role="tabpanel" aria-labelledby="t-handovers">
-    <p class="muted" style="margin-bottom:var(--s3)">Approved but not yet returned.</p>
+    <p class="muted" style="margin-bottom:var(--s3)">Approved and reserved. They complete when the person handing over enters the owner's one-time code.</p>
     {% if handovers %}
     <ul class="rows">
       {% for c in handovers %}
@@ -99,12 +104,12 @@
           <span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.item.title }}</a></span>
           <span class="r__meta"><span class="num">{{ c.pk|claim_id }}</span><span>{{ c.claimant.display_name }}</span><span>Approved {{ c.updated_at|naturaltime }}</span></span>
         </div>
-        <div class="r__side"><span class="badge badge--success">Confirm handover</span></div>
+        <div class="r__side"><span class="badge badge--success">Awaiting code</span></div>
       </div></li>
       {% endfor %}
     </ul>
     {% else %}
-      {% include 'partials/empty.html' with title='No handovers waiting' text='Approved claims wait here until someone confirms the item was handed over.' %}
+      {% include 'partials/empty.html' with title='No handovers waiting' text='Approved claims wait here until the owner handover code is entered.' %}
     {% endif %}
   </section>
 
@@ -123,7 +128,8 @@
         </div>
         <div class="review__decide">
           <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'dismiss' %}">{% csrf_token %}<button class="btn w-full" type="submit">Dismiss flags</button></form>
-          <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove “{{ item.title }}”?" data-confirm-text="It's rejected and deactivated, its matches are removed and the reporter is told." data-confirm-tone="danger" data-confirm-label="Remove report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger w-full" type="submit">Remove report</button></form>
+          <form method="post" action="{% url 'dashboard:resolve_flag' item.pk 'reject' %}" data-confirm="Remove “{{ item.title }}”?" data-confirm-text="It's rejected and deactivated, its similarity matches are retired and the reporter is told." data-confirm-tone="danger" data-confirm-label="Remove report" data-confirm-note="Reason shared with the reporter">{% csrf_token %}<button class="btn btn-danger w-full" type="submit">Remove report</button></form>
+          {% include 'partials/photo_privacy_control.html' with next=request.get_full_path %}
         </div>
       </article>
     {% empty %}

@@ -1,0 +1,34 @@
+{% extends 'accounts/auth_base.html' %}
+{% load ui %}
+{% block title %}Confirm your email{% endblock %}
+
+{% block form %}
+{% if state == 'confirm' %}
+<div class="stack" style="--gap:var(--s3)">
+  <h1>Confirm your email</h1>
+  <p class="muted">Confirm <b>{{ account.email }}</b> for the LostLink account <b>{{ account.username }}</b>.</p>
+</div>
+<form method="post" class="stack" style="--gap:var(--s4)">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Confirm email address</button>
+  <p class="hint">Didn't create this account? Close this page; nothing changes unless you confirm.</p>
+</form>
+{% else %}
+<div class="stack" style="--gap:var(--s3)">
+  <h1>{% if state == 'expired' %}This link has expired{% elif state == 'domain' %}This address can't be verified{% else %}This link isn't valid{% endif %}</h1>
+</div>
+<div class="notice notice--bad" role="alert">{% icon 'alert' %}<div class="notice__body">
+  {% if state == 'expired' %}
+  <span>Confirmation links expire for your safety. Ask for a new one below.</span>
+  {% elif state == 'domain' %}
+  <span>Only {{ domains }} addresses can be verified. Sign in and change your email in your profile.</span>
+  {% else %}
+  <span>The link has already been used, was replaced by a newer one, or was copied incompletely. If your account is already confirmed, just sign in.</span>
+  {% endif %}
+</div></div>
+<div class="stack" style="--gap:var(--s3)">
+  <a class="btn btn-primary btn-lg btn-block" href="{% url 'accounts:resend_verification' %}">Get a new link</a>
+  <p class="hint"><a class="link" href="{% url 'accounts:login' %}">Sign in</a></p>
+</div>
+{% endif %}
+{% endblock %}

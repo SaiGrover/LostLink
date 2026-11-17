@@ -5,7 +5,7 @@
 {% block main %}
 <section class="home-hero" aria-labelledby="home-title">
   <div class="stack" style="--gap:var(--s5)">
-    <h1 id="home-title">{% if match_count %}{{ match_count }} likely match{{ match_count|pluralize:"es" }} for your reports{% elif my_item_count %}No likely matches yet{% else %}Lost or found something?{% endif %}</h1>
+    <h1 id="home-title">{% if match_count %}{{ match_count }} similar report{{ match_count|pluralize }} to check{% elif my_item_count %}No similar reports yet{% else %}Lost or found something?{% endif %}</h1>
     <p class="home-summary">
       <a href="{% url 'items:mine' %}"><b class="num">{{ my_item_count }}</b> report{{ my_item_count|pluralize }}</a>
       {% if my_pending %}<a href="{% url 'items:mine' %}?status=active"><b class="num">{{ my_pending }}</b> waiting for review</a>{% endif %}
@@ -19,8 +19,8 @@
   </div>
 
   {% if top_matches %}{% with first=top_matches.0 %}
-  <a class="best" href="{{ first.other.get_absolute_url }}" aria-label="Your strongest match: {{ first.mine.title }} and {{ first.other.title }}, {{ first.match.percent }} out of 100. Open the other report.">
-    <span class="best__label">Your strongest match</span>
+  <a class="best" href="{{ first.other.get_absolute_url }}" aria-label="Your most similar pair: {{ first.mine.title }} and {{ first.other.title }}, similarity score {{ first.match.percent }} out of 100, evidence coverage {{ first.match.coverage_percent }}%. Open the other report.">
+    <span class="best__label">Your most similar pair</span>
     {% include 'partials/overlap.html' with a=first.mine b=first.other score=first.match.percent size='lg' photos=True reveal=True %}
     <span class="best__names" aria-hidden="true">
       <span>{{ first.mine.title }}<br><span class="type type--{{ first.mine.report_type }}" style="justify-content:flex-end;width:100%">{{ first.mine.get_report_type_display }}<i class="mk mk--{{ first.mine.report_type }}"></i></span></span>
@@ -43,7 +43,7 @@
   {% for c in incoming_claims %}
   <div class="notice">
     {% icon 'key' %}
-    <div class="notice__body"><span class="notice__title">{% if c.status == 'approved' %}Arrange the handover{% elif c.item.is_found %}Someone says this is theirs{% else %}Someone may have found it{% endif %}</span><span>“{{ c.item.title }}”, {{ c.get_status_display|lower }}</span></div>
+    <div class="notice__body"><span class="notice__title">{% if c.status == 'approved' %}Arrange the handover{% elif c.item.is_found %}Someone says this is theirs{% else %}Someone may have found it{% endif %}</span><span>“{{ c.item.title }}”, {{ c.status_label|lower }}</span></div>
     <a class="btn btn-sm" href="{% url 'claims:detail' c.pk %}">Open claim</a>
   </div>
   {% endfor %}
@@ -52,14 +52,14 @@
 
 <div class="home-grid">
   <section id="matches" aria-labelledby="matches-title">
-    <div class="sect-head"><h2 id="matches-title">Likely matches</h2>{% if top_matches %}<p class="small">Most overlap first</p>{% endif %}</div>
+    <div class="sect-head"><h2 id="matches-title">Similar reports</h2>{% if top_matches %}<p class="small">Highest similarity score first</p>{% endif %}</div>
     {% if top_matches %}
       <ul class="rows">
         {% for row in top_matches %}<li>{% include 'partials/pair.html' with match=row.match mine=row.mine other=row.other href=row.other.get_absolute_url %}</li>{% endfor %}
       </ul>
-      <p class="small muted mt-4">Open a report to see why it overlaps with yours, signal by signal.</p>
+      <p class="small muted mt-4">Moderate and strong similarity only. Scores are weighted comparisons, not probabilities; open a report to see each signal, what could not be compared, and how much evidence backs the score.</p>
     {% else %}
-      {% include 'partials/empty.html' with title='No likely matches yet' text='When a moderator approves a report that resembles one of yours, it appears here with every reason behind the score.' action_url='/report/' action_label='Report an item' %}
+      {% include 'partials/empty.html' with title='No similar reports yet' text='When a moderator approves a report that resembles one of yours, it appears here with every reason behind the similarity score.' action_url='/report/' action_label='Report an item' %}
     {% endif %}
   </section>
 
@@ -74,7 +74,7 @@
           <div class="r__main">
             <span class="r__title"><a href="{% url 'claims:detail' c.pk %}">{{ c.item.title }}</a></span>
             <span class="progress" aria-hidden="true">{% for s in c.timeline %}{% if not forloop.first %}<b class="{% if s.state == 'done' or s.state == 'current' %}is-done{% endif %}"></b>{% endif %}<i class="is-{{ s.state }}"></i>{% endfor %}</span>
-            <span class="r__meta">{% if c.item.is_found %}Your claim{% else %}Your offer to return it{% endif %}, {{ c.get_status_display|lower }}</span>
+            <span class="r__meta">{% if c.item.is_found %}Your claim{% else %}Your offer to return it{% endif %}, {{ c.status_label|lower }}</span>
           </div>
         </div></li>
         {% endfor %}

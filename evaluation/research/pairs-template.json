@@ -1,20 +1,26 @@
 {
-  "provenance": "Replace with consented collection dates, setting and review procedure.",
+  "dataset_kind": "independent_reviewed",
+  "provenance": "Replace with consented collection dates, setting, who photographed and wrote each report, and the review procedure.",
   "limitations": ["Incomplete collection template; not evaluation evidence."],
+  "taxonomy": {
+    "related_categories": [["bags", "others"]],
+    "adjacent_locations": [["library", "block-a"]]
+  },
   "pairs": [
     {
       "query_id": "lost-report-001",
       "split": "validation",
       "label": 1,
+      "conditions": ["genuine_positive", "independent_photos", "different_wording"],
       "query": {
-        "id": "lost-report-001", "physical_id": "object-001",
-        "description": "", "category": "", "location": "", "date": "",
-        "brand": "", "color": "", "image": ""
+        "id": "lost-report-001", "physical_id": "object-001", "report_type": "lost",
+        "title": "", "description": "", "category": "", "location": "",
+        "date": "", "time": "", "brand": "", "color": "", "image": ""
       },
       "candidate": {
-        "id": "found-report-001", "physical_id": "object-001",
-        "description": "", "category": "", "location": "", "date": "",
-        "brand": "", "color": "", "image": ""
+        "id": "found-report-001", "physical_id": "object-001", "report_type": "found",
+        "title": "", "description": "", "category": "", "location": "",
+        "date": "", "time": "", "brand": "", "color": "", "image": ""
       },
       "review": {
         "label_source": "manual", "status": "pending", "reviewer": "",

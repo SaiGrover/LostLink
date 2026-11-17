@@ -70,7 +70,7 @@
           <a class="lp-btn lp-btn--ghost lp-btn--lg" href="{% url 'items:found' %}"><span class="lp-btn__label">Browse found items</span></a>
           <div class="lp-cursor" aria-hidden="true"><svg class="lp-cursor__arrow"><use href="#lp-pointer"></use></svg><span class="lp-cursor__label">Someone found it</span></div>
         </div>
-        <p class="lp-proof" data-after-type><b>{{ counts.reports }}</b> open report{{ counts.reports|pluralize }} across {{ counts.zones }} campus zones right now{% if counts.matches %}, <b>{{ counts.matches }}</b> likely match{{ counts.matches|pluralize:"es" }}{% endif %}.</p>
+        <p class="lp-proof" data-after-type><b>{{ counts.reports }}</b> open report{{ counts.reports|pluralize }} across {{ counts.zones }} campus zones right now{% if counts.matches %}, <b>{{ counts.matches }}</b> strong or moderate similarity match{{ counts.matches|pluralize:"es" }}{% endif %}.</p>
       </div>
 
       <div class="lp-viz" role="img" aria-label="{% if featured %}Illustration: lost and found belongings circling LostLink. The strongest real match on campus, {{ featured.lost_item.title }} and {{ featured.found_item.title }}, is connected with its score of {{ featured.percent }} out of 100.{% else %}Illustration: lost and found belongings circling LostLink.{% endif %}">
@@ -112,7 +112,7 @@
               <path class="lp-link-path__line" data-link-line stroke="url(#lp-link-grad)"/>
               <circle class="lp-link-path__spark" r="5" data-link-spark/>
             </svg>
-            <div class="lp-match" data-link-label><span class="lp-match__mark"><i></i><i></i></span><b>{{ featured.percent }}% match</b></div>
+            <div class="lp-match" data-link-label><span class="lp-match__mark"><i></i><i></i></span><b>{{ featured.percent }}% similar</b></div>
             {% endif %}
           </div>
         </div>

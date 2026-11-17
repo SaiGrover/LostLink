@@ -1,0 +1,22 @@
+{% extends 'accounts/auth_base.html' %}
+{% load ui %}
+{% block title %}New confirmation link{% endblock %}
+
+{% block form %}
+<div class="stack" style="--gap:var(--s3)">
+  <h1>Get a new confirmation link</h1>
+  <p class="muted">Enter the email address you signed up with. If it belongs to an account that still needs confirming, we'll send a fresh link.</p>
+</div>
+
+<form method="post" novalidate class="stack" style="--gap:var(--s5)" data-validate>
+  {% csrf_token %}
+  {% if rate_limited %}<div class="notice notice--bad" role="alert">{% icon 'alert' %}<div class="notice__body"><span>Too many requests from your network. Wait a while, then try again.</span></div></div>{% endif %}
+  <div class="field{% if form.email.errors %} has-error{% endif %}">
+    <label class="label" for="id_email">Email address</label>
+    <input class="input" id="id_email" type="email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="email" required maxlength="254">
+    {{ form.email.errors }}
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Send link</button>
+  <p class="hint">Already confirmed? <a class="link" href="{% url 'accounts:login' %}">Sign in</a></p>
+</form>
+{% endblock %}

@@ -9,6 +9,7 @@ urlpatterns = [
     path('moderation/report/<int:pk>/<str:decision>/', views.review_report,
          name='review_report'),
     path('moderation/flag/<int:pk>/<str:decision>/', views.resolve_flag, name='resolve_flag'),
+    path('moderation/photo/<int:pk>/<str:decision>/', views.photo_privacy, name='photo_privacy'),
     path('moderation/history/', views.decision_history, name='decisions'),
     path('analytics/', views.analytics, name='analytics'),
     path('users/', views.manage_users, name='users'),

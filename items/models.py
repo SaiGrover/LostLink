@@ -42,6 +42,30 @@ class Location(models.Model):
         return self.name
 
 
+class ItemQuerySet(models.QuerySet):
+    """Single source of truth for which reports take part in discovery and matching.
+
+    ``matchable()`` is used by the matching engine and anything else that
+    must agree on eligibility; claim/ownership rules are folded in here so a
+    report that can no longer accept claims stops producing matches.
+    """
+
+    def matchable(self):
+        """Active, approved reports with no reserved (approved) ownership claim.
+
+        Once a claim is approved the item is reserved for that claimant: it
+        stays visible in search with a "handover pending" state but no longer
+        produces match alerts or accepts new claims.
+        """
+        return (self.filter(is_active=True,
+                            status__in=[Item.Status.APPROVED, Item.Status.CLAIMED])
+                .exclude(claims__status='approved'))
+
+    def public(self):
+        return self.filter(is_active=True,
+                           status__in=[Item.Status.APPROVED, Item.Status.CLAIMED])
+
+
 class Item(models.Model):
     """A lost or found item report — the platform's primary operational data."""
 
@@ -55,6 +79,8 @@ class Item(models.Model):
         REJECTED = 'rejected', 'Rejected'
         CLAIMED = 'claimed', 'Claim in progress'
         RETURNED = 'returned', 'Returned / Resolved'
+        WITHDRAWN = 'withdrawn', 'Withdrawn by reporter'
+        REMOVED = 'removed', 'Removed by a moderator'
 
     reporter = models.ForeignKey(settings.AUTH_USER_MODEL,
                                  on_delete=models.CASCADE, related_name='items')
@@ -78,6 +104,30 @@ class Item(models.Model):
 
     image = models.ImageField(upload_to='items/%Y/%m/', blank=True, null=True)
 
+    # Private verification details (serial-number fragment, hidden mark,
+    # contents). Never shown publicly, never used for matching; visible only
+    # to the reporter and moderators to check ownership claims against.
+    private_details = models.TextField(
+        blank=True,
+        help_text='Details only the real owner would know. Kept private; used to verify claims.')
+
+    # Photo privacy (items/media.py). A sensitive photo (ID card, bank card,
+    # anything showing numbers, contact details or codes) is shown in full
+    # only to the reporter, staff and a verified claimant; everyone else gets
+    # a blurred low-resolution preview.
+    class PhotoSensitivitySource(models.TextChoices):
+        REPORTER = 'reporter', 'Declared by the reporter'
+        AUTO = 'auto', 'Suggested automatically'
+        MODERATOR = 'moderator', 'Set by a moderator'
+
+    photo_sensitive = models.BooleanField(
+        default=False, help_text='Restrict the photo to the reporter, staff and a verified owner.')
+    photo_sensitivity_source = models.CharField(max_length=10, blank=True,
+                                                choices=PhotoSensitivitySource.choices)
+    photo_reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                          on_delete=models.SET_NULL, related_name='+')
+    photo_reviewed_at = models.DateTimeField(null=True, blank=True)
+
     status = models.CharField(max_length=12, choices=Status.choices,
                               default=Status.PENDING)
     is_active = models.BooleanField(
@@ -94,6 +144,8 @@ class Item(models.Model):
     feature_version = models.CharField(max_length=200, blank=True)
     duplicate_of = models.ForeignKey('self', null=True, blank=True,
                                     on_delete=models.SET_NULL, related_name='possible_duplicates')
+
+    objects = ItemQuerySet.as_manager()
 
     class Meta:
         ordering = ['-created_at']
@@ -129,12 +181,37 @@ class Item(models.Model):
             self.Status.REJECTED: 'danger',
             self.Status.CLAIMED: 'accent',
             self.Status.RETURNED: 'success',
+            self.Status.WITHDRAWN: 'muted',
+            self.Status.REMOVED: 'danger',
         }.get(self.status, 'muted')
 
     @property
+    def reserved_claim(self):
+        """The approved (ownership-reserved) claim, if any.
+
+        An approved claim always moves the report to ``claimed``, so other
+        statuses never query (keeps listings free of per-row queries).
+        """
+        if not self.pk or self.status != self.Status.CLAIMED:
+            return None
+        if not hasattr(self, '_reserved_claim_cache'):
+            self._reserved_claim_cache = self.claims.filter(status='approved').first()
+        return self._reserved_claim_cache
+
+    @property
+    def is_handover_pending(self):
+        return self.is_active and self.reserved_claim is not None
+
+    @property
+    def display_status(self):
+        if self.is_handover_pending:
+            return 'Handover pending'
+        return self.get_status_display()
+
+    @property
     def is_matchable(self):
-        return self.is_active and self.status in (
-            self.Status.APPROVED, self.Status.CLAIMED)
+        return (self.is_active and self.status in (self.Status.APPROVED, self.Status.CLAIMED)
+                and self.reserved_claim is None)
 
     @property
     def is_public(self):

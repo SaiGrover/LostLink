@@ -6,6 +6,9 @@
   models are installed and ``LOSTLINK_TEST_PRETRAINED=1`` is set.
 * ``isolated_media`` writes uploads to a temporary directory.
 * ``png_upload`` builds a small real PNG for upload tests.
+* ``make_user`` / ``make_users`` create accounts that have confirmed their
+  email (campus verified) unless ``verified=False`` is passed, because most
+  tests exercise reporting and claiming, which require verification.
 """
 import io
 import os
@@ -52,16 +55,23 @@ def make_taxonomy():
             'library': library, 'block_a': block_a, 'cafeteria': cafeteria}
 
 
-def make_users():
+def make_user(username, password='pass-word-123', verified=True, **fields):
+    """Create a user; campus-verified by default (see accounts.decorators)."""
+    from django.utils import timezone
+
     from accounts.models import User
+    if verified:
+        fields.setdefault('email_verified_at', timezone.now())
+        fields.setdefault('email_verification_method', User.VerificationMethod.EMAIL)
+    return User.objects.create_user(username=username, password=password, **fields)
+
+
+def make_users(verified=True):
     return {
-        'owner': User.objects.create_user(username='owner', password='pass-word-123', email='owner@x.edu',
-                                          first_name='Olive', phone='+91 90000 00001'),
-        'finder': User.objects.create_user(username='finder', password='pass-word-123', email='finder@x.edu',
-                                           first_name='Fin'),
-        'other': User.objects.create_user(username='other', password='pass-word-123', email='other@x.edu'),
-        'mod': User.objects.create_user(username='mod', password='pass-word-123', role='moderator',
-                                        email='mod@x.edu'),
-        'admin': User.objects.create_user(username='adm', password='pass-word-123', role='admin',
-                                         email='adm@x.edu'),
+        'owner': make_user('owner', email='owner@x.edu', first_name='Olive',
+                           phone='+91 90000 00001', verified=verified),
+        'finder': make_user('finder', email='finder@x.edu', first_name='Fin', verified=verified),
+        'other': make_user('other', email='other@x.edu', verified=verified),
+        'mod': make_user('mod', role='moderator', email='mod@x.edu', verified=verified),
+        'admin': make_user('adm', role='admin', email='adm@x.edu', verified=verified),
     }

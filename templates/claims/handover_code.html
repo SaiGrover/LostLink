@@ -1,0 +1,18 @@
+{% extends 'shell.html' %}
+{% load ui %}
+{% block title %}Handover code{% endblock %}
+
+{% block main %}
+<header class="page-head page-head--tight">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'claims:mine' %}">Claims</a>{% icon 'chevron-right' %}<a class="num" href="{% url 'claims:detail' claim.pk %}">{{ claim.pk|claim_id }}</a>{% icon 'chevron-right' %}<span>Handover code</span></nav>
+  <h1 style="font-size:var(--t-40)">Your handover code for “{{ item.title }}”</h1>
+</header>
+
+<section class="panel panel--here stack" style="--gap:var(--s5);max-width:40rem" aria-labelledby="code-title">
+  <h2 class="sr-only" id="code-title">One-time code</h2>
+  <p class="score num" style="font-size:clamp(2.5rem, 12vw, 4.5rem);letter-spacing:.12em" aria-label="Code {{ code }}">{{ code }}</p>
+  <p class="muted">Valid until <strong>{{ session.expires_at|time:"H:i" }}</strong>, for one use only. It is not stored anywhere you can look it up again: if you lose it, create a new one.</p>
+  <div class="notice notice--warn">{% icon 'alert' %}<div class="notice__body"><span class="notice__title">Only after you have the item</span><span>Tell this code to the person handing the item over <strong>after</strong> you have received it and checked it is yours. Entering the code records the item as returned.</span></div></div>
+  <div><a class="btn btn-primary" href="{% url 'claims:detail' claim.pk %}">Back to the claim</a></div>
+</section>
+{% endblock %}

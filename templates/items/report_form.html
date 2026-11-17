@@ -58,7 +58,7 @@
       </fieldset>
 
       <fieldset>
-        <legend>Describe it<small>Colour, material, marks, stickers. Keep truly private details, like what's inside, for the verification questions later.</small></legend>
+        <legend>Describe it<small>Colour, material, general condition: enough for the owner to recognise it. Everyone can read this, so keep serial numbers, names, ID numbers and hidden marks for the private box.</small></legend>
         <div class="form-grid form-grid--2">
           <div class="field span-2{% if form.description.errors %} has-error{% endif %}">
             <label class="label" for="{{ form.description.id_for_label }}">Description <span class="opt num" id="desc-count"></span></label>
@@ -66,6 +66,12 @@
           </div>
           <div class="field"><label class="label" for="{{ form.brand.id_for_label }}">Brand <span class="opt">optional</span></label>{{ form.brand }}{{ form.brand.errors }}</div>
           <div class="field"><label class="label" for="{{ form.color.id_for_label }}">Main colour <span class="opt">optional</span></label>{{ form.color }}{{ form.color.errors }}</div>
+          <div class="field span-2{% if form.private_details.errors %} has-error{% endif %}">
+            <label class="label" for="{{ form.private_details.id_for_label }}">{% icon 'lock' %} Private verification details <span class="opt">optional · only you and moderators</span></label>
+            {{ form.private_details }}
+            <span class="hint">{{ form.private_details.help_text }}</span>
+            {{ form.private_details.errors }}
+          </div>
         </div>
       </fieldset>
 
@@ -82,6 +88,9 @@
           </div>
           <span class="error" data-file-error role="alert"></span>
           {{ form.image.errors }}
+        </div>
+        <div class="field">
+          <label class="check" for="{{ form.declare_sensitive.id_for_label }}">{{ form.declare_sensitive }}<span><b>{{ form.declare_sensitive.label }}</b><br><span class="hint">{{ form.declare_sensitive.help_text }}</span></span></label>
         </div>
       </fieldset>
 

@@ -1,28 +1,41 @@
+from django.core import mail
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
-from config.testing import make_users
+from config.testing import make_user, make_users
 
 
 class RegistrationAndLoginTests(TestCase):
-    def test_register_creates_student_and_signs_in(self):
+    def setUp(self):
+        cache.clear()  # rate-limit counters
+
+    def test_register_creates_unverified_student_and_sends_link(self):
         response = self.client.post(reverse('accounts:register'), {
             'first_name': 'Riya', 'last_name': 'S', 'username': 'riya_s', 'email': 'Riya@College.edu',
             'enrolment_no': '22CS1', 'password1': 'campus-recovery-9', 'password2': 'campus-recovery-9'})
-        self.assertRedirects(response, reverse('items:dashboard'))
+        self.assertRedirects(response, reverse('accounts:verification_sent'))
         user = User.objects.get(username='riya_s')
         self.assertEqual(user.role, User.Role.STUDENT)
         self.assertEqual(user.email, 'riya@college.edu')
         self.assertFalse(user.is_staff_role)
+        self.assertFalse(user.is_campus_verified)
+        self.assertNotIn('_auth_user_id', self.client.session)  # not signed in yet
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['riya@college.edu'])
 
     def test_register_rejects_duplicate_email_and_mismatched_passwords(self):
         User.objects.create_user(username='taken', email='dup@x.edu', password='pass-word-123')
         response = self.client.post(reverse('accounts:register'), {
             'first_name': 'A', 'username': 'new_user', 'email': 'DUP@x.edu',
             'password1': 'campus-recovery-9', 'password2': 'campus-recovery-9'})
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'already exists')
+        # No second account, and no "already exists" error that would reveal
+        # the address; its owner is emailed instead.
+        self.assertRedirects(response, reverse('accounts:verification_sent'))
+        self.assertFalse(User.objects.filter(username='new_user').exists())
+        self.assertEqual(User.objects.filter(email__iexact='dup@x.edu').count(), 1)
+        self.assertEqual(mail.outbox[-1].to, ['dup@x.edu'])
         response = self.client.post(reverse('accounts:register'), {
             'first_name': 'A', 'username': 'new_user2', 'email': 'fresh@x.edu',
             'password1': 'campus-recovery-9', 'password2': 'different'})
@@ -30,7 +43,7 @@ class RegistrationAndLoginTests(TestCase):
         self.assertFalse(User.objects.filter(username='new_user2').exists())
 
     def test_login_valid_and_invalid_credentials(self):
-        User.objects.create_user(username='sam', password='pass-word-123')
+        make_user('sam', password='pass-word-123')
         response = self.client.post(reverse('accounts:login'), {'username': 'sam', 'password': 'wrong'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Please enter a correct username and password')

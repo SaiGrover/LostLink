@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': Path(os.environ.get('LOSTLINK_SQLITE_PATH', BASE_DIR / 'db.sqlite3')),
     }
 }
 
@@ -156,7 +156,8 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'items:dashboard'
 LOGOUT_REDIRECT_URL = 'items:home'
 
-# In development we print emails to the console (email is a future extension).
+# Development default; the accounts block at the end of this file selects
+# the real backend from the environment.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # --- Security hardening (active in production, i.e. when DEBUG is off) -------
@@ -253,3 +254,154 @@ MATCHING['TIER_MEDIUM'] = MATCHING_PROFILE['medium']
 MATCHING['TIER_HIGH'] = MATCHING_PROFILE['high']
 # Chance-level image similarity per vision model (see matching/profile.json).
 MATCHING['IMAGE_CHANCE'] = MATCHING_PROFILE.get('image_chance', {})
+
+# --- Claims: ownership reservation, appeals, evidence, OTP handover ---
+HANDOVER_CODE_TTL_MINUTES = int(os.environ.get('LOSTLINK_HANDOVER_CODE_TTL_MINUTES', 10))
+HANDOVER_CODE_MAX_ATTEMPTS = int(os.environ.get('LOSTLINK_HANDOVER_CODE_MAX_ATTEMPTS', 5))
+HANDOVER_CODES_PER_HOUR = int(os.environ.get('LOSTLINK_HANDOVER_CODES_PER_HOUR', 5))
+HANDOVER_VERIFY_PER_10_MIN = int(os.environ.get('LOSTLINK_HANDOVER_VERIFY_PER_10_MIN', 10))
+CLAIM_MAX_APPEALS = int(os.environ.get('LOSTLINK_CLAIM_MAX_APPEALS', 2))
+CLAIM_APPEALS_PER_DAY = int(os.environ.get('LOSTLINK_CLAIM_APPEALS_PER_DAY', 3))
+CLAIM_EVIDENCE_MAX_FILES = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_MAX_FILES', 5))
+CLAIM_EVIDENCE_MAX_BYTES = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_MAX_BYTES', 5 * 1024 * 1024))
+CLAIM_EVIDENCE_RETENTION_DAYS = int(os.environ.get('LOSTLINK_CLAIM_EVIDENCE_RETENTION_DAYS', 180))
+
+# --- Production hardening, media and uploads ---
+# Everything below refines the settings above; production-only checks and the
+# media/upload policy live here so they are reviewed in one place.
+
+
+def _env_list(name, default=''):
+    return [value.strip() for value in os.environ.get(name, default).split(',') if value.strip()]
+
+
+def _env_flag(name, default):
+    return os.environ.get(name, 'true' if default else 'false').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+# Hosting platforms set RENDER; there DEBUG must be chosen explicitly, so a
+# forgotten DJANGO_DEBUG can never publish debug pages with tracebacks.
+if DEBUG and os.environ.get('RENDER') and os.environ.get('DJANGO_DEBUG', '').lower() != 'true':
+    raise RuntimeError('Set DJANGO_DEBUG=false on Render (or DJANGO_DEBUG=true to run a debug build on purpose).')
+
+ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+
+# Optional SQLite location for local runs and the first-run smoke test
+# (scripts/smoke_first_run.py); ignored whenever DATABASE_URL is set.
+if os.environ.get('LOSTLINK_SQLITE_PATH') and not os.environ.get('DATABASE_URL'):
+    DATABASES['default']['NAME'] = Path(os.environ['LOSTLINK_SQLITE_PATH'])
+if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+
+if not DEBUG:
+    if len(SECRET_KEY) < 50 or SECRET_KEY.startswith('django-insecure') or len(set(SECRET_KEY)) < 5:
+        raise RuntimeError('DJANGO_SECRET_KEY must be a private random value of at least 50 characters.')
+    if not os.environ.get('DJANGO_ALLOWED_HOSTS') or '*' in ALLOWED_HOSTS:
+        raise RuntimeError('Set DJANGO_ALLOWED_HOSTS to the exact public hostname(s); "*" is not allowed.')
+    CSRF_TRUSTED_ORIGINS = _env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
+    if any(not origin.startswith('https://') for origin in CSRF_TRUSTED_ORIGINS):
+        raise RuntimeError('DJANGO_CSRF_TRUSTED_ORIGINS entries must be https:// origins.')
+    # TLS terminates at the platform proxy, which sets X-Forwarded-Proto.
+    SECURE_SSL_REDIRECT = _env_flag('DJANGO_SECURE_SSL_REDIRECT', True)
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', SECURE_HSTS_SECONDS))
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Uploads must live outside the static tree, so WhiteNoise can never serve
+    # one directly; every upload goes through the media view (items/media.py).
+    _media = Path(MEDIA_ROOT).resolve()
+    for _static in [Path(STATIC_ROOT).resolve(), *(Path(d).resolve() for d in STATICFILES_DIRS)]:
+        if _media == _static or _static in _media.parents or _media in _static.parents:
+            raise RuntimeError('LOSTLINK_MEDIA_ROOT must not overlap the static file directories.')
+
+SESSION_COOKIE_AGE = int(os.environ.get('DJANGO_SESSION_COOKIE_AGE', 60 * 60 * 24 * 14))
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+
+# Uploaded photographs are validated, stripped of metadata and re-encoded by
+# items/media.py; these bound what is accepted before any pixel is decoded.
+LOSTLINK_UPLOAD_MAX_BYTES = int(os.environ.get('LOSTLINK_UPLOAD_MAX_MB', '5')) * 1024 * 1024
+LOSTLINK_UPLOAD_MAX_PIXELS = int(os.environ.get('LOSTLINK_UPLOAD_MAX_PIXELS', '40000000'))
+LOSTLINK_UPLOAD_MAX_EDGE = int(os.environ.get('LOSTLINK_UPLOAD_MAX_EDGE', '2048'))
+FILE_UPLOAD_PERMISSIONS = 0o640
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o750
+
+# Security events (bad Host headers, suspicious file operations) and warnings
+# from any logger reach the console in production too. Log messages carry
+# record IDs only, never contact details or private answers.
+LOGGING['loggers']['django.security'] = {'handlers': ['console'], 'level': 'WARNING', 'propagate': False}
+LOGGING['root'] = {'handlers': ['console'], 'level': 'WARNING'}
+
+
+# --- Accounts: email verification, password reset, email backend ---
+# All values come from the environment; nothing secret is stored here.
+def _env_flag(name, default=False):
+    value = os.environ.get(name)
+    if value is None or value.strip() == '':
+        return default
+    return value.strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+# Email delivery. Precedence: an explicit DJANGO_EMAIL_BACKEND; SMTP when
+# DJANGO_EMAIL_HOST is set; the console in development; otherwise (DEBUG off
+# and nothing configured) a backend that drops mail and logs an ERROR for
+# each message, reported by ``manage.py check`` as accounts.W001. Production
+# never silently prints one-time links to the console.
+EMAIL_HOST = os.environ.get('DJANGO_EMAIL_HOST', '').strip()
+EMAIL_PORT = int(os.environ.get('DJANGO_EMAIL_PORT') or 587)
+EMAIL_HOST_USER = os.environ.get('DJANGO_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_SSL = _env_flag('DJANGO_EMAIL_USE_SSL', False)
+EMAIL_USE_TLS = _env_flag('DJANGO_EMAIL_USE_TLS', not EMAIL_USE_SSL)
+EMAIL_TIMEOUT = int(os.environ.get('DJANGO_EMAIL_TIMEOUT') or 10)
+if os.environ.get('DJANGO_EMAIL_BACKEND', '').strip():
+    EMAIL_BACKEND = os.environ['DJANGO_EMAIL_BACKEND'].strip()
+elif EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+elif DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'accounts.mail.UnconfiguredEmailBackend'
+DEFAULT_FROM_EMAIL = os.environ.get('DJANGO_DEFAULT_FROM_EMAIL', '').strip() or 'LostLink <no-reply@localhost>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Absolute base URL for links in emails, e.g. https://lostlink.example.edu.
+# When empty the current request's (ALLOWED_HOSTS-validated) host is used.
+LOSTLINK_PUBLIC_URL = os.environ.get('LOSTLINK_PUBLIC_URL', '').strip().rstrip('/')
+
+# Campus identity: comma-separated institutional email domains allowed to
+# register (subdomains included). Empty = any domain, still email-verified.
+LOSTLINK_ALLOWED_EMAIL_DOMAINS = [
+    d.strip().lower().lstrip('@') for d in
+    os.environ.get('LOSTLINK_ALLOWED_EMAIL_DOMAINS', '').split(',') if d.strip()]
+
+# Link lifetimes (seconds). Verification links: 3 days. Reset links: 1 hour.
+LOSTLINK_EMAIL_VERIFICATION_MAX_AGE = int(
+    os.environ.get('LOSTLINK_EMAIL_VERIFICATION_MAX_AGE') or 3 * 24 * 3600)
+PASSWORD_RESET_TIMEOUT = int(os.environ.get('LOSTLINK_PASSWORD_RESET_TIMEOUT') or 3600)
+
+# Per-endpoint rate limits as {name: (hits, window_seconds)}; any entry of
+# accounts.policy.DEFAULT_RATE_LIMITS can be overridden here.
+LOSTLINK_AUTH_RATE_LIMITS = {}
+
+# --- Matching: stable text model, chronology, evidence coverage ---
+# Text similarity uses a versioned, fixed-vocabulary lexical release
+# (matching/text_model/<release>.json, built by `manage.py build_text_model`),
+# so a pair's score never depends on which other reports exist. Changing the
+# release, chronology or coverage rules changes scoring semantics: bump the
+# engine version in matching/profile.json and run `manage.py rebuild_matches`.
+MATCHING['TEXT_MODEL_RELEASE'] = MATCHING_PROFILE.get('text_release', 'lexical-v1')
+# Graded chronology (matching/chronology.py): found-before-lost is penalised
+# and flagged, never silently excluded. Heuristic, documented thresholds.
+MATCHING['CHRONOLOGY'] = {
+    'HALF_LIFE_DAYS': MATCHING['DATE_HALF_LIFE_DAYS'],
+    'APPROXIMATE_DAYS': MATCHING['TEMPORAL_TOLERANCE_DAYS'],
+    'TIME_TOLERANCE_HOURS': 3,
+    'CONTRADICTORY_DAYS': 7,
+    'PENALTY': {'plausible': 1.0, 'approximate': 0.9, 'suspicious': 0.5, 'contradictory': 0.0},
+    'TIER_CAP': {'suspicious': 'medium', 'contradictory': 'low'},
+}
+# Evidence coverage = share of the base weight compared on both reports.
+# Below STRONG_MIN a pair is shown as moderate at most; below MODERATE_MIN as
+# weak. Heuristic display rules, not calibrated statistics.
+MATCHING['EVIDENCE_COVERAGE'] = {'STRONG_MIN': 0.70, 'MODERATE_MIN': 0.50}
+# Feature extraction attempts before a report waits for `manage.py retry_features`.
+MATCHING['FEATURE_MAX_ATTEMPTS'] = 3

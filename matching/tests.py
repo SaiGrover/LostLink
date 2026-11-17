@@ -46,12 +46,15 @@ class ScoringTests(SimpleTestCase):
         self.assertAlmostEqual(date_score(date(2026, 1, 1), date(2026, 1, 11)), .5)
 
     def test_found_before_lost_is_implausible(self):
+        # Graded chronology (requirement 4.7): five days "before" is suspicious
+        # and penalised (x0.5) instead of zeroed; beyond 7 days it scores 0.
         lost, found = date(2026, 3, 10), date(2026, 3, 5)
         self.assertFalse(is_temporally_plausible(lost, found))
-        self.assertEqual(date_score(lost, found), 0.0)
-        # one day of tolerance for approximate dates
+        self.assertAlmostEqual(date_score(lost, found), 0.5 * 0.5 ** 0.5)
+        self.assertEqual(date_score(lost, lost - timedelta(days=8)), 0.0)
+        # one day of tolerance for approximate dates, with a mild x0.9 penalty
         self.assertTrue(is_temporally_plausible(lost, lost - timedelta(days=1)))
-        self.assertAlmostEqual(date_score(lost, lost - timedelta(days=1)), 0.5 ** 0.1)
+        self.assertAlmostEqual(date_score(lost, lost - timedelta(days=1)), 0.9 * 0.5 ** 0.1)
 
     def test_incompatible_vectors_do_not_match(self):
         self.assertEqual(image_similarity([1, 0], [1, 0, 0]), 0)
@@ -83,7 +86,9 @@ class ScoringTests(SimpleTestCase):
         self.assertGreater(sims[1], 0.4)
         self.assertLess(sims[2], 0.15)
         self.assertEqual(sims[3], 0.0)
-        self.assertGreater(sims[0], sims[1])
+        # The paraphrase normalises to the same concepts (made of leather ->
+        # leather, branding -> logo), so it may tie with the identical text.
+        self.assertGreaterEqual(sims[0], sims[1])
         self.assertGreater(sims[1], sims[2])
         self.assertEqual(text_similarity(q, []), [])
 
@@ -193,14 +198,21 @@ class MatchingPipelineTests(TestCase):
         self.assertTrue(rows['image']['missing'])
         self.assertAlmostEqual(sum(r['contribution'] for r in rows.values()), m.score, places=6)
 
-    def test_found_before_lost_is_never_stored(self):
+    def test_found_before_lost_is_flagged_and_never_surfaced(self):
+        # Requirement 4.7 replaced the hard exclusion with graded chronology:
+        # the pair is stored for moderators, penalised, warned and capped.
         lost = self.report('owner', 'lost', 'Wallet', 'Black leather wallet', days_ago=2)
         self.report('finder', 'found', 'Wallet', 'Black leather wallet', days_ago=9)
-        self.assertEqual(run_matching(lost), [])
-        self.assertEqual(Match.objects.count(), 0)
-        # and the reverse direction agrees
+        m = run_matching(lost)[0]
+        self.assertEqual(m.chronology_status, 'suspicious')
+        self.assertTrue(m.chronology_warning)
+        self.assertLess(m.date_score, 0.5)
+        self.assertIn(m.tier, ('medium', 'low'))
+        # and the reverse direction agrees; far earlier is contradictory -> weak
         found = self.report('other', 'found', 'Wallet', 'Black leather wallet', days_ago=20)
-        self.assertEqual(run_matching(found), [])
+        far = run_matching(found)[0]
+        self.assertEqual((far.chronology_status, far.tier, far.date_score), ('contradictory', 'low', 0.0))
+        self.assertFalse(Notification.objects.filter(user=self.users['other'], kind='match').exists())
 
     def test_compatible_category_and_adjacent_location_earn_partial_credit(self):
         lost = self.report('owner', 'lost', 'Wallet', 'Black leather wallet', cat='bags', loc='library')
@@ -253,7 +265,9 @@ class MatchingPipelineTests(TestCase):
         found.category, found.location = self.tax['bags'], self.tax['library']
         found.save()
         m = run_matching(lost)[0]
-        self.assertEqual(m.tier, 'high')
+        # No photo and no brand/colour: 65% evidence coverage caps it at moderate.
+        self.assertEqual(m.tier, 'medium')
+        self.assertEqual(m.details['tier_before_caps'], 'high')
         self.assertEqual(Notification.objects.filter(user=self.users['finder'], kind='match').count(), 1)
         run_matching(lost)
         self.assertEqual(Notification.objects.filter(kind='match').count(), 2)

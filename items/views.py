@@ -5,15 +5,17 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
+from accounts.decorators import verified_required
 from claims.models import Claim
 from matching.models import Match
-from matching.services import clear_matches, run_matching
+from matching.services import clear_matches
 
 from .forms import FlagForm, ItemForm
 from .models import Category, Item, Location
@@ -29,10 +31,13 @@ def home(request):
         return redirect('items:dashboard')
     public = (Item.objects.filter(is_active=True, status__in=PUBLIC_STATUSES)
               .select_related('category', 'location'))
-    with_photos = list(public.exclude(image='').exclude(image__isnull=True)[:12])
+    # Decorative landing imagery never uses photos marked sensitive.
+    with_photos = list(public.exclude(image='').exclude(image__isnull=True)
+                       .exclude(photo_sensitive=True)[:12])
     # The strongest current match between two public reports with photos:
     # a real, engine-computed example for the landing page's matching story.
     featured = (_current_matches().exclude(lost_item__image='').exclude(found_item__image='')
+                .exclude(lost_item__photo_sensitive=True).exclude(found_item__photo_sensitive=True)
                 .select_related('lost_item', 'found_item', 'lost_item__category',
                                 'found_item__category', 'lost_item__location', 'found_item__location')
                 .order_by('-score').first())
@@ -111,6 +116,7 @@ def dashboard(request):
 
 
 @login_required
+@verified_required
 def report_item(request):
     initial = {}
     rtype = request.GET.get('type')
@@ -174,14 +180,20 @@ def item_detail(request, pk):
         # Other users only see matches surfaced for discovery (medium/high);
         # low-tier candidates stay search-only (synopsis Section 4.9).
         match_rows = [r for r in match_rows if r['match'].tier != 'low']
+    from claims.services import claim_eligibility
     if is_owner and item.is_active:
         from django.urls import reverse
         for row in match_rows:
-            if row['other'].is_active:
+            other_elig = claim_eligibility(row['other'], user)
+            if other_elig['can_claim']:
                 row['action_url'] = f"{reverse('claims:start', args=[row['other'].pk])}?match={row['match'].pk}"
                 row['action_label'] = 'This is mine — start a claim' if item.is_lost else 'Offer to return it'
+            elif other_elig['existing'] is not None:
+                row['action_url'] = other_elig['existing'].get_absolute_url()
+                row['action_label'] = 'View your claim'
 
-    existing_claim = item.claims.filter(claimant=user).first()
+    eligibility = claim_eligibility(item, user)
+    existing_claim = eligibility['existing']
     claims = item.claims.select_related('claimant') if (is_owner or can_review) else []
     my_flag = item.flags.filter(reporter=user, resolved_at__isnull=True).first()
 
@@ -203,6 +215,7 @@ def item_detail(request, pk):
         'can_review': can_review,
         'match_rows': match_rows,
         'existing_claim': existing_claim,
+        'eligibility': eligibility,
         'claims': claims,
         'photo_credit': photo_credit,
         'flag_form': FlagForm(),
@@ -215,6 +228,7 @@ def item_detail(request, pk):
 
 
 @login_required
+@verified_required
 @require_POST
 def flag_item(request, pk):
     item = get_object_or_404(Item, pk=pk)
@@ -247,7 +261,7 @@ def my_items(request):
     elif status == 'returned':
         qs = qs.filter(status=Item.Status.RETURNED)
     elif status == 'withdrawn':
-        qs = qs.filter(is_active=False).exclude(status=Item.Status.RETURNED)
+        qs = qs.filter(status__in=[Item.Status.WITHDRAWN, Item.Status.REMOVED])
     page = Paginator(qs, 12).get_page(request.GET.get('page'))
     return render(request, 'items/my_items.html', {
         'items': page, 'page_obj': page, 'sel_type': rtype, 'sel_status': status,
@@ -257,17 +271,22 @@ def my_items(request):
 
 @login_required
 @require_POST
+@transaction.atomic
 def withdraw_item(request, pk):
-    item = get_object_or_404(Item, pk=pk, reporter=request.user)
-    if item.claims.exclude(status='rejected').exists():
+    from dashboard.models import ModerationDecision
+    from items import lifecycle
+
+    item = get_object_or_404(Item.objects.select_for_update(), pk=pk, reporter=request.user)
+    if item.claims.exclude(status__in=['rejected', 'withdrawn']).exists():
         messages.error(request, 'This report has an active or completed claim. '
                                 'Contact a moderator before withdrawing it.')
         return redirect(item.get_absolute_url())
-    item.is_active = False
-    item.save(update_fields=['is_active'])
-    clear_matches(item)
-    # A withdrawn report is no longer public, so its open flags need no review.
-    item.flags.filter(resolved_at__isnull=True).update(resolved_at=timezone.now())
+    if not lifecycle.can_transition(item, Item.Status.WITHDRAWN) or item.status in lifecycle.TERMINAL:
+        messages.error(request, 'This report is already closed.')
+        return redirect(item.get_absolute_url())
+    # The lifecycle retires matches and resolves open flags on a closed report.
+    lifecycle.transition(item, Item.Status.WITHDRAWN, actor=request.user,
+                         action=ModerationDecision.Action.REPORT_WITHDRAWN)
     messages.info(request, f'“{item.title}” has been withdrawn.')
     return redirect('items:mine')
 
@@ -312,8 +331,9 @@ def search_filters(request):
 
 def _search_queryset(request, filters=None):
     f = filters or search_filters(request)
+    # Result cards never show the reporter, so their account row is not loaded.
     qs = (Item.objects.filter(is_active=True, status__in=PUBLIC_STATUSES)
-          .select_related('category', 'location', 'reporter'))
+          .select_related('category', 'location'))
     if f['q']:
         q = f['q']
         qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) |
@@ -398,18 +418,31 @@ def search_api(request):
 
 
 @login_required
+@verified_required
 def edit_item(request, pk):
+    from dashboard.models import ModerationDecision
+    from items import lifecycle
+
     item = get_object_or_404(Item, pk=pk, reporter=request.user, is_active=True)
-    if item.claims.exclude(status='rejected').exists():
+    if item.claims.exclude(status__in=['rejected', 'withdrawn']).exists():
         messages.error(request, 'A report with an ongoing claim cannot be edited. Contact a moderator.')
         return redirect(item.get_absolute_url())
     form = ItemForm(request.POST or None, request.FILES or None, instance=item)
     if request.method == 'POST' and form.is_valid():
-        item = form.save(commit=False)
-        item.status = Item.Status.PENDING
-        item.feature_version = ''
-        item.save()
-        clear_matches(item)  # content changed: stale scores must not survive
+        with transaction.atomic():
+            locked = Item.objects.select_for_update().get(pk=item.pk)
+            if locked.claims.exclude(status__in=['rejected', 'withdrawn']).exists():
+                messages.error(request, 'A claim arrived while you were editing. Contact a moderator.')
+                return redirect(item.get_absolute_url())
+            item = form.save(commit=False)
+            item.status = locked.status  # status changes only through the lifecycle
+            item.feature_version = ''
+            item.save()
+            # Any edit (including private verification details) goes back to review.
+            lifecycle.transition(item, Item.Status.PENDING, actor=request.user,
+                                 action=ModerationDecision.Action.REPORT_RESUBMITTED,
+                                 note='Edited by the reporter.')
+            clear_matches(item)  # content changed: stale scores must not survive
         from matching.features import prepare
         prepare(item)
         messages.success(request, 'Changes saved and sent for moderator review.')
@@ -418,20 +451,8 @@ def edit_item(request, pk):
 
 
 def serve_media(request, path):
-    """Protected media: item photographs are only served to users allowed to
-    see the report (public once approved; otherwise owner, participants and
-    staff). Never exposed through a static file URL."""
-    from django.http import FileResponse, Http404
-    item = get_object_or_404(Item, image=path)
-    user = request.user
-    allowed = user.is_authenticated and (
-        user.is_staff_role or item.reporter_id == user.id or
-        item.claims.filter(claimant=user).exists())
-    if not (item.is_public or allowed):
-        raise PermissionDenied('This image is awaiting review or is no longer public.')
-    try:
-        response = FileResponse(item.image.open('rb'))
-    except (FileNotFoundError, OSError):
-        raise Http404('Image unavailable')
-    response['Cache-Control'] = 'private, no-store'
-    return response
+    """Protected media (``/media/<path>``). Never exposed through a static
+    file URL. The deny-by-default policy, path normalisation, sensitive-photo
+    previews and response headers are defined in ``items.media``."""
+    from .media import serve
+    return serve(request, path)

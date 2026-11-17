@@ -1,0 +1,13 @@
+{% autoescape off %}Hi {{ user.display_name }},
+
+Confirm that this email address belongs to the LostLink account "{{ user.username }}" by opening this link:
+
+{{ verify_url }}
+
+The link works once and expires in {{ hours }} hour{{ hours|pluralize }}. Until the address is confirmed, the account can browse LostLink but cannot report, flag or claim items.
+
+If you did not create a LostLink account, ignore this email. Nothing happens unless the link is used.
+
+LostLink campus lost and found
+{{ base_url }}
+{% endautoescape %}

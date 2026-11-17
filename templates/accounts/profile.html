@@ -26,12 +26,14 @@
     <div class="row" style="--gap:var(--s3)"><span class="avatar" aria-hidden="true" style="width:48px;height:48px;font-size:var(--t-18)">{{ user.initials }}</span><div><p class="strong">{{ user.display_name }}</p><p class="small muted">{{ user.get_role_display }}</p></div></div>
     <dl class="facts">
       <dt>Username</dt><dd>{{ user.username }}</dd>
+      <dt>Email</dt><dd>{% if user.is_campus_verified %}{% if user.email_verified_at %}Confirmed{% else %}Staff account{% endif %}{% else %}<a class="link" href="{% url 'accounts:verification_pending' %}">Not confirmed yet</a>{% endif %}</dd>
       <dt>Member since</dt><dd>{{ user.date_joined|date:"j F Y" }}</dd>
       <dt>Reports</dt><dd><a class="link" href="{% url 'items:mine' %}">{{ user.items.count }}</a></dd>
       <dt>Claims</dt><dd><a class="link" href="{% url 'claims:mine' %}">{{ user.claims.count }}</a></dd>
     </dl>
     <div class="stack" style="--gap:var(--s2)"><span class="label">Colour theme</span>{% include 'partials/theme_choice.html' %}<span class="hint">System follows your device setting.</span></div>
-    <div class="cluster"><a class="btn btn-plain btn-sm" href="{% url 'accounts:logout' %}">{% icon 'logout' %}Sign out</a></div>
+    <p class="hint">Changing your email means confirming the new address before you can report or claim again.</p>
+    <div class="cluster"><a class="btn btn-plain btn-sm" href="{% url 'accounts:password_reset' %}">{% icon 'key' %}Reset password</a><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit" class="btn btn-plain btn-sm">{% icon 'logout' %}Sign out</button></form></div>
   </aside>
 </div>
 {% endblock %}
