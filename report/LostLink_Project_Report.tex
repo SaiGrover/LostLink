@@ -1,6 +1,6 @@
 \documentclass[12pt,a4paper,oneside]{report}
 
-\usepackage[a4paper,top=19mm,bottom=20mm,left=19mm,right=19mm,headheight=15pt]{geometry}
+\usepackage[a4paper,top=27mm,bottom=27mm,left=20mm,right=20mm,headheight=15pt,headsep=6mm,footskip=10mm]{geometry}
 \usepackage{fontspec}
 \setmainfont{Latin Modern Roman}
 \setsansfont{Latin Modern Sans}
@@ -9,9 +9,11 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{longtable}
 \usepackage{array}
 \usepackage{multirow}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage[table]{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.multipart,fit,calc,backgrounds}
@@ -104,8 +106,8 @@
 \renewcommand{\footrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
 
-% Chapters continue on the same page (no half-empty chapter endings).
-\titleclass{\chapter}{straight}
+% Every chapter starts on a new page.
+\setlength{\emergencystretch}{2em}
 
 \titleformat{\chapter}[display]
   {\normalfont\color{ink}}
@@ -113,7 +115,7 @@
   {2pt}
   {\fontsize{21}{25}\selectfont\bfseries}
   [\vspace{1pt}{\color{teal}\rule{20mm}{0.6pt}}]
-\titlespacing*{\chapter}{0pt}{16pt}{6pt}
+\titlespacing*{\chapter}{0pt}{0pt}{10pt}
 \titleformat{\section}{\fontsize{14}{17}\selectfont\bfseries\color{teal}}{\thesection}{0.55em}{}
 \titlespacing*{\section}{0pt}{8pt}{3pt}
 \titleformat{\subsection}{\fontsize{12.5}{15}\selectfont\bfseries\color{ink}}{\thesubsection}{0.55em}{}
@@ -198,23 +200,21 @@
 \end{center}
 
 \vspace{6mm plus 1fill}
-\noindent
-\hspace*{7mm}\begin{minipage}[t]{0.42\textwidth}
-{\fontsize{12}{15}\selectfont\bfseries SUBMITTED TO}\par\vspace{3mm}
-{\fontsize{11}{16}\selectfont
+\noindent\hspace*{10mm}%
+{\fontsize{11}{17}\selectfont
+\begin{tabular}[t]{@{}l@{}}
+{\fontsize{12}{15}\selectfont\bfseries SUBMITTED TO}\\[2mm]
 Dr. Sonal\\
-Dr. Shobhit Tyagi}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.48\textwidth}
-{\fontsize{12}{15}\selectfont\bfseries SUBMITTED BY}\par\vspace{3mm}
-{\fontsize{10.5}{15}\selectfont
-\begin{tabular}{@{}p{34mm}l@{}}
+Dr. Shobhit Tyagi
+\end{tabular}}\hfill
+{\fontsize{11}{17}\selectfont
+\begin{tabular}[t]{@{}l@{\hspace{8mm}}r@{}}
+\multicolumn{2}{@{}l}{\fontsize{12}{15}\selectfont\bfseries SUBMITTED BY}\\[2mm]
 Saanvi Grover & 2408030010\\
 Prankit Goel & 2408030011\\
 Aditya Sharma & 2408030019\\
 Aaradhya Kulashri & 2408030026
-\end{tabular}}
-\end{minipage}\hspace*{4mm}
+\end{tabular}}\hspace*{10mm}
 
 \vspace{6mm plus 1fill}
 \begin{center}
@@ -372,26 +372,29 @@ The project answers a practical campus need and an engineering question: can mul
 \section{Organisation of the Report}
 \begin{itemize}
   \item \textbf{Chapters 2--3:} requirements and technology stack.
-  \item \textbf{Chapter 4:} architecture, deployment, data model, state machines and sequence diagrams.
-  \item \textbf{Chapter 5:} implementation, including the matching engine, its calibration, security and workflow rules.
-  \item \textbf{Chapters 6--7:} modules and a screenshot walkthrough of the interface.
-  \item \textbf{Chapters 8--10:} testing, results with a worked example, and conclusions.
+  \item \textbf{Chapter 4:} architecture, deployment, data model and UML diagrams.
+  \item \textbf{Chapter 5:} matching engine, calibration, security and workflow rules.
+  \item \textbf{Chapters 6--10:} modules, interface walkthrough, testing, results and conclusions.
 \end{itemize}
 
 % ===========================================================================
 \chapter{Requirement Analysis}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item who uses LostLink and what each stakeholder needs;
   \item functional and non-functional requirements, with their status;
   \item use cases, platform requirements, role capabilities and acceptance evidence.
 \end{itemize}
 
 \section{Stakeholders}
+\begin{itemize}
+  \item Five groups have a stake in campus recovery; two of them are the students on either side of a lost item.
+  \item Each need below maps to a feature described later in this report.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Stakeholders and their needs}
-\begin{tabularx}{\textwidth}{p{30mm}X X}
+\begin{tabularx}{\textwidth}{P{30mm}X X}
 \toprule
 Stakeholder & Need & How LostLink serves it\\
 \midrule
@@ -405,10 +408,14 @@ Institution & Protect student data and resolve disputes & RBAC, protected media 
 \end{table}
 
 \section{Functional Requirements}
+\begin{itemize}
+  \item Nine functional requirements cover the whole journey, from registration to closing a case.
+  \item All nine are implemented and verified by automated tests (Chapter~8).
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Functional requirements and implemented response}
-\begin{tabularx}{\textwidth}{>{\bfseries}p{13mm}X p{27mm}}
+\begin{tabularx}{\textwidth}{>{\bfseries}P{13mm}X P{27mm}}
 \toprule
 ID & Requirement & Status\\
 \midrule
@@ -433,7 +440,7 @@ FR-09 & Close every dependent claim, match and report when a case ends. & \statu
 \begin{table}[H]
 \centering\small
 \caption{Principal use cases}
-\begin{tabularx}{\textwidth}{>{\bfseries}p{11mm}p{29mm}p{20mm}X}
+\begin{tabularx}{\textwidth}{>{\bfseries}P{10mm}P{29mm}P{25mm}X}
 \toprule
 ID & Use case & Actor & Main flow and outcome\\
 \midrule
@@ -450,10 +457,14 @@ UC-08 & Manage the service & Administrator & Roles, taxonomy, analytics and CSV/
 \end{table}
 
 \section{Non-Functional Requirements}
+\begin{itemize}
+  \item Quality requirements describe how well the system behaves, not what it does.
+  \item Security, privacy and integrity carry the most weight, because the system handles personal belongings and contact details.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Quality requirements}
-\begin{tabularx}{\textwidth}{p{27mm}X}
+\begin{tabularx}{\textwidth}{P{27mm}X}
 \toprule
 Quality & Requirement\\
 \midrule
@@ -470,10 +481,13 @@ Explainability & Every match stores its component scores, missing evidence, mode
 \end{table}
 
 \section{Hardware and Software Requirements}
+\begin{itemize}
+  \item LostLink runs on an ordinary laptop for development; the image model is the only heavy component.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Hardware and software requirements}
-\begin{tabularx}{\textwidth}{p{34mm}X}
+\begin{tabularx}{\textwidth}{P{34mm}X}
 \toprule
 Item & Requirement\\
 \midrule
@@ -489,10 +503,14 @@ Client & Any standards-compliant desktop or mobile browser\\
 \end{table}
 
 \section{User Requirements}
+\begin{itemize}
+  \item Capabilities grow with the role; administrators can do everything moderators can.
+  \item Acceptance is judged by the visible result, the permission boundary and the stored state together.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Role-to-capability matrix}
-\begin{tabularx}{\textwidth}{p{34mm}XXX}
+\begin{tabularx}{\textwidth}{P{34mm}XXX}
 \toprule
 Capability & Student & Moderator & Administrator\\
 \midrule
@@ -509,7 +527,7 @@ Analytics and exports & No & Limited review context & Yes\\
 \begin{table}[H]
 \centering\small
 \caption{User acceptance evidence}
-\begin{tabularx}{\textwidth}{p{28mm}X p{33mm}}
+\begin{tabularx}{\textwidth}{P{28mm}X P{33mm}}
 \toprule
 Area & Acceptance criterion & Verification evidence\\
 \midrule
@@ -526,7 +544,7 @@ Administration & Exports omit private answers and neutralise formula-like CSV va
 % ===========================================================================
 \chapter{Technology Stack}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item the six-layer stack from browser to server;
   \item frontend, backend and database choices and why they were made;
   \item the tools and custom management commands used to build and run the project.
@@ -574,7 +592,7 @@ Administration & Exports omit private answers and neutralise formula-like CSV va
 \begin{table}[H]
 \centering\small
 \caption{Technology stack summary}
-\begin{tabularx}{\textwidth}{p{28mm}p{48mm}X}
+\begin{tabularx}{\textwidth}{P{28mm}P{48mm}X}
 \toprule
 Layer & Technology & Purpose\\
 \midrule
@@ -601,7 +619,7 @@ Testing & Django TestCase, Playwright & Unit and integration tests, browser work
 \begin{table}[H]
 \centering\small
 \caption{Custom management commands}
-\begin{tabularx}{\textwidth}{p{50mm}X}
+\begin{tabularx}{\textwidth}{P{53mm}X}
 \toprule
 Command & Purpose\\
 \midrule
@@ -624,7 +642,7 @@ Command & Purpose\\
 % ===========================================================================
 \chapter{System Design}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item architecture, request lifecycle and deployment design;
   \item use case, data flow, entity relationship and activity diagrams;
   \item state machines, sequence diagrams, the database schema and the URL map.
@@ -663,7 +681,7 @@ Command & Purpose\\
 Every page follows Django's Model--View--Template flow, with security checks before any data is read.
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[node distance=5mm and 6mm]
+\begin{tikzpicture}[scale=0.92,every node/.append style={transform shape},node distance=5mm and 6mm]
 \node[term] (req) {HTTP request};
 \node[box,right=of req] (mw) {Middleware\\session, CSRF,\\security headers};
 \node[box,right=of mw] (url) {URL\\resolver};
@@ -682,9 +700,13 @@ Every page follows Django's Model--View--Template flow, with security checks bef
 \end{figure}
 
 \section{Deployment Architecture}
+\begin{itemize}
+  \item Production runs as one Render web service connected to a managed PostgreSQL database.
+  \item Photographs and model weights live on a persistent disk, because the service file system is reset on every deploy.
+\end{itemize}
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[node distance=6mm and 10mm]
+\begin{tikzpicture}[scale=0.88,every node/.append style={transform shape},node distance=6mm and 10mm]
 \node[pbox,minimum width=30mm,minimum height=12mm] (client) {Browser\\(phone or laptop)};
 \node[draw=teal,dashed,rounded corners=2mm,minimum width=78mm,minimum height=46mm,right=14mm of client,yshift=-8mm] (svc) {};
 \node[font=\scriptsize\bfseries,text=teal,anchor=north west] at (svc.north west) {\,Render web service};
@@ -800,7 +822,7 @@ Every page follows Django's Model--View--Template flow, with security checks bef
 \end{itemize}
 \begin{figure}[!htbp]
 \centering
-\begin{tikzpicture}[scale=0.84,every node/.append style={transform shape},
+\begin{tikzpicture}[scale=0.74,every node/.append style={transform shape},
   entity/.style={draw=ink,rounded corners=1mm,fill=paper,minimum width=28mm,minimum height=11mm,align=center,font=\small\bfseries},
   wideentity/.style={entity,minimum width=38mm},
   rel/.style={draw=teal,thick},
@@ -973,7 +995,7 @@ Reports and claims move through explicit states. Views re-read the current row b
 \begin{table}[H]
 \centering\scriptsize
 \caption{Core database schema}
-\begin{tabularx}{\textwidth}{p{28mm}p{50mm}X}
+\begin{tabularx}{\textwidth}{P{28mm}P{50mm}X}
 \toprule
 Model & Representative fields & Key relationships and constraints\\
 \midrule
@@ -999,7 +1021,7 @@ ScoreSnapshot & histogram, mean, tier counts, manifest & Score-distribution moni
 \begin{table}[H]
 \centering\small
 \caption{Principal routes and who can open them}
-\begin{tabularx}{\textwidth}{p{56mm}X p{24mm}}
+\begin{tabularx}{\textwidth}{P{64mm}X P{25mm}}
 \toprule
 Route & Page or action & Access\\
 \midrule
@@ -1022,7 +1044,7 @@ Route & Page or action & Access\\
 % ===========================================================================
 \chapter{Implementation}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item how the frontend, backend, authentication and validation are built;
   \item the matching engine: scoring model, image calibration and attribute normalisation;
   \item notifications, security controls and the workflow rules fixed in the logic audit.
@@ -1085,7 +1107,7 @@ Confirm the handover & -- & -- & Yes & Yes\\
 \begin{table}[H]
 \centering\small
 \caption{Form validation rules}
-\begin{tabularx}{\textwidth}{p{30mm}X}
+\begin{tabularx}{\textwidth}{P{30mm}X}
 \toprule
 Field & Rule\\
 \midrule
@@ -1114,7 +1136,7 @@ S \;=\; \frac{\sum_{i \in A} w_i\, s_i}{\sum_{i \in A} w_i}, \qquad A = \{\, i :
 \begin{table}[H]
 \centering\small
 \caption{Signal definitions and weights}
-\begin{tabularx}{\textwidth}{p{30mm}c X}
+\begin{tabularx}{\textwidth}{P{30mm}c X}
 \toprule
 Signal & Weight & How $s_i$ is computed\\
 \midrule
@@ -1225,10 +1247,14 @@ def calibrated_image_similarity(vec_a, vec_b, kind=None):
 \end{itemize}
 
 \subsection{Operational Traceability}
+\begin{itemize}
+  \item Every stage of the pipeline leaves evidence that a moderator or a test can inspect.
+  \item Missing evidence lowers the number of signals; it never produces a guessed score.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Matching pipeline controls and recorded evidence}
-\begin{tabularx}{\textwidth}{p{28mm}X X}
+\begin{tabularx}{\textwidth}{P{28mm}X X}
 \toprule
 Stage & Control & Recorded evidence\\
 \midrule
@@ -1243,10 +1269,13 @@ Claim review & Keep similarity separate from ownership approval & Questions, ans
 \end{table}
 
 \section{Notifications}
+\begin{itemize}
+  \item Eleven events create in-app notifications; each one names who receives it.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Notification events and recipients}
-\begin{tabularx}{\textwidth}{X p{38mm} p{18mm}}
+\begin{tabularx}{\textwidth}{X P{38mm} P{18mm}}
 \toprule
 Event & Recipient(s) & Kind\\
 \midrule
@@ -1270,10 +1299,13 @@ Role changed by an administrator & That user & System\\
 \end{itemize}
 
 \section{Security Controls}
+\begin{itemize}
+  \item Each threat below is handled on the server, so hiding a button is never the only protection.
+\end{itemize}
 \begin{table}[H]
 \centering\small
 \caption{Threats and the controls that address them}
-\begin{tabularx}{\textwidth}{p{38mm}X}
+\begin{tabularx}{\textwidth}{P{38mm}X}
 \toprule
 Threat & Control in LostLink\\
 \midrule
@@ -1297,7 +1329,7 @@ A logic audit of the full recovery journey found eight defects where the stored 
 \begin{table}[H]
 \centering\small
 \caption{Workflow defects found in the logic audit and the rule now enforced}
-\begin{tabularx}{\textwidth}{p{4mm}X X}
+\begin{tabularx}{\textwidth}{P{4mm}X X}
 \toprule
 \# & Defect before the audit & Rule now enforced\\
 \midrule
@@ -1328,7 +1360,7 @@ A logic audit of the full recovery journey found eight defects where the stored 
 % ===========================================================================
 \chapter{Module Description}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item how the six Django apps depend on each other;
   \item what each module is responsible for;
   \item the size and test coverage of every module.
@@ -1396,7 +1428,7 @@ A logic audit of the full recovery journey found eight defects where the stored 
 \centering\small
 \renewcommand{\arraystretch}{1.05}
 \caption{Module responsibilities, size and test coverage}
-\begin{tabularx}{\textwidth}{p{23mm}p{36mm}X rr}
+\begin{tabularx}{\textwidth}{P{23mm}P{36mm}X rr}
 \toprule
 Module & Responsibility & Principal output & Python lines & Tests\\
 \midrule
@@ -1415,7 +1447,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}058 & 
 % ===========================================================================
 \chapter{User Interface}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item the site map and the design tokens behind every page;
   \item a walkthrough of each screen, from the landing page to analytics;
   \item dark theme and phone layouts.
@@ -1457,7 +1489,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}058 & 
 \begin{table}[H]
 \centering\small
 \caption{Core design tokens of the Black + Vermilion theme (light mode)}
-\begin{tabularx}{\textwidth}{p{8mm}p{30mm}p{20mm}X}
+\begin{tabularx}{\textwidth}{P{8mm}P{30mm}P{20mm}X}
 \toprule
 & Token & Value & Used for\\
 \midrule
@@ -1644,7 +1676,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}058 & 
 % ===========================================================================
 \chapter{Testing}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item the testing strategy, levels and tools;
   \item twenty representative test cases with their results;
   \item error handling and the verification evidence for this release.
@@ -1687,7 +1719,7 @@ dashboard & Governance and insights & Decisions, analytics, exports & 1{,}058 & 
 \begin{table}[H]
 \centering\small
 \caption{Test levels, tools and scope}
-\begin{tabularx}{\textwidth}{p{26mm}p{38mm}X}
+\begin{tabularx}{\textwidth}{P{26mm}P{38mm}X}
 \toprule
 Level & Tool & Scope\\
 \midrule
@@ -1719,7 +1751,7 @@ End to end & Playwright script & Report $\rightarrow$ approve $\rightarrow$ matc
   \item Twenty representative cases: TC-01 to TC-12 cover the core workflow, TC-13 to TC-20 the calibration and audit fixes.
   \item Every case passes on the current code; each maps to at least one automated test.
 \end{itemize}
-\begin{longtable}{>{\bfseries}p{14mm}p{56mm}p{60mm}p{12mm}}
+\begin{longtable}{>{\bfseries}P{14mm}P{56mm}P{60mm}P{12mm}}
 \caption{Representative test cases and results}\\
 \toprule
 ID & Scenario & Expected outcome & Result\\
@@ -1763,7 +1795,7 @@ TC-20 & Open a protected page while signed out & Sign-in keeps \code{?next=} & P
 \begin{table}[H]
 \centering\small
 \caption{Repository verification evidence}
-\begin{tabularx}{\textwidth}{p{46mm}X}
+\begin{tabularx}{\textwidth}{P{46mm}X}
 \toprule
 Check & Recorded outcome\\
 \midrule
@@ -1780,7 +1812,7 @@ Migration checks & Empty PostgreSQL and populated SQLite paths documented as suc
 \begin{table}[H]
 \centering\small
 \caption{Testing concerns and assurance level}
-\begin{tabularx}{\textwidth}{p{30mm}X p{26mm}}
+\begin{tabularx}{\textwidth}{P{30mm}X P{26mm}}
 \toprule
 Concern & Representative assurance & Level\\
 \midrule
@@ -1797,7 +1829,7 @@ Model quality & Deterministic component and calibration tests; real benchmark pe
 % ===========================================================================
 \chapter{Results and Discussion}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item what was delivered against the synopsis;
   \item a worked matching example and the results on the demonstration data;
   \item pilot evaluation, performance observations and limitations.
@@ -1844,6 +1876,10 @@ Brand / colour & 1.000 & 0.05 & 0.050 & Both blue\\
 \end{table}
 
 \section{Matching on the Demonstration Data}
+\begin{itemize}
+  \item The chart breaks every live match into the points each signal contributed.
+  \item Text and image vary most between pairs; zone, category, date and colour are near their maximum for all six.
+\end{itemize}
 \begin{figure}[!htbp]
 \centering
 \begin{tikzpicture}[x=13.2cm,y=0.72cm]
@@ -1927,7 +1963,7 @@ Sentence-BERT & CLIP & 0.85 & 0.968 & 1.000 & 0.984 & 1.000\\
 \begin{table}[H]
 \centering\small
 \caption{Observed strengths and evidence}
-\begin{tabularx}{\textwidth}{p{32mm}X}
+\begin{tabularx}{\textwidth}{P{32mm}X}
 \toprule
 Strength & Evidence\\
 \midrule
@@ -1952,7 +1988,7 @@ Design coherence & Tokens, overlapping match discs and status dots form one visu
 % ===========================================================================
 \chapter{Conclusion and Future Scope}
 \textbf{In this chapter:}
-\begin{itemize}
+\begin{itemize}[beginpenalty=10000]
   \item the main conclusions of the project;
   \item a prioritised roadmap of future enhancements;
   \item smaller improvements for operation in production.
@@ -1968,10 +2004,13 @@ Design coherence & Tokens, overlapping match discs and status dots form one visu
 \end{itemize}
 
 \section{Future Enhancements}
-\begin{table}[H]
+\begin{itemize}
+  \item Priorities reflect what limits the project most today: evidence of accuracy, then a live deployment.
+\end{itemize}
+\begin{table}[!tbp]
 \centering\small
 \caption{Future work roadmap}
-\begin{tabularx}{\textwidth}{p{6mm}X p{18mm}p{30mm}}
+\begin{tabularx}{\textwidth}{P{6mm}X P{18mm}P{30mm}}
 \toprule
 \# & Enhancement & Priority & Benefit\\
 \midrule
@@ -2086,6 +2125,38 @@ python scripts/e2e_workflow.py --base http://127.0.0.1:8000
   \item After changing the engine version or image model, run \code{rebuild\_matches} once; reports and claims are not touched.
   \item Production uses PostgreSQL via \code{DATABASE\_URL}, \code{DJANGO\_DEBUG=false} and a private secret key (see \code{docs/DEPLOY\_RENDER.md}).
 \end{itemize}
+
+\setcounter{table}{0}\renewcommand{\thetable}{B.\arabic{table}}
+\chapter*{Appendix B: Repository Layout}
+\addcontentsline{toc}{chapter}{Appendix B: Repository Layout}
+\markboth{Appendix B}{Appendix B}
+\begin{itemize}
+  \item Each Django app sits in its own top-level folder with its models, views, URLs, forms and tests.
+  \item Templates, static files and documentation are shared across the apps.
+\end{itemize}
+\begin{table}[H]
+\centering\footnotesize\renewcommand{\arraystretch}{1.0}
+\caption{Top-level folders of the LostLink repository}
+\begin{tabularx}{\textwidth}{P{34mm}X}
+\toprule
+Folder & Contents\\
+\midrule
+\code{config/} & Django settings, root URL configuration and WSGI entry point\\
+\code{accounts/} & Custom user model, roles, registration, sign-in and role decorators\\
+\code{items/} & Reports, search, landing and home pages, demo-data commands\\
+\code{matching/} & Feature extraction, calibration, scoring, evaluation and monitoring commands\\
+\code{claims/} & Claims, verification questions, decisions, disputes, handovers\\
+\code{notifications/} & In-app notifications and the unread-count endpoint\\
+\code{dashboard/} & Review queue, decision log, users, taxonomy, analytics and exports\\
+\code{templates/} & Shared page shell, partials and per-app page templates\\
+\code{static/} & Stylesheets (with the design tokens) and JavaScript\\
+\code{scripts/} & Browser sweep, end-to-end workflow and PostgreSQL helper scripts\\
+\code{evaluation/} & Pilot dataset, evaluation results and study templates\\
+\code{docs/} & Deployment, evaluation, frontend and PostgreSQL notes\\
+\code{report/} & This report's LaTeX source, figures and PDFs\\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \end{document}
 
